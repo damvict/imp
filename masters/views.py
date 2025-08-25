@@ -1,0 +1,1078 @@
+from django.shortcuts import render
+
+from django.utils import timezone
+# Item Category
+from django.shortcuts import render, redirect,get_object_or_404, redirect
+from .models import ItemCategory
+from .forms import ItemCategoryForm
+from .forms import ItemWarehouseSelectionForm
+
+from .models import VehicleType
+from .forms import VehicleTypeForm  # Assuming you created this form
+
+from .models import StatusColor
+from .forms import StatusColorForm
+
+from .models import SalesDivision
+from .forms import SalesDivisionForm  # We'll create this form next
+
+from .forms import ShipmentForm
+from .models import Shipment
+
+from .models import UserProfile
+
+from django.contrib.auth.decorators import login_required
+from .forms import BankControllerForm
+
+from django.utils import timezone
+#from .forms import ShipmentArrivalForm
+from .models import ShipmentStatusHistory
+
+from django.db.models import F, ExpressionWrapper, DurationField, Avg
+
+from datetime import timedelta
+from .models import Shipment, ShipmentDetail
+
+
+from .forms import (
+    ShipmentForm,
+    BankDocForm,
+    AssessmentForm,
+    MarkPaymentForm,
+    DutyApprovalForm,
+   
+)
+
+
+def itemcategory_list(request):
+    categories = ItemCategory.objects.all()
+    return render(request, 'masters/itemcategory_list.html', {'categories': categories})
+
+
+def itemcategory_create(request):
+    if request.method == "POST":
+        form = ItemCategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save()
+            return redirect('itemcategory_list')
+    else:
+        form = ItemCategoryForm()
+    return render(request, 'masters/itemcategory_form.html', {'form': form})
+
+def itemcategory_edit(request, pk):
+    category = get_object_or_404(ItemCategory, pk=pk)
+    if request.method == 'POST':
+        form = ItemCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            return redirect('itemcategory_list')
+    else:
+        form = ItemCategoryForm(instance=category)
+    return render(request, 'masters/itemcategory_form.html', {'form': form})
+
+def itemcategory_delete(request, pk):
+    category = get_object_or_404(ItemCategory, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        return redirect('itemcategory_list')
+    return render(request, 'masters/itemcategory_confirm_delete.html', {'category': category})
+
+
+
+
+########### Vehicle Types
+
+
+
+# List all vehicle types
+def vehicle_type_list(request):
+    vehicle_types = VehicleType.objects.all()
+    return render(request, 'masters/vehicle_type_list.html', {'vehicle_types': vehicle_types})
+
+# Create a new vehicle type
+def vehicle_type_create(request):
+    if request.method == 'POST':
+        form = VehicleTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('vehicle_type_list')
+    else:
+        form = VehicleTypeForm()
+    return render(request, 'masters/vehicle_type_form.html', {'form': form})
+
+# Edit an existing vehicle type
+def vehicle_type_edit(request, pk):
+    vehicle_type = get_object_or_404(VehicleType, pk=pk)
+    if request.method == 'POST':
+        form = VehicleTypeForm(request.POST, instance=vehicle_type)
+        if form.is_valid():
+            form.save()
+            return redirect('vehicle_type_list')
+    else:
+        form = VehicleTypeForm(instance=vehicle_type)
+    return render(request, 'masters/vehicle_type_form.html', {'form': form})
+
+# Delete a vehicle type
+def vehicle_type_delete(request, pk):
+    vehicle_type = get_object_or_404(VehicleType, pk=pk)
+    if request.method == 'POST':
+        vehicle_type.delete()
+        return redirect('vehicle_type_list')
+    return render(request, 'masters/vehicle_type_confirm_delete.html', {'vehicle_type': vehicle_type})
+
+
+
+#################
+
+############ status 
+
+
+
+def status_color_list(request):
+    status_colors = StatusColor.objects.all()
+    return render(request, 'masters/status_color_list.html', {'status_colors': status_colors})
+
+
+def status_color_create(request):
+    if request.method == 'POST':
+        form = StatusColorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('status_color_list')
+    else:
+        form = StatusColorForm()
+    return render(request, 'masters/status_color_form.html', {'form': form})
+
+
+def status_color_edit(request, pk):
+    status_color = get_object_or_404(StatusColor, pk=pk)
+    if request.method == 'POST':
+        form = StatusColorForm(request.POST, instance=status_color)
+        if form.is_valid():
+            form.save()
+            return redirect('status_color_list')
+    else:
+        form = StatusColorForm(instance=status_color)
+    return render(request, 'masters/status_color_form.html', {'form': form})
+
+
+def status_color_delete(request, pk):
+    status_color = get_object_or_404(StatusColor, pk=pk)
+    status_color.delete()
+    return redirect('status_color_list')
+
+
+############ Sales Division 
+
+def salesdivision_list(request):
+    divisions = SalesDivision.objects.all()
+    return render(request, 'masters/salesdivision_list.html', {'divisions': divisions})
+
+def salesdivision_create(request):
+    if request.method == 'POST':
+        form = SalesDivisionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('salesdivision_list')
+    else:
+        form = SalesDivisionForm()
+    return render(request, 'masters/salesdivision_form.html', {'form': form})
+
+def salesdivision_edit(request, pk):
+    division = get_object_or_404(SalesDivision, pk=pk)
+    if request.method == 'POST':
+        form = SalesDivisionForm(request.POST, instance=division)
+        if form.is_valid():
+            form.save()
+            return redirect('salesdivision_list')
+    else:
+        form = SalesDivisionForm(instance=division)
+    return render(request, 'masters/salesdivision_form.html', {'form': form})
+
+def salesdivision_delete(request, pk):
+    division = get_object_or_404(SalesDivision, pk=pk)
+    division.delete()
+    return redirect('salesdivision_list')
+    
+#####################################
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from .models import Company
+from .forms import CompanyForm  # Make sure this form exists
+
+# List View
+class CompanyListView(ListView):
+    model = Company
+    template_name = 'masters/company_list.html'
+    context_object_name = 'companies'
+
+# Create View
+class CompanyCreateView(CreateView):
+    model = Company
+    form_class = CompanyForm
+    template_name = 'masters/company_form.html'
+    success_url = reverse_lazy('company_list')
+
+# Update View
+class CompanyUpdateView(UpdateView):
+    model = Company
+    form_class = CompanyForm
+    template_name = 'masters/company_form.html'
+    success_url = reverse_lazy('company_list')
+
+# Delete View
+class CompanyDeleteView(DeleteView):
+    model = Company
+    template_name = 'masters/company_confirm_delete.html'
+    success_url = reverse_lazy('company_list')
+
+#################################################################
+
+# views.py
+def shipment_create(request):
+    if request.method == 'POST':
+        shipment_form = ShipmentForm(request.POST)
+        item_warehouse_form = ItemWarehouseSelectionForm(request.POST)
+
+        if shipment_form.is_valid() and item_warehouse_form.is_valid():
+            shipment = shipment_form.save(commit=False)
+            shipment.created_by = request.user
+            shipment.save()
+
+            default_status = StatusColor.objects.get(status_id=1)
+
+            for combo in item_warehouse_form.cleaned_data['item_warehouses']:
+                item_id, warehouse_id = map(int, combo.split('_'))
+                item = ItemCategory.objects.get(pk=item_id)
+                warehouse = Warehouse.objects.get(pk=warehouse_id)
+
+                ShipmentDetail.objects.create(
+                    shipment=shipment,
+                    item_category=item,
+                    warehouse=warehouse,
+                    sales_division=item.sales_division,
+                    status=default_status
+                )
+
+            return redirect('shipment_list')
+
+    else:
+        shipment_form = ShipmentForm()
+        item_warehouse_form = ItemWarehouseSelectionForm()
+
+    return render(request, 'masters/shipment_form.html', {
+        'form': shipment_form,
+        'item_warehouse_form': item_warehouse_form
+    })
+
+
+
+from django.shortcuts import render
+from .models import ShipmentDetail
+def shipment_list(request):
+    shipments = ShipmentDetail.objects.select_related(
+        'shipment', 'item_category', 'status', 'vehicle_type'
+    ).exclude(
+        status__status_name__iexact='Unloading completed'
+    ).all()
+
+    # check if user is Bank Controller
+    is_bank_controller = request.user.groups.filter(name="Bank Controller").exists()
+
+    return render(
+        request,
+        'masters/shipment_list.html',
+        {
+            'shipments': shipments,
+            'is_bank_controller': is_bank_controller,  # pass flag to template
+        }
+    )
+
+
+
+@login_required
+def pending_shipments(request):
+    try:
+        pending_status = StatusColor.objects.get(status_name="Shipment created, not yet arrived")
+    except StatusColor.DoesNotExist:
+        pending_status = None
+
+    shipments = Shipment.objects.filter(status=pending_status).order_by('expected_arrival_date')
+    return render(request, 'masters/pending_shipments_list.html', {'shipments': shipments})
+
+@login_required
+def shipment_edit(request, pk):
+    shipment = get_object_or_404(Shipment, pk=pk)
+
+    if request.method == 'POST':
+        form = ShipmentForm(request.POST, instance=shipment)   # <-- instance=shipment
+        if form.is_valid():
+            form.save()
+            return redirect('shipment_list')  # or wherever you want
+    else:
+        form = ShipmentForm(instance=shipment)   # <-- prefill with shipment
+
+    return render(request, 'masters/shipment_form.html', {
+        'form': form,
+        'item_warehouse_form': None,  # if you need another form, pass it here
+    })
+
+@login_required
+def shipment_delete(request, pk):
+    shipment = get_object_or_404(Shipment, pk=pk)
+    if request.method == 'POST':
+        shipment.delete()
+        return redirect('shipment_list')
+    return render(request, 'masters/shipment_confirm_delete.html', {'shipment': shipment})
+
+
+############################ shipments Pending vehicle update
+from django.contrib.auth.decorators import login_required, permission_required
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from .models import ShipmentDetail, StatusColor, ShipmentStatusHistory
+
+@login_required
+@permission_required('masters.can_update_arrival_status', raise_exception=True)
+def pending_arrival_list(request):
+    pending_status = StatusColor.objects.filter(
+        status_name="Shipment created, not yet arrived"
+    ).first()
+
+    details = (ShipmentDetail.objects
+               .filter(status=pending_status)
+               .select_related('shipment', 'item_category', 'shipment__company')
+               .order_by('shipment__expected_arrival_date')
+              ) if pending_status else ShipmentDetail.objects.none()
+
+
+    return render(request,
+                  'masters/pending_arrivals_list.html',
+                  {'details': details})
+
+@login_required
+def pending_shipments(request):
+    try:
+        pending_status = StatusColor.objects.get(status_name="Shipment created, not yet arrived")
+    except StatusColor.DoesNotExist:
+        pending_status = None
+
+    shipments = Shipment.objects.filter(status=pending_status).order_by('expected_arrival_date')
+    return render(request, 'masters/pending_shipments_list.html', {'shipments': shipments})
+    
+############################################
+@login_required
+def bank_controller_update(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    # Ensure only Bank Controllers can access
+    if not request.user.groups.filter(name="Bank Controller").exists():
+        return redirect("shipment_list")  # Or raise PermissionDenied
+
+    if request.method == "POST":
+        form = BankControllerForm(request.POST, instance=shipment)
+        if form.is_valid():
+            form.save()
+            return redirect("shipment_list")  # After save, redirect
+    else:
+        form = BankControllerForm(instance=shipment)
+
+    return render(request, "masters/bank_controller_update.html", {"form": form, "shipment": shipment})
+
+
+###############################################
+
+
+@login_required
+def shipment_arrival_update(request, pk):
+    shipment = get_object_or_404(Shipment, pk=pk)
+
+    if request.method == 'POST':
+        form = ShipmentArrivalForm(request.POST, instance=shipment)
+        if form.is_valid():
+            shipment = form.save(commit=False)
+
+            # Update status to "Arrived"
+            try:
+                arrived_status = StatusColor.objects.get(status_name="Shipment arrived at warehouse")
+                shipment.status = arrived_status
+            except StatusColor.DoesNotExist:
+                pass  # Optionally handle if status missing
+
+            shipment.save()
+
+            # Record status history
+            ShipmentStatusHistory.objects.create(
+                shipment=shipment,
+                status=shipment.status,
+                updated_by=request.user,
+                remarks=shipment.remarks
+            )
+
+            return redirect('pending_shipments')
+    else:
+        form = ShipmentArrivalForm(instance=shipment)
+
+    return render(request, 'masters/shipment_arrival_form.html', {'form': form, 'shipment': shipment})
+
+
+############################ Pending Unloading
+@login_required
+def pending_unloading_list(request):
+    unloading_status = StatusColor.objects.get(status_name="Shipment arrived at warehouse")
+    pending_shipments = ShipmentDetail.objects.filter(
+        status=unloading_status,
+        unloading_start_time__isnull=True
+    ).distinct()
+
+    return render(request, 'masters/pending_unloading_list.html', {
+        'pending_shipments': pending_shipments
+    })
+
+
+@login_required
+
+
+def start_unloading(request, pk):
+    # Get the current shipment detail
+    shipment_detail = get_object_or_404(ShipmentDetail, pk=pk)
+
+    # Get the desired status object
+    unloading_status = StatusColor.objects.get(status_name="Currently being unloaded")
+
+    # Get all records with same shipment_id and warehouse_id
+    matching_details = ShipmentDetail.objects.filter(
+        shipment=shipment_detail.shipment,
+        warehouse=shipment_detail.warehouse
+    )
+
+    # Update each record
+    for detail in matching_details:
+        detail.unloading_start_time = timezone.now()
+        detail.status = unloading_status
+        detail.save()
+
+        # Record status history
+        ShipmentStatusHistory.objects.create(
+            shipment=detail.shipment,
+            status=unloading_status,
+            updated_by=request.user
+        )
+
+    messages.success(request, "Unloading started successfully for all matching records.")
+
+    #return redirect('masters:pending_unloading_list')  # ✅ Use correct URL name
+    return redirect('pending_unloading_list')
+    
+############ Finish Loading 
+@login_required
+def unloading_in_progress_list(request):
+    status = StatusColor.objects.get(status_name="Currently being unloaded")
+    shipments = ShipmentDetail.objects.filter(status=status)
+    return render(request, 'masters/unloading_in_progress_list.html', {'shipments': shipments})
+    
+
+def finish_unloading(request, pk):
+    # Get the reference ShipmentDetail using pk
+    shipment_detail = get_object_or_404(ShipmentDetail, pk=pk)
+
+    # Get the related shipment_id and warehouse_id
+    shipment_id = shipment_detail.shipment_id
+    warehouse_id = shipment_detail.warehouse_id
+
+    # Get the status object for "Unloading completed"
+    unloaded_status = StatusColor.objects.get(status_name="Unloading completed")
+
+    # Update all ShipmentDetail records with same shipment_id and warehouse_id
+    ShipmentDetail.objects.filter(
+        shipment_id=shipment_id,
+        warehouse_id=warehouse_id
+    ).update(
+        unloading_end_time=timezone.now(),
+        status=unloaded_status
+    )
+
+    # Save status history for tracking
+    ShipmentStatusHistory.objects.create(
+        shipment=shipment_detail.shipment,
+        status=unloaded_status,
+        updated_by=request.user
+    )
+
+    # Redirect to the appropriate page (fix name if different)
+    return redirect('warehouse_dashboard')
+
+#########################3
+###################### warehouse
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from .models import Warehouse
+from .forms import WarehouseForm
+
+# List View
+class WarehouseListView(ListView):
+    model = Warehouse
+    template_name = 'masters/warehouse_list.html'
+    context_object_name = 'warehouses'
+
+# Create View
+class WarehouseCreateView(CreateView):
+    model = Warehouse
+    form_class = WarehouseForm
+    template_name = 'masters/warehouse_form.html'
+    success_url = reverse_lazy('warehouse_list')
+
+# Update View
+class WarehouseUpdateView(UpdateView):
+    model = Warehouse
+    form_class = WarehouseForm
+    template_name = 'masters/warehouse_form.html'
+    success_url = reverse_lazy('warehouse_list')
+
+# Delete View
+class WarehouseDeleteView(DeleteView):
+    model = Warehouse
+    template_name = 'masters/warehouse_confirm_delete.html'
+    success_url = reverse_lazy('warehouse_list')
+
+#######################################################################################################
+
+
+
+##################### Reports
+
+@login_required
+def average_unloading_time_report(request):
+    shipments_with_times = Shipment.objects.filter(
+        unloading_start_time__isnull=False,
+        unloading_end_time__isnull=False
+    ).annotate(
+        unloading_duration=ExpressionWrapper(
+            F('unloading_end_time') - F('unloading_start_time'),
+            output_field=DurationField()
+        )
+    )
+
+    average_time = shipments_with_times.aggregate(avg_time=Avg('unloading_duration'))['avg_time']
+
+    context = {
+        'average_time': average_time,
+        'shipments': shipments_with_times
+    }
+    return render(request, 'reports/average_unloading_time.html', context)
+    
+    ############### users
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from .forms import UserCreateForm
+from django.contrib import messages
+
+
+def create_user(request):
+    if request.method == 'POST':
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+
+            # assign groups
+            groups = form.cleaned_data['groups']
+            user.groups.set(groups)
+            
+            # assign warehouses
+            # Create UserProfile and assign selected warehouse
+            selected_warehouse = form.cleaned_data['warehouse']
+            UserProfile.objects.create(user=user, warehouse=selected_warehouse)
+
+            messages.success(request, 'User created successfully.')
+            return redirect('user_list')  # or wherever you want
+    else:
+        form = UserCreateForm()
+
+    return render(request, 'masters/create_user.html', {'form': form})
+
+ 
+#@group_required('Imports Department')
+def user_list(request):
+    users = User.objects.filter(is_superuser=False).order_by('-date_joined')
+    #users = User.objects.all().order_by('-date_joined')
+    return render(request, 'masters/user_list.html', {'users': users})
+    
+
+#!!!!!!!!!!!!!!!edit user
+
+def edit_user(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    user_profile = getattr(user, 'userprofile', None)
+
+    if request.method == 'POST':
+        form = UserCreateForm(request.POST, instance=user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            if form.cleaned_data['password']:
+                user.set_password(form.cleaned_data['password'])
+            user.save()
+            
+            user.groups.set(form.cleaned_data['groups'])
+
+            # Update or create user profile
+            selected_warehouse = form.cleaned_data['warehouse']
+            if user_profile:
+                user_profile.warehouse = selected_warehouse
+                user_profile.save()
+            else:
+                UserProfile.objects.create(user=user, warehouse=selected_warehouse)
+
+            messages.success(request, 'User updated successfully.')
+            return redirect('user_list')
+    else:
+        initial_data = {
+            'warehouse': user_profile.warehouse if user_profile else None,
+            'groups': user.groups.all()
+        }
+        form = UserCreateForm(instance=user, initial=initial_data)
+
+    return render(request, 'masters/edit_user.html', {'form': form, 'user_id': user.id})
+
+#!!!!!!!!!!!!!!!!delete use
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def delete_user(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, 'User deleted successfully.')
+        return redirect('user_list')
+    return render(request, 'masters/confirm_delete_user.html', {'user': user})
+
+#!!!!!!!!!!! change password
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+
+def change_user_password(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+
+    if request.method == 'POST':
+        form = PasswordChangeForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)  # Keeps the user logged in
+            messages.success(request, 'Password updated successfully.')
+            return redirect('user_list')
+    else:
+        form = PasswordChangeForm(user)
+
+    return render(request, 'masters/change_password.html', {'form': form, 'user': user})
+
+
+
+
+
+####################### Pending
+# Pending shipment list (awaiting arrivals)
+from django.contrib.auth.decorators import login_required, permission_required
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from .models import ShipmentDetail, StatusColor, ShipmentStatusHistory
+import logging
+logger = logging.getLogger(__name__)
+
+@login_required
+@permission_required('masters.can_update_arrival_status', raise_exception=True)
+def pending_arrival_list(request):
+    pending_status = StatusColor.objects.filter(
+        status_name="Shipment created, not yet arrived"
+    ).first()
+
+    details = (ShipmentDetail.objects
+               .filter(status=pending_status)
+               .select_related('shipment', 'item_category', 'shipment__company')
+               .order_by('shipment__expected_arrival_date')
+              ) if pending_status else ShipmentDetail.objects.none()
+
+
+    return render(request,
+                  'masters/pending_arrivals_list.html',
+                  {'details': details})   
+                  
+                  
+                  
+######################
+from django.utils import timezone
+from .forms import ArrivalUpdateForm
+
+@login_required
+@permission_required('masters.can_update_arrival_status', raise_exception=True)
+def arrival_update_detail(request, detail_id):
+    detail = get_object_or_404(ShipmentDetail, pk=detail_id)
+
+    if request.method == 'POST':
+        form = ArrivalUpdateForm(request.POST, instance=detail)
+        if form.is_valid():
+            updated_detail = form.save(commit=False)
+            try:
+                arrived_status = StatusColor.objects.get(pk=2)
+                updated_detail.status = arrived_status
+            except StatusColor.DoesNotExist:
+                messages.error(request, "Arrival status not found.")
+                return redirect('masters:arrival_update_form.html')  # fix your redirect here!
+
+            updated_detail.save()
+
+            # Bulk update all ShipmentDetails with same shipment, warehouse, vehicle_type and vehicle_number
+            ShipmentDetail.objects.filter(
+                shipment=updated_detail.shipment,
+                warehouse=updated_detail.warehouse,
+             
+            ).update(
+                status=arrived_status,
+                actual_arrival_date=updated_detail.actual_arrival_date,
+                unloading_start_time=updated_detail.unloading_start_time,
+                unloading_end_time=updated_detail.unloading_end_time,
+                remarks=updated_detail.remarks,
+                is_delayed=updated_detail.is_delayed,
+                delay_reason=updated_detail.delay_reason,
+                demurrage_start_date=updated_detail.demurrage_start_date,
+                demurrage_end_date=updated_detail.demurrage_end_date,
+                demurrage_amount=updated_detail.demurrage_amount,
+                vehicle_type=updated_detail.vehicle_type,
+                vehicle_number=updated_detail.vehicle_number,
+            )
+
+            # Create history records for each updated ShipmentDetail (optional)
+            for shipment_detail in ShipmentDetail.objects.filter(
+                shipment=updated_detail.shipment,
+                warehouse=updated_detail.warehouse,
+                vehicle_type=updated_detail.vehicle_type,
+                vehicle_number=updated_detail.vehicle_number,
+            ):
+                ShipmentStatusHistory.objects.create(
+                    shipment=shipment_detail.shipment,
+                    status=arrived_status,
+                    updated_by=request.user
+                )
+
+            return redirect('pending_arrival_list')
+
+    else:
+        form = ArrivalUpdateForm(instance=detail)
+
+    return render(request, 'masters/arrival_update_form.html', {
+        'form': form,
+        'detail': detail
+    })
+
+    
+    
+    
+#################### Dashboard - warehouse 
+from django.db.models import Count
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.utils import timezone
+from masters.models import StatusColor, ShipmentDetail, UserProfile
+
+@login_required
+def warehouse_dashboard(request):
+    today = timezone.now().date()
+
+    # Get the user's assigned warehouse
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        user_warehouse = user_profile.warehouse
+    except UserProfile.DoesNotExist:
+        user_warehouse = None
+
+    if not user_warehouse:
+        return render(request, 'dash/warehouse_dashboard.html', {
+            'error': 'No warehouse assigned to your profile.'
+        })
+
+    # Get predefined statuses
+    pending_status = StatusColor.objects.filter(status_name__iexact="Shipment created, not yet arrived").first()
+    arrived_status = StatusColor.objects.filter(status_name="Shipment arrived at warehouse").first()
+    unloading_status = StatusColor.objects.filter(status_name__iexact="Currently being unloaded").first()
+    delivered_status = StatusColor.objects.filter(status_name__iexact="Unloading completed").first()
+
+    # Shipments Awaiting Arrival
+    shipments_awaiting = ShipmentDetail.objects.filter(
+        status=pending_status,
+        warehouse=user_warehouse
+    ).values('shipment').distinct().count() if pending_status else 0
+
+    # Arrived Shipments (Count and List)
+    arrived_shipments = ShipmentDetail.objects.filter(
+        status=arrived_status,
+        warehouse=user_warehouse
+    ).values('shipment').distinct().count() if arrived_status else 0
+
+    arrived_shipments_list = ShipmentDetail.objects.filter(
+        status=arrived_status,
+        warehouse=user_warehouse
+    ).select_related('shipment', 'item_category', 'vehicle_type').distinct() if arrived_status else []
+
+    # Currently Unloading
+    currently_unloading = ShipmentDetail.objects.filter(
+        status=unloading_status,
+        warehouse=user_warehouse
+    ).values('shipment').distinct().count() if unloading_status else 0
+    
+    
+    # Full list of currently unloading shipments
+    currently_unloading_shipments = ShipmentDetail.objects.filter(
+        status=unloading_status,
+        warehouse=user_warehouse
+    ).select_related('shipment', 'status').distinct() if unloading_status else []
+
+    # Completed Shipments Today
+    shipments_delivered_today = ShipmentDetail.objects.filter(
+        status=delivered_status,
+        actual_arrival_date=today,
+        warehouse=user_warehouse
+    ).values('shipment').distinct().count() if delivered_status else 0
+
+    # Pie chart data
+    shipments_by_status = ShipmentDetail.objects.filter(
+        warehouse=user_warehouse
+    ).values('status__status_name').annotate(count=Count('id'))
+
+    # Total shipments that are either arrived or being unloaded
+    total_shipments_current = ShipmentDetail.objects.filter(
+        status__status_name__in=['Shipment arrived at warehouse', 'Currently being unloaded'],
+        warehouse=user_warehouse
+    ).values('shipment').distinct().count()
+
+    # Delayed shipments
+    delayed_shipments = ShipmentDetail.objects.filter(
+        is_delayed=True,
+        warehouse=user_warehouse
+    ).values('shipment').distinct().count()
+
+    # Pending list
+    pending_arrival_list = ShipmentDetail.objects.filter(
+        status=pending_status,
+        warehouse=user_warehouse
+    ).select_related('shipment', 'vehicle_type', 'status').distinct() if pending_status else []
+
+    # Final context
+    context = {
+        'shipments_awaiting': shipments_awaiting,
+        'arrived_shipments': arrived_shipments,
+        'arrived_shipments_list': arrived_shipments_list,
+        'currently_unloading': currently_unloading,
+        'currently_unloading_shipments':currently_unloading_shipments,
+        'shipments_delivered_today': shipments_delivered_today,
+        'shipments_by_status': shipments_by_status,
+        'total_shipments_current': total_shipments_current,
+        'delayed_shipments': delayed_shipments,
+        'warehouse': user_warehouse,
+        'pending_arrival_list': pending_arrival_list,
+    }
+
+    return render(request, 'dash/warehouse_dashboard.html', context)
+######################## Admin Dashboard
+
+from django.shortcuts import render
+from .models import ShipmentDetail
+from django.db.models import OuterRef, Subquery
+from collections import defaultdict
+from datetime import datetime
+from django.db.models import Count
+
+from django.utils.timezone import make_aware, get_current_timezone
+default_time = make_aware(datetime.min, get_current_timezone())
+
+def admin_dashboard(request):
+    # Fetch all shipment details
+    details = ShipmentDetail.objects.select_related(
+        'shipment', 'status', 'warehouse', 'vehicle_type', 'item_category'
+    ).order_by('-unloading_start_time')
+
+    # Group by unique (shipment_id, warehouse_id)
+    grouped = defaultdict(list)
+    for d in details:
+        grouped[(d.shipment.id, d.warehouse.warehouse_id)].append(d)
+
+    # Prepare recent 10 grouped records
+    grouped_details = []
+    for (shipment_id, warehouse_id), detail_list in grouped.items():
+        first = detail_list[0]
+        item_names = ", ".join(d.item_category.item_name for d in detail_list if d.item_category)
+        grouped_details.append({
+            'shipment': first.shipment,
+            'shipment_id': first.shipment.id,
+            'warehouse': first.warehouse,
+            'status': first.status,
+            'vehicle_number': first.vehicle_number,
+            'unloading_start_time': first.unloading_start_time,
+            'unloading_end_time': first.unloading_end_time,
+            'item_names': item_names,
+        })
+
+    # Sort and limit to 10 recent
+    grouped_details = sorted(
+    grouped_details,
+    key=lambda x: x['unloading_start_time'] or default_time,
+    reverse=True
+    )[:10]
+    #grouped_details = sorted(grouped_details, key=lambda x: x['unloading_start_time'] or '', reverse=True)[:10]
+    #grouped_details = sorted(grouped_details, key=lambda x: x['unloading_start_time'] or datetime.min, reverse=True)[:10]
+    # Count logic
+    def count_by_status(name):
+        return ShipmentDetail.objects.filter(status__status_name=name).values('shipment_id', 'warehouse_id').distinct().count()
+
+    total_shipments = ShipmentDetail.objects.values('shipment_id', 'warehouse_id').distinct().count()
+    pending_arrivals = count_by_status("Shipment created, not yet arrived")
+    pending_unloading = count_by_status("Pending unloading")
+    unloading_shipments = count_by_status("Currently being unloaded")
+    unloaded_shipments = count_by_status("Unloading completed")
+    delayed_shipments = ShipmentDetail.objects.filter(is_delayed=True).values('shipment_id', 'warehouse_id').distinct().count()
+
+    context = {
+        'total_shipments': total_shipments,
+        'pending_arrivals': pending_arrivals,
+        'pending_unloading': pending_unloading,
+        'unloading_shipments': unloading_shipments,
+        'delayed_shipments': delayed_shipments,
+        'unloaded_shipments': unloaded_shipments,
+        'recent_shipments': grouped_details
+    }
+
+    return render(request, 'dash/admin_dashboard.html', context)
+
+
+
+################################ API ##############
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+#from .models import Shipment
+from .serializers import ClearingAgentShipmentSerializer
+from .serializers import MDShipmentSerializer
+
+from django.db.models import Q
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def clearing_agent_shipments(request):
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=True
+    ).filter(
+        Q(assessment_document__isnull=True) | Q(assessment_document='')
+    )
+    serializer = ClearingAgentShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
+
+#### Upload assensment
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Shipment
+from .serializers import BankManagerShipmentSerializer
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def upload_assessment_document(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+     # Debug: check what Django receives
+    print("DEBUG -> request.FILES:", request.FILES)
+    print("DEBUG -> request.data:", request.data)
+
+    file = request.FILES.get("assessment_document")
+    if not file:
+        return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+
+    shipment.assessment_document = file
+    shipment.assessment_uploaded_date = timezone.now().date()
+    shipment.save()
+    return Response(
+        {"message": "File uploaded successfully", "file_url": shipment.assessment_document.url},
+        status=status.HTTP_200_OK,
+    )
+
+
+#########
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bank_manager_shipments(request):
+    """
+    List shipments that have assessment document uploaded but payment not marked yet
+    """
+    shipments = Shipment.objects.filter(
+        assessment_document__isnull=False,
+        payment_marked=False
+    )
+    serializer = BankManagerShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
+from rest_framework import status
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_payment_done(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Mark payment done
+    shipment.payment_marked = True
+    shipment.payment_marked_date = timezone.now().date()
+    shipment.save()
+
+    serializer = BankManagerShipmentSerializer(shipment)
+    return Response(
+        {"message": "Payment marked successfully", "shipment": serializer.data},
+        status=status.HTTP_200_OK
+    )
+
+###############################################
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def md_shipments(request):
+    """
+    List shipments where payment is marked but duty not approved yet
+    """
+    shipments = Shipment.objects.filter(
+        payment_marked=True,
+        duty_paid=False
+    )
+    serializer = MDShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def approve_duty_paid(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=404)
+
+    if not shipment.payment_marked:
+        return Response({"error": "Payment not marked yet"}, status=400)
+
+    shipment.duty_paid = True
+    shipment.duty_paid_date = timezone.now().date()
+    shipment.save()
+
+    serializer = MDShipmentSerializer(shipment)
+    return Response(
+        {"message": "Duty approved successfully", "shipment": serializer.data},
+        status=200
+    )

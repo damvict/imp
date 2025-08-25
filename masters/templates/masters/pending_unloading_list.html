@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th, .table td {
+    padding: 0.4rem 0.6rem;
+    vertical-align: middle;
+}
+
+.table tr {
+    height: 20px;
+}
+
+/* Custom striped row color */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #beccc4;
+}
+
+/* Hover effect */
+.table-hover tbody tr:hover {
+    background-color: #e9eff5;
+}
+
+/* Header styling */
+.table thead th {
+    background-color: #10243a;
+    color: white;
+    padding: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dt-buttons {
+    margin-bottom: 0.75rem;
+}
+</style>
+
+<div class="container mt-5">
+
+    <a href="{% url 'shipment_create' %}" class="btn btn-light text-primary fw-bold btn-sm mb-3">
+        <i class="fas fa-plus-circle"></i> New Shipment
+    </a>
+
+    <div class="card-body p-4">
+        <table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Shipment</th>
+      <th>Item</th>
+      <th>Vehicle</th>
+      <th>Arrival Date</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for detail in pending_shipments %}
+      <tr>
+        <td>{{ detail.shipment.id }}</td>
+        <td>{{ detail.item_category.item_name }}</td>
+        <td>{{ detail.vehicle_number }}</td>
+        <td>{{ detail.actual_arrival_date }}</td>
+        <td>{% if detail.unloading_start_time %}Started{% else %}Pending{% endif %}</td>
+        <td>
+          <a href="{% url 'start_unloading' detail.id %}" class="btn btn-sm btn-success">
+            Start Unloading
+          </a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="6" class="text-center">No pending unloadings.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+    </div>
+
+</div>
+
+{% endblock %}

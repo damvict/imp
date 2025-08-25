@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - QFix Help Desk</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Login to Your Account</h2>
+        
+        <!-- Display error message if login fails -->
+        {% if messages %}
+            <ul class="error-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="username">Username:</label>
+                <input type="text" name="username" id="username" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" name="password" id="password" required>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+
+       
+    </div>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

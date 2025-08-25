@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h4>Update Arrival for {{ detail.shipment.purchase_order_no }} – {{ detail.item_category.item_name }}</h4>
+  <form method="post">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+      {{ form.actual_arrival_date.label_tag }} {{ form.actual_arrival_date }}
+    </div>
+    <div class="mb-3">
+      {{ form.vehicle_type.label_tag }} {{ form.vehicle_type }}
+    </div>
+    <div class="mb-3">
+      {{ form.vehicle_number.label_tag }} {{ form.vehicle_number }}
+    </div>
+    <button type="submit" class="btn btn-primary">Save Arrival</button>
+    
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Vehicle Type</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            {{ form.type_code.label_tag }}
+            {{ form.type_code }}
+            {% if form.type_code.errors %}
+                <div class="text-danger">{{ form.type_code.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.type_name.label_tag }}
+            {{ form.type_name }}
+            {% if form.type_name.errors %}
+                <div class="text-danger">{{ form.type_name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-check mb-3">
+            {{ form.is_active }}
+            {{ form.is_active.label_tag }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'vehicle_type_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

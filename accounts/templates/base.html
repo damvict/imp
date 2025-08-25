@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Anura Group - Imports{% endblock %}</title>
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="{% static 'assets/vendors/bootstrap/dist/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/font-awesome/css/font-awesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/nprogress/nprogress.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/build/css/custom.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="{% static 'assets/vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/vendors/datatables.net-scroller-bs/css/scroller.bootstrap.min.css' %}">
+
+  <!-- Select2 -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body class="nav-md">
+<div class="container body">
+  <div class="main_container">
+
+    <!-- Sidebar -->
+    <div class="col-md-3 left_col">
+      <div class="left_col scroll-view">
+        <div class="navbar nav_title">
+          <a class="site_title" href="{% url 'home' %}"><i class="fa fa-paw"></i> <span>IMPORTS</span></a>
+        </div>
+        <div class="clearfix"></div>
+
+        <!-- Profile -->
+        <div class="profile clearfix">
+          <div class="profile_pic">
+            <img src="{% static 'assets/images/p.png' %}" alt="..." class="img-circle profile_img">
+          </div>
+          <div class="profile_info">
+            <span>Welcome,</span>
+            <h2>{{ user.username }}</h2>
+          </div>
+        </div>
+        <br />
+
+        <!-- Sidebar Menu -->
+        <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+          <div class="menu_section">
+            <h3>General</h3>
+            <ul class="nav side-menu">
+              <li><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                  {% if request.user.groups.all.0.name == 'Admin' %}
+                    <li><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+                  {% elif request.user.groups.all.0.name == 'Warehouse Staff' %}
+                    <li><a href="{% url 'warehouse_dashboard' %}">Warehouse Dashboard</a></li>
+                  {% elif request.user.groups.all.0.name == 'Security Guard' %}
+                    <li><a href="{% url 'home' %}">Dashboard</a></li>
+                  {% endif %}
+                </ul>
+              </li>
+
+              <li><a><i class="fa fa-truck"></i> Shipment Management <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                  {% if perms.masters.can_create_shipment %}
+                    <li><a href="{% url 'shipment_create' %}">Create New Shipment</a></li>
+                    <li><a href="{% url 'shipment_list' %}">View Shipment</a></li>
+                  {% endif %}
+                  <li><a>View All Shipments <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'pending_arrival_list' %}">Pending Arrivals</a></li>
+                      {% if request.user.groups.all.0.name == 'Warehouse Staff' %}
+                        <li><a href="{% url 'pending_unloading_list' %}">Pending Unloading</a></li>
+                        <li><a href="{% url 'unloading_in_progress_list' %}">Complete Unloading</a></li>
+                      {% endif %}
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+
+              {% if show_common_masters_menu %}
+              <li><a><i class="fa fa-sitemap"></i> Common Masters <span class="fa fa-chevron-down"></span></a>
+                <ul class="nav child_menu">
+                  <li><a>Item Categories <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'itemcategory_create' %}">New</a></li>
+                      <li><a href="{% url 'itemcategory_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                  <li><a>Container/Vehicle Types <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'vehicle_type_create' %}">New</a></li>
+                      <li><a href="{% url 'vehicle_type_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                  <li><a>Status Colors <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'status_color_create' %}">New</a></li>
+                      <li><a href="{% url 'status_color_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                  <li><a>Warehouse <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'warehouse_create' %}">New</a></li>
+                      <li><a href="{% url 'warehouse_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                  <li><a>Sales Divisions <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'salesdivision_create' %}">New</a></li>
+                      <li><a href="{% url 'salesdivision_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                  <li><a>Company <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'company_create' %}">New</a></li>
+                      <li><a href="{% url 'company_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                  <li><a>Users <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'create_user' %}">New</a></li>
+                      <li><a href="{% url 'user_list' %}">View</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer hidden-small">
+          <a data-toggle="tooltip" title="Settings"><span class="glyphicon glyphicon-cog"></span></a>
+          <a data-toggle="tooltip" title="FullScreen"><span class="glyphicon glyphicon-fullscreen"></span></a>
+          <a data-toggle="tooltip" title="Lock"><span class="glyphicon glyphicon-eye-close"></span></a>
+          <a data-toggle="tooltip" title="Logout" href="{% url 'logout' %}"><span class="glyphicon glyphicon-off"></span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="top_nav">
+      <div class="nav_menu">
+        <div class="nav toggle">
+          <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+        </div>
+        <nav class="nav navbar-nav">
+          <ul class="navbar-right">
+            <li class="nav-item dropdown open" style="padding-left: 15px;">
+              <a href="#" class="user-profile dropdown-toggle" data-toggle="dropdown">
+                <img src="{% static 'assets/images/p.png' %}" alt="">{{ user.username }}
+              </a>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="#">Profile</a>
+                <a class="dropdown-item" href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Log Out</a>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="right_col" role="main">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<!-- JS Scripts -->
+<script src="{% static 'assets/vendors/jquery/dist/jquery.min.js' %}"></script>
+<script src="{% static 'assets/vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/build/js/custom.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.select2').select2({
+      placeholder: "Please select",
+      allowClear: true,
+      dropdownAutoWidth: true,
+      width: '100%'
+    });
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>
