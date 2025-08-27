@@ -109,6 +109,9 @@ def home(request):
         return render(request, 'dashboard/user_dashboard.html', context)
     elif user.groups.filter(name="Admin").exists():
         return redirect('admin_dashboard')  # URL name for your admin dashboard
+    elif user.groups.filter(name="Managing Director").exists():
+        return redirect('md_dashboard')  # URL name for your admin dashboard
     else:
+ 
         # fallback - unauthorized or unknown role
         return render(request, 'dashboard/access_denied.html', context)

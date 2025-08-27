@@ -77,6 +77,8 @@ urlpatterns = [
     path('shipments/admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('reports/average-unloading-time/', views.average_unloading_time_report, name='average_unloading_time_report'),
     path('shipments/warehouse-dashboard/', views.warehouse_dashboard, name='warehouse_dashboard'),
+    path('shipments/md-dashboard/', views.md_dashboard, name='md_dashboard'),
+    path("shipments/approve-duty/<int:shipment_id>/", views.approve_duty_paid_md, name="approve_duty_paid_md"),
 
     path('users/create/', views.create_user, name='create_user'),
     path('users/', views.user_list, name='user_list'),

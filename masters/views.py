@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect,get_object_or_404, redirect
 from .models import ItemCategory
 from .forms import ItemCategoryForm
 from .forms import ItemWarehouseSelectionForm
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .models import VehicleType
 from .forms import VehicleTypeForm  # Assuming you created this form
@@ -239,7 +240,11 @@ def shipment_create(request):
             shipment.created_by = request.user
             shipment.save()
 
-            default_status = StatusColor.objects.get(status_id=1)
+            #default_status = StatusColor.objects.get(status_id=1)
+            default_status, created = StatusColor.objects.get_or_create(
+                status_id=1,
+                defaults={'status_name': 'Pending', 'color_code': '#FFA500'}
+            )
 
             for combo in item_warehouse_form.cleaned_data['item_warehouses']:
                 item_id, warehouse_id = map(int, combo.split('_'))
@@ -941,6 +946,39 @@ def admin_dashboard(request):
     }
 
     return render(request, 'dash/admin_dashboard.html', context)
+
+################ md_Dashboard
+
+def is_md(user):
+    return user.groups.filter(name="Managing Director").exists()
+
+@login_required
+@user_passes_test(is_md)
+def md_dashboard(request):   
+    # Filter shipments where payment is marked but duty not approved yet
+    shipments = Shipment.objects.filter(payment_marked=True, duty_paid=False)
+
+    context = {
+        "shipments": shipments
+    }
+    return render(request, "dash/md_dashboard.html", context)
+
+
+
+def approve_duty_paid_md(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if not shipment.payment_marked:
+        messages.error(request, "Payment not marked yet. Cannot approve duty.")
+        return redirect("md_dashboard")
+
+    shipment.duty_paid = True
+    shipment.duty_paid_date = timezone.now().date()
+    shipment.save()
+
+    messages.success(request, f"Duty approved successfully for Shipment {shipment.id}")
+    return redirect("md_dashboard")
+
 
 
 
