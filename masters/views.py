@@ -280,7 +280,7 @@ def shipment_list(request):
         'shipment', 'item_category', 'status', 'vehicle_type'
     ).exclude(
         status__status_name__iexact='Unloading completed'
-    ).all()
+    ).all().order_by('-shipment__created_at')
 
     # check if user is Bank Controller
     is_bank_controller = request.user.groups.filter(name="Bank Controller").exists()
@@ -410,7 +410,45 @@ def bank_manager_update(request, shipment_id):
     return render(request, "masters/bank_manager_update.html", {"form": form, "shipment": shipment})
 
 
-###############################################
+############################ Clearing Agent Update  ###################
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
+from .models import Shipment
+from .forms import AssessmentUploadForm  # We'll create this form
+
+def clearing_agent_shipments_view(request):
+    # Filter shipments same as your API
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=True
+    ).filter(
+        Q(assessment_document__isnull=True) | Q(assessment_document='')
+    )
+
+    return render(request, 'masters/clearing_agent_shipments.html', {'shipments': shipments})
+
+
+
+
+# views.py
+def upload_assessment_document_view(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == 'POST':
+        form = AssessmentUploadForm(request.POST, request.FILES, instance=shipment)
+        if form.is_valid():
+            shipment.assessment_uploaded_date = timezone.now().date()
+            form.save()
+            return redirect('clearing_agent_shipments_view')  # Redirect back to list
+    else:
+        form = AssessmentUploadForm(instance=shipment)
+
+    return render(request, 'masters/upload_assessment_document.html', {
+        'form': form,
+        'shipment': shipment
+    })
+
+#####################
 
 
 @login_required

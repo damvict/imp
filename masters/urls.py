@@ -68,7 +68,12 @@ urlpatterns = [
     ############## unloading completed
     path('shipments/complete-unloading/', views.unloading_in_progress_list, name='unloading_in_progress_list'),
     path('shipments/finish_unloading/<int:pk>/', views.finish_unloading, name='finish_unloading'),
+
+
+    path('clearing-agent/shipments/', views.clearing_agent_shipments_view, name='clearing_agent_shipments_view'),
+    path('clearing-agent/upload/<int:shipment_id>/', views.upload_assessment_document_view, name='upload_assessment_document_view'),
     
+    ######################################### 
     
     path('warehouses/', WarehouseListView.as_view(), name='warehouse_list'),
     path('warehouses/create/', WarehouseCreateView.as_view(), name='warehouse_create'),

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+/* Container */
+.assessment-dashboard {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 15px 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Header */
+.assessment-dashboard h2 {
+    font-size: 1.8rem;
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+/* Table */
+.assessment-dashboard table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.assessment-dashboard th {
+    background-color: #2563eb;
+    color: white;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.assessment-dashboard td {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+}
+
+.assessment-dashboard tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.assessment-dashboard tbody tr:hover {
+    background-color: #e0f2fe;
+}
+
+/* Links & Buttons */
+.doc-link, .upload-link {
+    color: #2563eb;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.doc-link:hover, .upload-link:hover {
+    text-decoration: underline;
+    color: #1e40af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .assessment-dashboard table, .assessment-dashboard thead, .assessment-dashboard tbody, .assessment-dashboard th, .assessment-dashboard td, .assessment-dashboard tr {
+        display: block;
+    }
+    .assessment-dashboard tr {
+        margin-bottom: 15px;
+    }
+    .assessment-dashboard th {
+        display: none;
+    }
+    .assessment-dashboard td {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+    .assessment-dashboard td:before {
+        content: attr(data-label);
+        font-weight: bold;
+        width: 45%;
+        flex-shrink: 0;
+    }
+}
+</style>
+
+<div class="assessment-dashboard">
+    <h2>Shipments Pending Assessment</h2>
+
+    {% if shipments %}
+    <table>
+        <thead>
+            <tr>
+                <th>Document Type</th>
+                <th>Shipment No</th>
+                <th>Document</th>
+                <th>Upload Assessment</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shipment in shipments %}
+            <tr>
+                <td data-label="Document Type">{{ shipment.bank_doc_type }}</td>
+                <td data-label="Reference">{{ shipment.reference_number }}</td>
+                <td data-label="Document">
+                    {% if shipment.assessment_document %}
+                        <a href="{{ shipment.assessment_document.url }}" target="_blank" class="doc-link">View Document</a>
+                    {% else %}
+                        <span style="color: gray;">No Document</span>
+                    {% endif %}
+                </td>
+                <td data-label="Upload Assessment">
+                    <a href="{% url 'upload_assessment_document_view' shipment.id %}" class="upload-link">Upload</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: gray; margin-top: 20px;">No shipments pending assessment.</p>
+    {% endif %}
+</div>
+{% endblock %}

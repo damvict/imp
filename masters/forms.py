@@ -128,6 +128,18 @@ class BankControllerForm(forms.ModelForm):
         fields = ["send_to_clearing_agent", "send_date"]
 
 
+# forms.py
+
+
+class AssessmentUploadForm(forms.ModelForm):
+    class Meta:
+        model = Shipment
+        fields = ['assessment_document']
+
+
+
+
+
 # ðŸ“¦ Shipment Detail Form
 class ShipmentDetailForm(forms.ModelForm):
 
