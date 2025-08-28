@@ -56,6 +56,8 @@ urlpatterns = [
     path('shipment/edit/<int:pk>/', views.shipment_edit, name='shipment_edit'),
     path('shipment/delete/<int:pk>/', views.shipment_delete, name='shipment_delete'),
     path("shipments/<int:shipment_id>/bank-update/", views.bank_controller_update, name="bank_controller_update"),
+    path("shipments/<int:shipment_id>/bank-mupdate/", views.bank_manager_update, name="bank_manager_update"),
+
     
     path('shipments/pending-arrival/', views.pending_arrival_list, name='pending_arrival_list'),
     path('shipments/details/<int:detail_id>/arrival-update/',views.arrival_update_detail,name='arrival_update_detail'),

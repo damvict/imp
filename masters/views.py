@@ -24,6 +24,7 @@ from .models import UserProfile
 
 from django.contrib.auth.decorators import login_required
 from .forms import BankControllerForm
+from .forms import MarkPaymentForm
 
 from django.utils import timezone
 #from .forms import ShipmentArrivalForm
@@ -283,6 +284,7 @@ def shipment_list(request):
 
     # check if user is Bank Controller
     is_bank_controller = request.user.groups.filter(name="Bank Controller").exists()
+    is_bank_Manager = request.user.groups.filter(name="Bank Manager").exists()
 
     return render(
         request,
@@ -290,6 +292,7 @@ def shipment_list(request):
         {
             'shipments': shipments,
             'is_bank_controller': is_bank_controller,  # pass flag to template
+            'is_bank_Manager': is_bank_Manager,  # pass flag to template
         }
     )
 
@@ -383,6 +386,28 @@ def bank_controller_update(request, shipment_id):
         form = BankControllerForm(instance=shipment)
 
     return render(request, "masters/bank_controller_update.html", {"form": form, "shipment": shipment})
+
+
+###############################################
+
+############################################
+@login_required
+def bank_manager_update(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    # Ensure only Bank Controllers can access
+    if not request.user.groups.filter(name="Bank Manager").exists():
+        return redirect("shipment_list")  # Or raise PermissionDenied
+
+    if request.method == "POST":
+        form = MarkPaymentForm(request.POST, instance=shipment)
+        if form.is_valid():
+            form.save()
+            return redirect("shipment_list")  # After save, redirect
+    else:
+        form = BankControllerForm(instance=shipment)
+
+    return render(request, "masters/bank_manager_update.html", {"form": form, "shipment": shipment})
 
 
 ###############################################

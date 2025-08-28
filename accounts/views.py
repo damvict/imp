@@ -111,6 +111,10 @@ def home(request):
         return redirect('admin_dashboard')  # URL name for your admin dashboard
     elif user.groups.filter(name="Managing Director").exists():
         return redirect('md_dashboard')  # URL name for your admin dashboard
+    elif user.groups.filter(name="Bank Controller").exists():
+        return redirect('shipment_list')  # URL name for your adm
+    elif user.groups.filter(name="Bank Manager").exists():
+        return redirect('shipment_list')  # URL name for your adm
     else:
  
         # fallback - unauthorized or unknown role
