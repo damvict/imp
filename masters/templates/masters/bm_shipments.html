@@ -85,7 +85,7 @@
 </style>
 
 <div class="assessment-dashboard">
-    <h2>Shipments - Payment Uploaded</h2>
+    <h2>Shipments - To be Paid</h2>
 
     {% if shipments %}
     <table>
@@ -95,6 +95,9 @@
                 <th>PL Ref</th>
                 <th>Document Type</th>
                 <th>Doc Ref.</th>
+                <th>Uploaded Assesment </th>
+                 <th>Uploaded Date </th>
+                <th>Total Duty</th>
                 <th>Payment Marked</th>
                 
             </tr>
@@ -106,6 +109,15 @@
                 <td data-label="Document Type">{{ shipment.packing_list_ref }}</td>
                 <td data-label="Document Type">{{ shipment.bank_doc_type }}</td>
                 <td data-label="Reference">{{ shipment.reference_number }}</td>
+                 <td data-label="Document">
+                    {% if shipment.assessment_document %}
+                        <a href="{{ shipment.assessment_document.url }}" target="_blank" class="doc-link">View Document</a>
+                    {% else %}
+                        <span style="color: gray;">No Document</span>
+                    {% endif %}
+                </td>
+                 <td data-label="Reference">{{ shipment.assessment_uploaded_date }}</td>
+                <td data-label="Reference">{{ shipment.total_duty_value }}</td>
                  <td>
                             <form method="post" action="{% url 'bank_manager_update' shipment.id %}" class="responsive-form">
                                 {% csrf_token %}
@@ -114,7 +126,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm">Update</button>
                             </form>
                         </td>
-               
+                        
             </tr>
             {% endfor %}
         </tbody>
