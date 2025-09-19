@@ -78,15 +78,13 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Shipment No</th>
-                        <th>Purchase Order</th>
+                        
                         <th>Order Date</th>
                         <th>Item Category</th>
                         <th>Expected Arrival</th>
                         <th>Status</th>
                         <th>Actions</th>
-                        {% if is_bank_controller %}
-                        <th>Bank Doc.Received</th>
-                        {% endif %}
+                       
                          {% if is_bank_Manager %}
                         <th>Payment Done</th>
                         {% endif %}
@@ -96,7 +94,7 @@
                     {% for shipment in shipments %}
                     <tr>
                         <td>{{ shipment.shipment.id }}</td>
-                        <td>{{ shipment.shipment.purchase_order_no }}</td>
+                        
                         <td>{{ shipment.shipment.order_date }}</td>
                         <td>{{ shipment.item_category.item_name }}</td>
                         <td>{{ shipment.shipment.expected_arrival_date }}</td>
@@ -114,26 +112,27 @@
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </td>
-                        {% if is_bank_controller %}
-                        <td>
-                            <form method="post" action="{% url 'bank_controller_update' shipment.shipment.id %}" class="responsive-form">
-                                {% csrf_token %}
-                                <input type="date" name="send_date" value="{{ shipment.shipment.send_date|date:'Y-m-d' }}">
-                                <input type="checkbox" name="send_to_clearing_agent" {% if shipment.shipment.send_to_clearing_agent %}checked{% endif %}>
-                                <button type="submit" class="btn btn-primary btn-sm">Update</button>
-                            </form>
-                        </td>
-                        {% endif %}
+                        
 
                          {% if is_bank_Manager %}
                         <td>
                             <form method="post" action="{% url 'bank_manager_update' shipment.shipment.id %}" class="responsive-form">
                                 {% csrf_token %}
                                 <input type="date" name="send_date" value="{{ shipment.shipment.send_date|date:'Y-m-d' }}">
-                                <input type="checkbox" name="payment markerd" {% if shipment.shipment.payment_marked_date %}checked{% endif %}>
+                               <input type="checkbox" name="payment_marked"
+       {% if shipment.shipment.payment_marked %}checked{% endif %}>
+
                                 <button type="submit" class="btn btn-primary btn-sm">Update</button>
                             </form>
                         </td>
+                        <td>
+                            <td data-label="Document">
+         
+            <a href="{{ shipment.assessment_document.url }}" target="_blank" class="doc-link">View Document</a>
+        
+        </td>
+                        </td>
+                        
                         {% endif %}
                         
                     </tr>

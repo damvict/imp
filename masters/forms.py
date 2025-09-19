@@ -59,7 +59,7 @@ class SalesDivisionForm(forms.ModelForm):
 
 
 ###################### Shipments
-
+from datetime import timedelta
 
 # ðŸ“¦ Shipment Form (parent)
 class ShipmentForm(forms.ModelForm):
@@ -73,7 +73,7 @@ class ShipmentForm(forms.ModelForm):
         model = Shipment
         exclude = ['created_by', 'created_at']
         widgets = {
-            'purchase_order_no': forms.TextInput(attrs={'class': 'form-control'}),
+            #'purchase_order_no': forms.TextInput(attrs={'class': 'form-control'}),
             'packing_list_ref': forms.TextInput(attrs={'class': 'form-control'}),
             'supplier_invoice': forms.TextInput(attrs={'class': 'form-control'}),
             'order_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -84,6 +84,17 @@ class ShipmentForm(forms.ModelForm):
             'bank_doc_type': forms.Select(attrs={'class': 'form-select select2'}),  # dropdown
             'reference_number': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+        def clean(self):
+            cleaned_data = super().clean()
+            order_date = cleaned_data.get("order_date")
+            expected_arrival_date = cleaned_data.get("expected_arrival_date")
+
+            # Auto-fill expected_arrival_date if not provided
+            if order_date and not expected_arrival_date:
+                cleaned_data["expected_arrival_date"] = order_date + timedelta(days=4)
+
+            return cleaned_data
 
 
 #################################
@@ -103,8 +114,11 @@ class AssessmentForm(forms.ModelForm):
     """Clearing agent can upload assessment doc"""
     class Meta:
         model = Shipment
-        fields = ["assessment_document"]
-
+        fields = ["assessment_document",'total_duty_value']
+        widgets = {
+            'assessment_document': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'total_duty_value': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
 
 class MarkPaymentForm(forms.ModelForm):
     """Bank manager marks payment"""

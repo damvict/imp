@@ -84,7 +84,7 @@ def shipment_upload_path(instance, filename):
 #  Shipment
 class Shipment(models.Model):
     id = models.AutoField(primary_key=True)
-    purchase_order_no = models.CharField(max_length=100)
+    # purchase_order_no = models.CharField(max_length=100)
     packing_list_ref = models.CharField(max_length=100)
     supplier_invoice = models.CharField(max_length=100,null=True, blank=True)
     order_date = models.DateField()
@@ -127,6 +127,7 @@ class Shipment(models.Model):
         blank=True
     )
     assessment_uploaded_date = models.DateField(null=True, blank=True)
+    total_duty_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)  # NEW
 
     # Bank manager stage
     payment_marked = models.BooleanField(default=False)
@@ -196,7 +197,6 @@ class ShipmentDetail(models.Model):
     unloading_start_time = models.DateTimeField(blank=True, null=True)
     unloading_end_time = models.DateTimeField(blank=True, null=True)
     remarks = models.TextField(blank=True, null=True)
-
     is_delayed = models.BooleanField(default=False)
     delay_reason = models.TextField(blank=True, null=True)
     demurrage_start_date = models.DateField(blank=True, null=True)

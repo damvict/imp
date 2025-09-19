@@ -68,7 +68,16 @@
 
                     {% elif request.user.groups.all.0.name == 'Clearing Agent' %}
                     <li><a href="{% url 'clearing_agent_shipments_view' %}"> Dashboard</a></li>
+
+                     {% elif request.user.groups.all.0.name == 'Bank Controller' %}
+                    <li><a href="{% url 'bank_controller_view' %}"> Dashboard</a></li>
+
+                      {% elif request.user.groups.all.0.name == 'Bank Manager' %}
+                    <li><a href="{% url 'bank_manager_view' %}"> Dashboard</a></li>
+                   
+
                   {% endif %}
+                 
                 </ul>
               </li>
 

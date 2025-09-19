@@ -30,7 +30,20 @@
           {% endif %}
 
           <div class="container">
+            <div class="row mb-3">
+  <div class="col-md-4">
+    <label>Bank Document Type</label>
+    {{ form.bank_doc_type }}
+  </div>
+  <div class="col-md-4">
+    <label>Reference Number</label>
+    {{ form.reference_number }}
+  </div>
+</div>
+
+
   <div class="row mb-3">
+    
     <div class="col-md-4">
       <label>Company</label>
       {{ form.company }}
@@ -39,10 +52,7 @@
       <label>Packing List Ref</label>
       {{ form.packing_list_ref }}
     </div>
-    <div class="col-md-4">
-      <label>PO Number</label>
-      {{ form.purchase_order_no }}
-    </div>
+   
   </div>
 
   <div class="row mb-3">
@@ -87,16 +97,7 @@
 
 
   </div>
-<div class="row mb-3">
-  <div class="col-md-4">
-    <label>Bank Document Type</label>
-    {{ form.bank_doc_type }}
-  </div>
-  <div class="col-md-4">
-    <label>Reference Number</label>
-    {{ form.reference_number }}
-  </div>
-</div>
+
 
   <hr>
 
@@ -141,6 +142,21 @@
       toggleDelayFields();
     });
   });
+
+$(document).ready(function(){
+  $('#id_order_date').change(function(){
+    let orderDate = new Date($(this).val());
+    if (!isNaN(orderDate)) {
+      orderDate.setDate(orderDate.getDate() + 4);
+      let formatted = orderDate.toISOString().split('T')[0]; // yyyy-mm-dd
+      $('#id_expected_arrival_date').val(formatted);
+    }
+  });
+});
+
+
 </script>
+
+
 
 {% endblock %}

@@ -34,7 +34,7 @@ from django.db.models import F, ExpressionWrapper, DurationField, Avg
 
 from datetime import timedelta
 from .models import Shipment, ShipmentDetail
-
+from django.core.mail import send_mail
 
 from .forms import (
     ShipmentForm,
@@ -369,6 +369,16 @@ def pending_shipments(request):
     return render(request, 'masters/pending_shipments_list.html', {'shipments': shipments})
     
 ############################################
+
+def bank_controller_view(request):
+    # Filter shipments same as your API
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=False
+    )
+
+    return render(request, 'masters/bc_shipments.html', {'shipments': shipments})
+
+
 @login_required
 def bank_controller_update(request, shipment_id):
     shipment = get_object_or_404(Shipment, id=shipment_id)
@@ -381,7 +391,30 @@ def bank_controller_update(request, shipment_id):
         form = BankControllerForm(request.POST, instance=shipment)
         if form.is_valid():
             form.save()
-            return redirect("shipment_list")  # After save, redirect
+################################
+
+        # --- Send email notification ---
+        subject = f"Shipment {shipment.id} Updated by Bank Controller"
+        message = (
+        f"Dear Team,\n\n"
+        f"The shipment with ID {shipment.id} has been updated by {request.user.username}.\n\n"
+        f"Regards,\n"
+        f"Imports System"
+        )
+        from_email = "damvict@gmail.com"
+        recipient_list = ["damayanthi.caipl@gmail.com"]
+
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+        except Exception as e:
+            print("Email sending failed:", e)
+
+
+######################### end of email
+
+            #return redirect("shipment_list")  # After save, redirect
+        return redirect('bank_controller_view')
+
     else:
         form = BankControllerForm(instance=shipment)
 
@@ -392,7 +425,7 @@ def bank_controller_update(request, shipment_id):
 
 ############################################
 @login_required
-def bank_manager_update(request, shipment_id):
+def bank_manager_update_original(request, shipment_id):
     shipment = get_object_or_404(Shipment, id=shipment_id)
 
     # Ensure only Bank Controllers can access
@@ -410,6 +443,42 @@ def bank_manager_update(request, shipment_id):
     return render(request, "masters/bank_manager_update.html", {"form": form, "shipment": shipment})
 
 
+def bank_manager_view(request):
+    # Filter shipments same as your API
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=True,
+        payment_marked=False
+    )
+
+    return render(request, 'masters/bm_shipments.html', {'shipments': shipments})
+
+def bank_manager_update(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == "POST":
+        print("DEBUG: POST data:", request.POST)
+
+        shipment.send_date = request.POST.get("send_date") or None
+        print("DEBUG: send_date:", shipment.send_date)
+
+        if "payment_marked" in request.POST:   # checkbox checked
+            shipment.payment_marked = True
+            if not shipment.payment_marked_date:   # only set once
+                shipment.payment_marked_date = timezone.now().date()
+            print("DEBUG: payment_marked checked, date:", shipment.payment_marked_date)
+        else:
+            shipment.payment_marked = False
+            shipment.payment_marked_date = None
+            print("DEBUG: payment_marked unchecked")
+
+        shipment.save()
+        print("DEBUG: Shipment saved:", shipment.id)
+
+        return redirect("bank_manager_view")
+
+
+
+
 ############################ Clearing Agent Update  ###################
 # views.py
 from django.shortcuts import render, get_object_or_404, redirect
@@ -418,15 +487,25 @@ from .models import Shipment
 from .forms import AssessmentUploadForm  # We'll create this form
 
 def clearing_agent_shipments_view(request):
-    # Filter shipments same as your API
+   
     shipments = Shipment.objects.filter(
-        send_to_clearing_agent=True
-    ).filter(
-        Q(assessment_document__isnull=True) | Q(assessment_document='')
+        send_to_clearing_agent=True,
+        payment_marked=False
     )
 
-    return render(request, 'masters/clearing_agent_shipments.html', {'shipments': shipments})
+    #return render(request, 'masters/clearing_agent_shipments.html', {'shipments': shipments})
+    if request.method == "POST":
+        # Loop through shipments to save total duty values
+        for shipment in shipments:
+            duty_value = request.POST.get(f"total_duty_{shipment.id}")
+            if duty_value:
+                shipment.total_duty_value = duty_value
+                shipment.save()
+        return redirect("clearing_agent_shipments_view")
 
+    return render(request, "masters/clearing_agent_shipments.html", {
+        "shipments": shipments
+    })
 
 
 
@@ -436,8 +515,10 @@ def upload_assessment_document_view(request, shipment_id):
 
     if request.method == 'POST':
         form = AssessmentUploadForm(request.POST, request.FILES, instance=shipment)
+        duty_value = request.POST.get(f"total_duty_{shipment.id}")
         if form.is_valid():
             shipment.assessment_uploaded_date = timezone.now().date()
+            shipment.total_duty_value = duty_value
             form.save()
             return redirect('clearing_agent_shipments_view')  # Redirect back to list
     else:

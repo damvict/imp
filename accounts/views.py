@@ -112,9 +112,11 @@ def home(request):
     elif user.groups.filter(name="Managing Director").exists():
         return redirect('md_dashboard')  # URL name for your admin dashboard
     elif user.groups.filter(name="Bank Controller").exists():
-        return redirect('shipment_list')  # URL name for your adm
+        #return redirect('shipment_list')  # URL name for your adm
+        return redirect('bank_controller_view')  # URL name for your adm    
     elif user.groups.filter(name="Bank Manager").exists():
-        return redirect('shipment_list')  # URL name for your adm
+        #return redirect('shipment_list')  # URL name for your adm
+        return redirect('bank_manager_view')
     elif user.groups.filter(name="Clearing Agent").exists():
         return redirect('clearing_agent_shipments_view')
     else:
