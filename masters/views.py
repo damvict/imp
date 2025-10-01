@@ -458,41 +458,23 @@ def bank_manager_update(request, shipment_id):
     shipment = get_object_or_404(Shipment, id=shipment_id)
 
     if request.method == "POST":
-<<<<<<< Updated upstream
         #print("DEBUG: POST data:", request.POST)
 
-       # shipment.send_date = request.POST.get("send_date") or None
-        #print("DEBUG: send_date:", shipment.send_date)
-=======
-      # print("DEBUG: POST data:", request.POST)
-
         shipment.send_date = request.POST.get("send_date") or None
-       # print("DEBUG: send_date:", shipment.send_date)
->>>>>>> Stashed changes
+        #print("DEBUG: send_date:", shipment.send_date)
 
         if "payment_marked" in request.POST:   # checkbox checked
             shipment.payment_marked = True
             if not shipment.payment_marked_date:   # only set once
                 shipment.payment_marked_date = timezone.now().date()
-<<<<<<< Updated upstream
             #print("DEBUG: payment_marked checked, date:", shipment.payment_marked_date)
-       # else:
-        #    shipment.payment_marked = False
-         #   shipment.payment_marked_date = None
-            #print("DEBUG: payment_marked unchecked")
-
-       # shipment.save()
-        #print("DEBUG: Shipment saved:", shipment.id)
-=======
-        #    print("DEBUG: payment_marked checked, date:", shipment.payment_marked_date)
         else:
             shipment.payment_marked = False
             shipment.payment_marked_date = None
-         #   print("DEBUG: payment_marked unchecked")
+            #print("DEBUG: payment_marked unchecked")
 
         shipment.save()
-       # print("DEBUG: Shipment saved:", shipment.id)
->>>>>>> Stashed changes
+        #print("DEBUG: Shipment saved:", shipment.id)
 
         return redirect("bank_manager_view")
 
