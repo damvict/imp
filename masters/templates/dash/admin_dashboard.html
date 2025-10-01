@@ -105,18 +105,25 @@
     </div>
 
     <!-- Reports Section -->
-    <div class="card mb-5">
-        <div class="card-header bg-dark text-white">📊 Reports & Analysis</div>
-        <div class="card-body">
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <a href="{% url 'average_unloading_time_report' %}" class="btn btn-outline-primary">📘 Average Unloading Time Report</a>
-                </li>
-                <li class="list-group-item"><a href="#">Delay Summary</a></li>
-                <li class="list-group-item"><a href="#">Manpower Requirement Forecast</a></li>
-            </ul>
-        </div>
+<div class="card mb-5">
+    <div class="card-header bg-dark text-white">📊 Reports & Analysis</div>
+    <div class="card-body">
+        <ul class="list-group">
+            <li class="list-group-item">
+                <a href="{% url 'average_unloading_time_report' %}" class="btn btn-outline-primary">📘 Average Unloading Time Report</a>
+            </li>
+            <li class="list-group-item">
+                <a href="{% url 'shipment_stage_times_report' %}" class="btn btn-outline-secondary">
+                    🕒 Shipment Stage Date/Time Report
+                </a>
+            </li>
+           
+            <li class="list-group-item"><a href="#">Delay Summary</a></li>
+            <li class="list-group-item"><a href="#">Manpower Requirement Forecast</a></li>
+        </ul>
     </div>
+</div>
+
 </div>
 
 <!-- Chart.js -->

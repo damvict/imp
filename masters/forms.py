@@ -69,6 +69,8 @@ class ShipmentForm(forms.ModelForm):
         required=False,
         label="Select Items"
     )
+
+
     class Meta:
         model = Shipment
         exclude = ['created_by', 'created_at']
@@ -83,6 +85,10 @@ class ShipmentForm(forms.ModelForm):
             'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}), 
             'bank_doc_type': forms.Select(attrs={'class': 'form-select select2'}),  # dropdown
             'reference_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'bank': forms.Select(attrs={'class': 'form-select select2'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}), 
+            
+            
         }
 
         def clean(self):
@@ -314,3 +320,27 @@ class CompanyForm(forms.ModelForm):
         labels = {
             'name': 'Company Name'
         }
+
+
+
+############ Bank ################
+from .models import Bank
+
+
+class BankForm(forms.ModelForm):
+    class Meta:
+        model = Bank
+        fields = [
+            'b_name',
+            'accno',
+            'branch',
+            'od',
+            'lc',
+            'imp',
+            'da',
+            'notes',
+           
+        ]
+
+
+############ End of Bank #############

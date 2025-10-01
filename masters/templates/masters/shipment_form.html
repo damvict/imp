@@ -39,6 +39,12 @@
     <label>Reference Number</label>
     {{ form.reference_number }}
   </div>
+  <div class="col-md-4">
+  <label>Bank</label>
+  {{ form.bank }}
+</div>
+
+
 </div>
 
 
@@ -52,7 +58,10 @@
       <label>Packing List Ref</label>
       {{ form.packing_list_ref }}
     </div>
-   
+   <div class="mb-3">
+    <label for="id_amount" class="form-label">Amount</label>
+    {{ form.amount }}
+</div>
   </div>
 
   <div class="row mb-3">

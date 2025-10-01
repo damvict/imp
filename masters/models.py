@@ -4,6 +4,8 @@ from datetime import timedelta
 from django.utils import timezone
 from datetime import datetime
 import os
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 #### Company
 class Company(models.Model):
@@ -67,6 +69,25 @@ class VehicleType(models.Model):
     def __str__(self):
         return self.type_name
 
+
+class Bank(models.Model):
+    b_id = models.AutoField(primary_key=True)
+    b_name = models.CharField(max_length=255)
+    accno = models.CharField(max_length=100)
+    branch = models.CharField(max_length=255)
+
+    od = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    lc = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    imp = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    da = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+
+    notes = models.TextField(null=True, blank=True)
+    edate = models.DateField(auto_now_add=True)  # Current date on insert
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.b_name} - {self.accno}"
+
 ####################################
 
 def shipment_upload_path(instance, filename):
@@ -95,6 +116,11 @@ class Shipment(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)
     # masters/models.py (Shipment)
     c_date = models.DateField(null=True, blank=True)
+
+    bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    
+    #bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
     #remarks = models.TextField(blank=True, null=True)
     #vehicle_number = models.CharField(max_length=50, blank=True, null=True)
     #vehicle_type = models.CharField(max_length=50, blank=True, null=True)
@@ -155,6 +181,7 @@ class Shipment(models.Model):
 
     def __str__(self):
         return f"PO: {self.purchase_order_no}"
+    
 
     def get_status(self):
         """
@@ -202,6 +229,7 @@ class ShipmentDetail(models.Model):
     demurrage_start_date = models.DateField(blank=True, null=True)
     demurrage_end_date = models.DateField(blank=True, null=True)
     demurrage_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
 
     def __str__(self):
         return f"{self.shipment.purchase_order_no} | {self.item_category} | {self.sales_division} | {self.warehouse}"
@@ -221,6 +249,8 @@ class ShipmentDetail(models.Model):
         today = timezone.now().date()
         return self.demurrage_start_date and self.demurrage_end_date and self.demurrage_start_date <= today <= self.demurrage_end_date
 
+
+
 #  Shipment Status History (audit trail)
 class ShipmentStatusHistory(models.Model):
     shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE)
@@ -228,6 +258,12 @@ class ShipmentStatusHistory(models.Model):
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(blank=True, null=True)
+
+
+
+
+
+
 
 
 #from .models import Warehouse
@@ -241,3 +277,63 @@ class UserProfile(models.Model):
 
 
 
+class BankDocument(models.Model):
+    DOC_TYPES = [
+        ("LC", "Letter of Credit"),
+        ("DA", "Documents Against Acceptance"),
+        ("DP", "Documents Against Payment"),
+        ("TT", "Telegraphic Transfer"),
+        ("IMP", "Import Loan"),
+    ]
+
+    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE, related_name="bank_docs")
+    bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
+
+    doc_type = models.CharField(max_length=10, choices=DOC_TYPES)
+    reference_number = models.CharField(max_length=100, blank=True, null=True)
+
+   # amount = models.DecimalField(max_digits=15, decimal_places=2)
+    amount = models.DecimalField(
+    max_digits=15,
+    decimal_places=2,
+    null=True,
+    blank=True   # allows the form to accept empty values
+)
+    issue_date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)  # e.g. LC maturity, IMP loan repayment
+    settled = models.BooleanField(default=False)
+    settlement_date = models.DateField(null=True, blank=True)
+
+    # For LC → Import Loan conversion
+    converted_to_imp = models.BooleanField(default=False)
+    imp_reference = models.CharField(max_length=100, blank=True, null=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.doc_type} for Shipment {self.shipment.id} - {self.reference_number}"
+
+
+
+##################################################################################
+
+@receiver(post_save, sender=Shipment)
+def create_bank_document(sender, instance, created, **kwargs):
+    if created and instance.bank_doc_type and instance.bank:
+        # Use the amount entered in Shipment form
+        amount = instance.amount or 0
+
+        # Use c_date or order_date or today as issue_date
+        issue_date = instance.c_date or instance.order_date or timezone.now().date()
+
+        BankDocument.objects.create(
+            shipment=instance,
+            bank=instance.bank,
+            doc_type=instance.bank_doc_type,
+            reference_number=instance.reference_number or "",
+            amount=amount,
+            issue_date=issue_date,
+            due_date=None,  # No due date calculation
+            created_by=instance.created_by
+        )

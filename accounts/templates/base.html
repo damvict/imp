@@ -144,6 +144,14 @@
                       <li><a href="{% url 'user_list' %}">View</a></li>
                     </ul>
                   </li>
+
+                   <li><a>Bank <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'bank_create' %}">New</a></li>
+                      <li><a href="{% url 'bank_list' %}">View</a></li>
+                    </ul>
+                  </li>
+
                 </ul>
               </li>
               {% endif %}

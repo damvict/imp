@@ -241,6 +241,8 @@ def shipment_create(request):
             shipment.created_by = request.user
             shipment.save()
 
+            
+
             #default_status = StatusColor.objects.get(status_id=1)
             default_status, created = StatusColor.objects.get_or_create(
                 status_id=1,
@@ -456,23 +458,23 @@ def bank_manager_update(request, shipment_id):
     shipment = get_object_or_404(Shipment, id=shipment_id)
 
     if request.method == "POST":
-        print("DEBUG: POST data:", request.POST)
+        #print("DEBUG: POST data:", request.POST)
 
         shipment.send_date = request.POST.get("send_date") or None
-        print("DEBUG: send_date:", shipment.send_date)
+        #print("DEBUG: send_date:", shipment.send_date)
 
         if "payment_marked" in request.POST:   # checkbox checked
             shipment.payment_marked = True
             if not shipment.payment_marked_date:   # only set once
                 shipment.payment_marked_date = timezone.now().date()
-            print("DEBUG: payment_marked checked, date:", shipment.payment_marked_date)
+            #print("DEBUG: payment_marked checked, date:", shipment.payment_marked_date)
         else:
             shipment.payment_marked = False
             shipment.payment_marked_date = None
-            print("DEBUG: payment_marked unchecked")
+            #print("DEBUG: payment_marked unchecked")
 
         shipment.save()
-        print("DEBUG: Shipment saved:", shipment.id)
+        #print("DEBUG: Shipment saved:", shipment.id)
 
         return redirect("bank_manager_view")
 
@@ -1091,6 +1093,30 @@ def admin_dashboard(request):
 
     return render(request, 'dash/admin_dashboard.html', context)
 
+
+
+# masters/views.py
+from django.shortcuts import render
+
+def shipment_stage_times_report(request):
+    shipments = Shipment.objects.all()  # Or your query
+    return render(request, "reports/shipment_stage_times_report.html", {"shipments": shipments})
+
+
+def shipment_stage_times_report_pdf(request):
+    shipments = Shipment.objects.all().order_by('created_at')
+    
+    html_string = render_to_string('reports/shipment_stage_times_report.html', {
+        'shipments': shipments
+    })
+    
+    html = HTML(string=html_string)
+    pdf_file = html.write_pdf()
+    
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="shipment_stage_times_report.pdf"'
+    return response
+
 ################ md_Dashboard
 
 def is_md(user):
@@ -1258,3 +1284,48 @@ def approve_duty_paid(request, shipment_id):
         {"message": "Duty approved successfully", "shipment": serializer.data},
         status=200
     )
+
+
+
+
+
+################### Bank ###############
+
+from .models import Bank
+from .forms import BankForm
+
+
+# List View
+class BankListView(ListView):
+    model = Bank
+    template_name = 'masters/bank_list.html'
+    context_object_name = 'banks'
+
+
+# Create View
+class BankCreateView(CreateView):
+    model = Bank
+    form_class = BankForm
+    template_name = 'masters/bank_form.html'
+    success_url = reverse_lazy('bank_list')
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+# Update View
+class BankUpdateView(UpdateView):
+    model = Bank
+    form_class = BankForm
+    template_name = 'masters/bank_form.html'
+    success_url = reverse_lazy('bank_list')
+
+
+# Delete View
+class BankDeleteView(DeleteView):
+    model = Bank
+    template_name = 'masters/bank_confirm_delete.html'
+    success_url = reverse_lazy('bank_list')
+
+################### END of BANK

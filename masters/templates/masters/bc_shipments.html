@@ -102,10 +102,10 @@
         <tbody>
             {% for shipment in shipments %}
             <tr>
-                <td data-label="Document Type">{{ shipment.id }}</td>
-                <td data-label="Document Type">{{ shipment.packing_list_ref }}</td>
-                <td data-label="Document Type">{{ shipment.bank_doc_type }}</td>
-                <td data-label="Reference">{{ shipment.reference_number }}</td>
+                <td data-label="Shipment No">{{ shipment.id }}</td>
+                <td data-label="PL Ref">{{ shipment.packing_list_ref }}</td>
+                <td data-label="ocument Type">{{ shipment.bank_doc_type }}</td>
+                <td data-label="Doc Ref">{{ shipment.reference_number }}</td>
                  <td>
                             <form method="post" action="{% url 'bank_controller_update' shipment.id %}" class="responsive-form">
                                 {% csrf_token %}

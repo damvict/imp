@@ -16,6 +16,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views import upload_assessment_document
 
+from .views import (
+    BankListView,
+    BankCreateView,
+    BankUpdateView,
+    BankDeleteView,
+)
+
 urlpatterns = [
     # Item Category URLs
     path('itemcategory/', views.itemcategory_list, name='itemcategory_list'),
@@ -100,6 +107,13 @@ urlpatterns = [
     path('shipments/md-dashboard/', views.md_dashboard, name='md_dashboard'),
     path("shipments/approve-duty/<int:shipment_id>/", views.approve_duty_paid_md, name="approve_duty_paid_md"),
 
+
+    path("reports/stage-times/", views.shipment_stage_times_report, name="shipment_stage_times_report"),
+    path('reports/stage-times/pdf/', views.shipment_stage_times_report_pdf, name='shipment_stage_times_report_pdf'),
+
+    
+
+
     path('users/create/', views.create_user, name='create_user'),
     path('users/', views.user_list, name='user_list'),
     path('users/<int:user_id>/edit/', views.edit_user, name='edit_user'),
@@ -114,6 +128,16 @@ urlpatterns = [
 
     path('api/md/shipments/', views.md_shipments, name='md_shipments'),
     path('api/md/approve_duty/<int:shipment_id>/', views.approve_duty_paid, name='approve_duty_paid'),
+
+
+    ##############    bank #############
+    path('banks/', BankListView.as_view(), name='bank_list'),
+    path('banks/create/', BankCreateView.as_view(), name='bank_create'),
+    path('banks/<int:pk>/update/', BankUpdateView.as_view(), name='bank_update'),
+    path('banks/<int:pk>/delete/', BankDeleteView.as_view(), name='bank_delete'),
+
+
+    ####### enf of Bank ########
      
 ]       
 
