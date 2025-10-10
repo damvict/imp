@@ -19,7 +19,7 @@ from django.urls import path,include
 from django.shortcuts import redirect
 #from accounts.admin import admin_site 
 from rest_framework_simplejwt.views import TokenObtainPairView
-
+from masters.views import MyTokenObtainPairView
 
 
 
@@ -32,5 +32,9 @@ urlpatterns = [
     path('', lambda request: redirect('login')),  # Redirect root URL to login
     
     #path('', include('masters.urls')),  # Include the masters app URLs
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    #('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    
+
+    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+
 ]

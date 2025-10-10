@@ -1133,7 +1133,67 @@ def md_dashboard(request):
     }
     return render(request, "dash/md_dashboard.html", context)
 
+############################################
 
+from .models import Bank, BankDocument
+from django.db.models import Sum, Q
+
+
+def md_bank_dashboard(request):
+    banks = Bank.objects.all()
+    data = []
+
+    for bank in banks:
+        # Total used amounts from BankDocument (only unsettled)
+        lc_used = BankDocument.objects.filter(
+            bank=bank,
+            doc_type='LC',
+            settled=False
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        imp_used = BankDocument.objects.filter(
+            bank=bank,
+            doc_type='IMP',
+            settled=False
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        da_used = BankDocument.objects.filter(
+            bank=bank,
+            doc_type='DA',
+            settled=False
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        # Calculate balances (limit - used)
+        lc_balance = (bank.lc or 0) - lc_used
+        imp_balance = (bank.imp or 0) - imp_used
+        da_balance = (bank.da or 0) - da_used
+
+        # Percent used
+        lc_percent = ((lc_used / bank.lc) * 100) if bank.lc else 0
+        imp_percent = ((imp_used / bank.imp) * 100) if bank.imp else 0
+        da_percent = ((da_used / bank.da) * 100) if bank.da else 0
+
+        data.append({
+            'bank_name': bank.b_name,
+            'od': bank.od or 0,
+            'lc_limit': bank.lc or 0,
+            'lc_balance': lc_balance,
+            'lc_percent': round(lc_percent, 2),
+            'imp_limit': bank.imp or 0,
+            'imp_balance': imp_balance,
+            'imp_percent': round(imp_percent, 2),
+            'da_limit': bank.da or 0,
+            'da_balance': da_balance,
+            'da_percent': round(da_percent, 2),
+        })
+
+    context = {'bank_data': data}
+    return render(request, "dash/md_bank_dashboard.html", context)
+
+
+
+
+###############################
 
 def approve_duty_paid_md(request, shipment_id):
     shipment = get_object_or_404(Shipment, id=shipment_id)
@@ -1329,3 +1389,15 @@ class BankDeleteView(DeleteView):
     success_url = reverse_lazy('bank_list')
 
 ################### END of BANK
+
+
+#################### API
+
+
+
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import MyTokenObtainPairSerializer
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer

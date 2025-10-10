@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>MD Bank Dashboard</h2>
+<table border="1" cellpadding="5" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Bank</th>
+            <th>OD</th>
+            <th>LC - Limit</th>
+            <th>Balance</th>
+            <th>LC %</th>
+            <th>Imp - Limit</th>
+            <th>Balance</th>
+            <th>Imp %</th>
+            <th>DA - Limit</th>
+            <th>DA Balance</th>
+            <th>DA %</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bank in bank_data %}
+        <tr>
+            <td>{{ bank.bank_name }}</td>
+            <td>{{ bank.od }}</td>
+            <td>{{ bank.lc_limit }}</td>
+            <td>{{ bank.lc_balance }}</td>
+            <td>{{ bank.lc_percent }}%</td>
+            <td>{{ bank.imp_limit }}</td>
+            <td>{{ bank.imp_balance }}</td>
+            <td>{{ bank.imp_percent }}%</td>
+            <td>{{ bank.da_limit }}</td>
+            <td>{{ bank.da_balance }}</td>
+            <td>{{ bank.da_percent }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

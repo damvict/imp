@@ -45,3 +45,29 @@ class MDShipmentSerializer(serializers.ModelSerializer):
             "duty_paid",
             "duty_paid_date",
         ]
+
+
+############################### Login
+
+# myapp/serializers.py
+# masters/serializers.py
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims to JWT
+        token['username'] = user.username
+        token['groups'] = list(user.groups.values_list('name', flat=True))
+        token['user_id'] = user.id
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['username'] = self.user.username
+        data['groups'] = list(self.user.groups.values_list('name', flat=True))
+        data['user_id'] = self.user.id  # 👈 Add this line
+        return data
+

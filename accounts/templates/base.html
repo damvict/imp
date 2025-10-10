@@ -65,6 +65,8 @@
                     <li><a href="{% url 'home' %}">Dashboard</a></li>
                       {% elif request.user.groups.all.0.name == 'Managing Director' %}
                     <li><a href="{% url 'md_dashboard' %}">MD Dashboard</a></li>
+                    <li><a href="{% url 'md_bank_dashboard' %}">Bank Dashboard</a></li>
+               
 
                     {% elif request.user.groups.all.0.name == 'Clearing Agent' %}
                     <li><a href="{% url 'clearing_agent_shipments_view' %}"> Dashboard</a></li>
