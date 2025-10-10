@@ -1,4 +1,6 @@
 from django.urls import path
+#from .views import MyTokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 from .views import (
     WarehouseListView, WarehouseCreateView,
@@ -130,6 +132,9 @@ urlpatterns = [
     path('api/md/approve_duty/<int:shipment_id>/', views.approve_duty_paid, name='approve_duty_paid'),
 
 
+    path('md/banks/', views.md_bank_dashboard, name='md_bank_dashboard'),
+
+
     ##############    bank #############
     path('banks/', BankListView.as_view(), name='bank_list'),
     path('banks/create/', BankCreateView.as_view(), name='bank_create'),
@@ -138,10 +143,21 @@ urlpatterns = [
 
 
     ####### enf of Bank ########
+
+    ################### API
+
+
+   # path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+   # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
      
 ]       
 
+
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
 
 

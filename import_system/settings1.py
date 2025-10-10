@@ -34,14 +34,9 @@ SECRET_KEY = 'django-insecure-cgaxsi4u^0j3w^(q3nlhe8sodr3oythj!oz8^8*1juv&e_m1!0
 DEBUG = True
 
 #ALLOWED_HOSTS = []
-#ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.29", "0.0.0.0"]
-ALLOWED_HOSTS = ["62.210.123.134", "imp.agcresourceportal.lk", "localhost", "127.0.0.1","ims.agcresourceportal.lk"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.29", "0.0.0.0"]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:19006",  # Expo web
-    "http://127.0.0.1:19006",
-    "http://192.168.1.10:19006",
-]
+
 
 
 # Application definition
