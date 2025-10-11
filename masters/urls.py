@@ -25,6 +25,7 @@ from .views import (
     BankDeleteView,
 )
 
+from .views import bank_dashboard
 urlpatterns = [
     # Item Category URLs
     path('itemcategory/', views.itemcategory_list, name='itemcategory_list'),
@@ -144,12 +145,7 @@ urlpatterns = [
 
     ####### enf of Bank ########
 
-    ################### API
-
-
-   # path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-   # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
+    path('api/bank-dashboard/', bank_dashboard, name='bank_dashboard'),
      
 ]       
 

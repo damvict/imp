@@ -104,8 +104,7 @@ def shipment_upload_path(instance, filename):
 
 #  Shipment
 class Shipment(models.Model):
-    id = models.AutoField(primary_key=True)
-    # purchase_order_no = models.CharField(max_length=100)
+    id = models.AutoField(primary_key=True)    
     packing_list_ref = models.CharField(max_length=100)
     supplier_invoice = models.CharField(max_length=100,null=True, blank=True)
     order_date = models.DateField()
@@ -113,21 +112,11 @@ class Shipment(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     remark = models.CharField(max_length=100,null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)
-    # masters/models.py (Shipment)
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)   
     c_date = models.DateField(null=True, blank=True)
 
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    
-    #bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
-    #remarks = models.TextField(blank=True, null=True)
-    #vehicle_number = models.CharField(max_length=50, blank=True, null=True)
-    #vehicle_type = models.CharField(max_length=50, blank=True, null=True)
-    #actual_arrival_date = models.DateField(blank=True, null=True)
-
-    # NEW FIELDS
-    #bank_doc_type = models.CharField(max_length=100, null=True, blank=True)
 
     BANK_DOC_TYPES = [
         ("DA", "DA"),
@@ -162,6 +151,33 @@ class Shipment(models.Model):
     # MD final approval
     duty_paid = models.BooleanField(default=False)
     duty_paid_date = models.DateField(null=True, blank=True)
+
+    # --- (NEW) ---
+    SHIPMENT_TYPES = [
+        ("IMPORT", "Import"),
+        ("EXPORT", "Export"),
+    ]
+    shipment_type = models.CharField(max_length=10, choices=SHIPMENT_TYPES, default="IMPORT")
+
+    INCOTERMS = [
+        ("FOB", "Free On Board"),
+        ("CIF", "Cost, Insurance, and Freight"),
+        ("EXW", "Ex Works"),
+        ("DDP", "Delivered Duty Paid"),
+        ("DAP", "Delivered At Place"),
+    ]
+    incoterm = models.CharField(max_length=10, choices=INCOTERMS, null=True, blank=True)
+
+    TRANSPORT_MODES = [
+        ("SEA", "Sea"),
+        ("AIR", "Air"),
+        ("LAND", "Land"),
+    ]
+    transport_mode = models.CharField(max_length=10, choices=TRANSPORT_MODES, null=True, blank=True)
+
+    origin_country = models.CharField(max_length=100, null=True, blank=True)
+    destination_port = models.CharField(max_length=100, null=True, blank=True)
+
 
     class Meta:
         permissions = [

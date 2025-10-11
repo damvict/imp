@@ -30,99 +30,109 @@
           {% endif %}
 
           <div class="container">
+
+            <!-- Bank Info -->
             <div class="row mb-3">
-  <div class="col-md-4">
-    <label>Bank Document Type</label>
-    {{ form.bank_doc_type }}
-  </div>
-  <div class="col-md-4">
-    <label>Reference Number</label>
-    {{ form.reference_number }}
-  </div>
-  <div class="col-md-4">
-  <label>Bank</label>
-  {{ form.bank }}
-</div>
+              <div class="col-md-4">
+                <label>Bank Document Type</label>
+                {{ form.bank_doc_type }}
+              </div>
+              <div class="col-md-4">
+                <label>Reference Number</label>
+                {{ form.reference_number }}
+              </div>
+              <div class="col-md-4">
+                <label>Bank</label>
+                {{ form.bank }}
+              </div>
+            </div>
 
+            <!-- Shipment Basic Info -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label>Company</label>
+                {{ form.company }}
+              </div>
+              <div class="col-md-4">
+                <label>Packing List Ref</label>
+                {{ form.packing_list_ref }}
+              </div>
+              <div class="col-md-4">
+                <label>Amount</label>
+                {{ form.amount }}
+              </div>
+            </div>
 
-</div>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label>Order Date</label>
+                {{ form.order_date }}
+              </div>
+              <div class="col-md-4">
+                <label>Supplier Invoice</label>
+                {{ form.supplier_invoice }}
+              </div>
+              <div class="col-md-4">
+                <label>Expected Arrival Date</label>
+                {{ form.expected_arrival_date }}
+              </div>
+            </div>
 
+            <!-- Remark -->
+            <div class="row mb-1">
+              <div class="col-12">
+                <label class="form-label">Remark</label>
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-12">
+                {{ form.remark }}
+                {{ form.remark.errors }}
+              </div>
+            </div>
 
-  <div class="row mb-3">
-    
-    <div class="col-md-4">
-      <label>Company</label>
-      {{ form.company }}
-    </div>
-    <div class="col-md-4">
-      <label>Packing List Ref</label>
-      {{ form.packing_list_ref }}
-    </div>
-   <div class="mb-3">
-    <label for="id_amount" class="form-label">Amount</label>
-    {{ form.amount }}
-</div>
-  </div>
+            <!-- Clear Date -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Clear Date</label>
+                {{ form.c_date }}
+                {{ form.c_date.errors }}
+              </div>
+            </div>
 
-  <div class="row mb-3">
-    <div class="col-md-4">
-      <label>Order Date</label>
-      {{ form.order_date }}
-    </div>
-    <div class="col-md-4">
-      <label>Supplier Invoice</label>
-      {{ form.supplier_invoice }}
-    </div>
-    <div class="col-md-4">
-      <label>Expected Arrival Date</label>
-      {{ form.expected_arrival_date }}
-    </div>
-  </div>
+            <!-- New Shipment Fields -->
+            <h4>Shipment Details</h4>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label>Shipment Type</label>
+                {{ form.shipment_type }}
+              </div>
+              <div class="col-md-4">
+                <label>Incoterm</label>
+                {{ form.incoterm }}
+              </div>
+              <div class="col-md-4">
+                <label>Mode</label>
+                {{ form.mode }}
+              </div>
+            </div>
 
-  <!-- Remark (label row, then control row full width) -->
-<div class="row mb-1">
-  <div class="col-12">
-    <label class="form-label">Remark</label>
-  </div>
-</div>
-<div class="row mb-3">
-  <div class="col-12">
-    {{ form.remark }}
-    {{ form.remark.errors }}
-  </div>
-</div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Origin Country</label>
+                {{ form.origin_country }}
+              </div>
+              <div class="col-md-6">
+                <label>Destination Port</label>
+                {{ form.destination_port }}
+              </div>
+            </div>
 
-<!-- Clear Date, aligned like other fields -->
-<div class="row mb-3">
-  <div class="col-md-4">
-    <label class="form-label">Clear Date</label>
-    {{ form.c_date }}
-    {{ form.c_date.errors }}
-  </div>
-  <div class="col-md-8"><!-- keep grid alignment --></div>
-</div>
+            <!-- Item & Warehouse Selection -->
+            <h4>Item & Warehouse Selection</h4>
+            {{ item_warehouse_form.as_p }}
 
-
-
-
-  </div>
-
-
-  <hr>
-
-
-
-           
-
-           
- <!-- Shipment Form -->
-
-
-  <h4>Item & Warehouse Selection</h4>
-  {{ item_warehouse_form.as_p }}
-            
-
-           
+            <!-- Buttons -->
             <div class="mt-4">
               <button type="submit" class="btn btn-primary">Save</button>
               <a href="{% url 'shipment_list' %}" class="btn btn-secondary">Cancel</a>
@@ -135,10 +145,11 @@
   </div>
 </div>
 
-<!-- jQuery to toggle delay fields -->
+<!-- jQuery to toggle delay fields and auto-fill expected arrival -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
   $(document).ready(function(){
+    // Toggle delay fields
     function toggleDelayFields() {
       if ($('#id_is_delayed').is(':checked')) {
         $('.delay-fields').show();
@@ -150,22 +161,17 @@
     $('#id_is_delayed').change(function(){
       toggleDelayFields();
     });
+
+    // Auto-fill expected arrival date
+    $('#id_order_date').change(function(){
+      let orderDate = new Date($(this).val());
+      if (!isNaN(orderDate)) {
+        orderDate.setDate(orderDate.getDate() + 4);
+        let formatted = orderDate.toISOString().split('T')[0]; // yyyy-mm-dd
+        $('#id_expected_arrival_date').val(formatted);
+      }
+    });
   });
-
-$(document).ready(function(){
-  $('#id_order_date').change(function(){
-    let orderDate = new Date($(this).val());
-    if (!isNaN(orderDate)) {
-      orderDate.setDate(orderDate.getDate() + 4);
-      let formatted = orderDate.toISOString().split('T')[0]; // yyyy-mm-dd
-      $('#id_expected_arrival_date').val(formatted);
-    }
-  });
-});
-
-
 </script>
-
-
 
 {% endblock %}
