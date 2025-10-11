@@ -60,6 +60,29 @@ class SalesDivisionForm(forms.ModelForm):
 
 ###################### Shipments
 from datetime import timedelta
+from .models import Shipment, ItemCategory, Company, Bank
+
+# Choices for shipment_type
+SHIPMENT_TYPES = [
+   ("IMPORT", "Import"),
+   ("EXPORT", "Export"),
+]
+
+# Choices for Incoterms
+INCOTERMS = [
+    ("FOB", "Free On Board"),
+    ("CIF", "Cost, Insurance, and Freight"),
+    ("EXW", "Ex Works"),
+    ("DDP", "Delivered Duty Paid"),
+    ("DAP", "Delivered At Place"),
+]
+
+# Choices for shipment mode
+SHIPMENT_MODES = [
+    ("Sea", "Sea"),
+    ("Air", "Air"),
+    ("Land", "Land"),
+]
 
 # ðŸ“¦ Shipment Form (parent)
 class ShipmentForm(forms.ModelForm):
@@ -70,7 +93,34 @@ class ShipmentForm(forms.ModelForm):
         label="Select Items"
     )
 
+    shipment_type = forms.ChoiceField(
+        choices=SHIPMENT_TYPES,
+        widget=forms.Select(attrs={'class': 'form-select select2'}),
+        required=True
+    )
 
+
+    incoterm = forms.ChoiceField(
+        choices=INCOTERMS,
+        widget=forms.Select(attrs={'class': 'form-select select2'}),
+        required=True
+    )
+
+    mode = forms.ChoiceField(
+        choices=SHIPMENT_MODES,
+        widget=forms.Select(attrs={'class': 'form-select select2'}),
+        required=True
+    )
+
+    origin_country = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    destination_port = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True
+    )
     class Meta:
         model = Shipment
         exclude = ['created_by', 'created_at']

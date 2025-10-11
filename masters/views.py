@@ -1401,3 +1401,54 @@ from .serializers import MyTokenObtainPairSerializer
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+
+
+
+
+
+
+###################################################################################3
+
+from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from masters.models import Shipment, BankDocument
+from django.db.models import Sum, Q
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bank_dashboard(request):
+    today = timezone.now().date()
+    first_day = today.replace(day=1)
+
+    # 1️⃣ Total shipments created this month
+    total_shipments_month = Shipment.objects.filter(created_at__date__gte=first_day).count()
+
+    # 2️⃣ Active shipments (not yet completed or cleared)
+    active_shipments = Shipment.objects.filter(
+        duty_paid=False, 
+        send_to_clearing_agent=True
+    ).count()
+
+    # 3️⃣ Pending bank documents (not settled)
+    pending_docs = BankDocument.objects.filter(settled=False).count()
+
+    # 4️⃣ Completed shipments (fully cleared and duty paid)
+    completed_shipments = Shipment.objects.filter(duty_paid=True).count()
+
+    # 5️⃣ Total amount pending (sum of unsettled bank docs)
+    total_amount_pending = (
+        BankDocument.objects.filter(settled=False)
+        .aggregate(total=Sum('amount'))['total'] or 0
+    )
+
+    return Response({
+        "total_shipments_month": total_shipments_month,
+        "active_shipments": active_shipments,
+        "pending_docs": pending_docs,
+        "completed_shipments": completed_shipments,
+        "total_amount_pending": f"{total_amount_pending:,.2f}",
+    })
