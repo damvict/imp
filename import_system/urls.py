@@ -20,7 +20,7 @@ from django.shortcuts import redirect
 #from accounts.admin import admin_site 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from masters.views import MyTokenObtainPairView
-
+from masters.views import bank_dashboard  # adjust import if needed
 
 
 urlpatterns = [
@@ -36,5 +36,6 @@ urlpatterns = [
     
 
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/bank-dashboard/', bank_dashboard, name='bank_dashboard'),
 
 ]
