@@ -71,3 +71,25 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user_id'] = self.user.id  # 👈 Add this line
         return data
 
+from rest_framework import serializers
+from .models import Bank, Company, ItemCategory, Warehouse
+
+class BankSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bank
+        fields = '__all__'
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = '__all__'
+
+class ItemCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemCategory
+        fields = '__all__'
+
+class WarehouseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Warehouse
+        fields = '__all__'

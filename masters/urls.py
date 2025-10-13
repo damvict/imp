@@ -147,6 +147,11 @@ urlpatterns = [
     ####################### API #############################
     path('api/bank-dashboard/', bank_dashboard, name='bank_dashboard'),
     path('api/shipment-create/', views.shipment_create_api, name='shipment-create-api'), 
+
+    path('api/banks/', views.banks_list, name='banks-list'),
+    path('api/companies/', views.companies_list, name='companies-list'),
+    path('api/items/', views.items_list, name='items_list'),
+    path('api/warehouses/', views.warehouses_list, name='warehouses-list'),
 ]       
 
 

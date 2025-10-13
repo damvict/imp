@@ -1504,3 +1504,39 @@ def shipment_create_api(request):
 
     except Exception as e:
         return Response({'error': str(e)}, status=400)
+
+
+    # masters/views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Bank, Company, ItemCategory, Warehouse
+from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, WarehouseSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def banks_list(request):
+    banks = Bank.objects.all()
+    serializer = BankSerializer(banks, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def companies_list(request):
+    companies = Company.objects.all()
+    serializer = CompanySerializer(companies, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def items_list(request):
+    items = ItemCategory.objects.all()
+    serializer = ItemCategorySerializer(items, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def warehouses_list(request):
+    warehouses = Warehouse.objects.all()
+    serializer = WarehouseSerializer(warehouses, many=True)
+    return Response(serializer.data)
