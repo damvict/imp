@@ -26,6 +26,13 @@ from .views import (
 )
 
 from .views import bank_dashboard
+from .views import bank_doc_types
+from .views import incoterms
+from .views import transport_modes
+from .views import shipment_types
+
+
+
 urlpatterns = [
     # Item Category URLs
     path('itemcategory/', views.itemcategory_list, name='itemcategory_list'),
@@ -152,6 +159,12 @@ urlpatterns = [
     path('api/companies/', views.companies_list, name='companies-list'),
     path('api/items/', views.items_list, name='items_list'),
     path('api/warehouses/', views.warehouses_list, name='warehouses-list'),
+    path('api/bank-doc-types/', bank_doc_types, name='bank-doc-types'),
+    path('api/incoterms/', incoterms, name='incoterms'),
+    path('api/transport-modes/', transport_modes, name='transport-modes'),
+    path('api/shipment-types/', shipment_types, name='shipment-types'),
+
+    
 ]       
 
 

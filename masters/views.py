@@ -1540,3 +1540,26 @@ def warehouses_list(request):
     warehouses = Warehouse.objects.all()
     serializer = WarehouseSerializer(warehouses, many=True)
     return Response(serializer.data)
+
+def choice_list(choices):
+    return [{'value': value, 'label': label} for value, label in choices]
+
+@api_view(['GET'])
+def bank_doc_types(request):
+    """
+    Returns list of bank document types for shipments.
+    """
+    data = [{'value': value, 'label': label} for value, label in Shipment.BANK_DOC_TYPES]
+    return Response(data)
+
+@api_view(['GET'])
+def shipment_types(request):
+    return Response(choice_list(Shipment.SHIPMENT_TYPES))
+
+@api_view(['GET'])
+def incoterms(request):
+    return Response(choice_list(Shipment.INCOTERMS))
+
+@api_view(['GET'])
+def transport_modes(request):
+    return Response(choice_list(Shipment.TRANSPORT_MODES))
