@@ -45,6 +45,7 @@ from .forms import (
    
 )
 
+from django.utils.dateparse import parse_date
 
 def itemcategory_list(request):
     categories = ItemCategory.objects.all()
@@ -1452,3 +1453,54 @@ def bank_dashboard(request):
         "completed_shipments": completed_shipments,
         "total_amount_pending": f"{total_amount_pending:,.2f}",
     })
+
+
+################# API Data Entry
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def shipment_create_api(request):
+    data = request.data
+    try:
+        # Save Shipment
+        shipment = Shipment.objects.create(
+            bank_doc_type=data['bank_doc_type'],
+            reference_number=data['reference_number'],
+            bank_id=data['bank'],
+            company_id=data['company'],
+            packing_list_ref=data['packing_list_ref'],
+            amount=data['amount'],
+            order_date=parse_date(data['order_date']),
+            supplier_invoice=data['supplier_invoice'],
+            expected_arrival_date=parse_date(data['expected_arrival_date']),
+            c_date=parse_date(data['c_date']),
+            remark=data.get('remark', ''),
+            shipment_type=data['shipment_type'],
+            incoterm=data['incoterm'],
+            mode=data['mode'],
+            origin_country=data['origin_country'],
+            destination_port=data['destination_port'],
+            created_by=request.user
+        )
+
+        default_status, _ = StatusColor.objects.get_or_create(
+            status_id=1,
+            defaults={'status_name': 'Pending', 'color_code': '#FFA500'}
+        )
+
+        for combo in data.get('item_warehouses', []):
+            item_id, warehouse_id = map(int, combo.split('_'))
+            item = ItemCategory.objects.get(pk=item_id)
+            warehouse = Warehouse.objects.get(pk=warehouse_id)
+            ShipmentDetail.objects.create(
+                shipment=shipment,
+                item_category=item,
+                warehouse=warehouse,
+                sales_division=item.sales_division,
+                status=default_status
+            )
+
+        return Response({'success': True, 'shipment_id': shipment.id}, status=201)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)

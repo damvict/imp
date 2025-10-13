@@ -3,7 +3,9 @@ from . import views
 #from accounts.views import signup
 #from accounts.views import approve_users
 
-from .views import MyTokenObtainPairView
+#from .views import MyTokenObtainPairView
+from masters.views import MyTokenObtainPairView
+
 
 urlpatterns = [
     path('login/', views.login_view, name='login'),  # Login route

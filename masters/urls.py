@@ -144,9 +144,9 @@ urlpatterns = [
 
 
     ####### enf of Bank ########
-
+    ####################### API #############################
     path('api/bank-dashboard/', bank_dashboard, name='bank_dashboard'),
-     
+    path('api/shipment-create/', views.shipment_create_api, name='shipment-create-api'), 
 ]       
 
 
