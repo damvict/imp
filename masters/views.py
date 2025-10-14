@@ -1477,7 +1477,7 @@ def shipment_create_api(request):
             remark=data.get('remark', ''),
             shipment_type=data['shipment_type'],
             incoterm=data['incoterm'],
-            mode=data['mode'],
+            transport_mode=data['mode'],
             origin_country=data['origin_country'],
             destination_port=data['destination_port'],
             created_by=request.user
