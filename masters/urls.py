@@ -163,6 +163,7 @@ urlpatterns = [
     path('api/incoterms/', incoterms, name='incoterms'),
     path('api/transport-modes/', transport_modes, name='transport-modes'),
     path('api/shipment-types/', shipment_types, name='shipment-types'),
+    path('api/item-warehouse-options/', views.item_warehouse_options, name='item-warehouse-options'),
 
     
 ]       

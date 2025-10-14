@@ -1477,7 +1477,7 @@ def shipment_create_api(request):
             remark=data.get('remark', ''),
             shipment_type=data['shipment_type'],
             incoterm=data['incoterm'],
-            transport_mode=data['mode'],
+            transport_mode=data['transport_mode'],
             origin_country=data['origin_country'],
             destination_port=data['destination_port'],
             created_by=request.user
@@ -1563,3 +1563,18 @@ def incoterms(request):
 @api_view(['GET'])
 def transport_modes(request):
     return Response(choice_list(Shipment.TRANSPORT_MODES))
+
+
+@api_view(['GET'])
+def item_warehouse_options(request):
+    """
+    Returns list of all item-warehouse combinations.
+    """
+    data = []
+    for item in ItemCategory.objects.prefetch_related('warehouses'):
+        for wh in item.warehouses.all():
+            data.append({
+                'id': f"{item.pk}_{wh.pk}",
+                'label': f"{item.item_name} — {wh.warehouse_name}"
+            })
+    return Response(data)

@@ -60,12 +60,13 @@ class SalesDivisionForm(forms.ModelForm):
 
 ###################### Shipments
 from datetime import timedelta
+from django import forms
 from .models import Shipment, ItemCategory, Company, Bank
 
 # Choices for shipment_type
 SHIPMENT_TYPES = [
-   ("IMPORT", "Import"),
-   ("EXPORT", "Export"),
+    ("IMPORT", "Import"),
+    ("EXPORT", "Export"),
 ]
 
 # Choices for Incoterms
@@ -77,14 +78,14 @@ INCOTERMS = [
     ("DAP", "Delivered At Place"),
 ]
 
-# Choices for shipment mode
-SHIPMENT_MODES = [
-    ("Sea", "Sea"),
-    ("Air", "Air"),
-    ("Land", "Land"),
+# ✅ Choices for transport mode (should match model exactly)
+TRANSPORT_MODES = [
+    ("SEA", "Sea"),
+    ("AIR", "Air"),
+    ("LAND", "Land"),
 ]
 
-# ðŸ“¦ Shipment Form (parent)
+
 class ShipmentForm(forms.ModelForm):
     item_categories = forms.ModelMultipleChoiceField(
         queryset=ItemCategory.objects.all(),
@@ -99,15 +100,15 @@ class ShipmentForm(forms.ModelForm):
         required=True
     )
 
-
     incoterm = forms.ChoiceField(
         choices=INCOTERMS,
         widget=forms.Select(attrs={'class': 'form-select select2'}),
         required=True
     )
 
-    mode = forms.ChoiceField(
-        choices=SHIPMENT_MODES,
+    # ✅ FIXED: Choice keys (SEA, AIR, LAND) must match model’s choices
+    transport_mode = forms.ChoiceField(
+        choices=TRANSPORT_MODES,
         widget=forms.Select(attrs={'class': 'form-select select2'}),
         required=True
     )
@@ -121,37 +122,34 @@ class ShipmentForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         required=True
     )
+
     class Meta:
         model = Shipment
         exclude = ['created_by', 'created_at']
         widgets = {
-            #'purchase_order_no': forms.TextInput(attrs={'class': 'form-control'}),
             'packing_list_ref': forms.TextInput(attrs={'class': 'form-control'}),
             'supplier_invoice': forms.TextInput(attrs={'class': 'form-control'}),
             'order_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'expected_arrival_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'c_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'company': forms.Select(attrs={'class': 'form-select select2'}),
-            'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}), 
-            'bank_doc_type': forms.Select(attrs={'class': 'form-select select2'}),  # dropdown
+            'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'bank_doc_type': forms.Select(attrs={'class': 'form-select select2'}),
             'reference_number': forms.TextInput(attrs={'class': 'form-control'}),
             'bank': forms.Select(attrs={'class': 'form-select select2'}),
-            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}), 
-            
-            
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
 
-        def clean(self):
-            cleaned_data = super().clean()
-            order_date = cleaned_data.get("order_date")
-            expected_arrival_date = cleaned_data.get("expected_arrival_date")
+    def clean(self):
+        cleaned_data = super().clean()
+        order_date = cleaned_data.get("order_date")
+        expected_arrival_date = cleaned_data.get("expected_arrival_date")
 
-            # Auto-fill expected_arrival_date if not provided
-            if order_date and not expected_arrival_date:
-                cleaned_data["expected_arrival_date"] = order_date + timedelta(days=4)
+        # Auto-fill expected_arrival_date if not provided
+        if order_date and not expected_arrival_date:
+            cleaned_data["expected_arrival_date"] = order_date + timedelta(days=4)
 
-            return cleaned_data
-
+        return cleaned_data
 
 #################################
 class BankDocForm(forms.ModelForm):
