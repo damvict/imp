@@ -30,7 +30,7 @@ from .views import bank_doc_types
 from .views import incoterms
 from .views import transport_modes
 from .views import shipment_types
-
+from .views import confirm_handover
 
 
 urlpatterns = [
@@ -165,11 +165,8 @@ urlpatterns = [
     path('api/shipment-types/', shipment_types, name='shipment-types'),
     path('api/item-warehouse-options/', views.item_warehouse_options, name='item-warehouse-options'),
     path('api/bank-controller-shipments/', views.bank_controller_shipments, name='bank_controller_shipments'),
-
-
-    
+    path('api/confirm-handover/<int:shipment_id>/', confirm_handover, name='confirm-handover'),
 ]       
-
 
 
 if settings.DEBUG:
