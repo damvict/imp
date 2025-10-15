@@ -164,6 +164,8 @@ urlpatterns = [
     path('api/transport-modes/', transport_modes, name='transport-modes'),
     path('api/shipment-types/', shipment_types, name='shipment-types'),
     path('api/item-warehouse-options/', views.item_warehouse_options, name='item-warehouse-options'),
+    path('api/bank-controller-shipments/', views.bank_controller_shipments, name='bank_controller_shipments'),
+
 
     
 ]       

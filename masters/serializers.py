@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Shipment
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,4 +93,17 @@ class ItemCategorySerializer(serializers.ModelSerializer):
 class WarehouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Warehouse
+        fields = '__all__'
+
+
+class ItemWarehouseOptionSerializer(serializers.Serializer):
+    id = serializers.CharField()      # "itemId_warehouseId"
+    label = serializers.CharField()   # "ItemName — WarehouseName"
+
+
+
+# ------------------ Shipments ------------------
+class ShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
         fields = '__all__'

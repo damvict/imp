@@ -1578,3 +1578,44 @@ def item_warehouse_options(request):
                 'label': f"{item.item_name} — {wh.warehouse_name}"
             })
     return Response(data)
+
+
+from .models import Shipment
+from .serializers import ShipmentSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bank_controller_shipments(request):
+    if not request.user.groups.filter(name="Bank Controller").exists():
+        return Response({"detail": "Permission denied"}, status=403)
+    
+    shipments = Shipment.objects.filter(send_to_clearing_agent=False)
+    serializer = ShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
+#### ----------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def bank_controller_update_shipment(request, shipment_id):
+    if not request.user.groups.filter(name="Bank Controller").exists():
+        return Response({"detail": "Permission denied"}, status=403)
+
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+    serializer = ShipmentSerializer(shipment, data=request.data, partial=True)
+    
+    if serializer.is_valid():
+        serializer.save()
+        
+        # Send email notification
+        subject = f"Shipment {shipment.id} Updated by Bank Controller"
+        message = f"Shipment {shipment.id} updated by {request.user.username}"
+        from_email = "damvict@gmail.com"
+        recipient_list = ["damayanthi.caipl@gmail.com"]
+        try:
+            send_mail(subject, message, from_email, recipient_list)
+        except Exception as e:
+            print("Email failed:", e)
+        
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
