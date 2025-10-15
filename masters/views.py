@@ -47,6 +47,8 @@ from .forms import (
 
 from django.utils.dateparse import parse_date
 
+
+
 def itemcategory_list(request):
     categories = ItemCategory.objects.all()
     return render(request, 'masters/itemcategory_list.html', {'categories': categories})
@@ -1619,3 +1621,37 @@ def bank_controller_update_shipment(request, shipment_id):
         
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+##############_-----------
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils import timezone
+from .models import Shipment
+from .forms import BankControllerForm
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def confirm_handover(request, shipment_id):
+    """
+    Confirm shipment handover: sets send_to_clearing_agent=True and send_date=now
+    """
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    # Use the form to validate and save
+    data = {
+        "send_to_clearing_agent": True,
+        "send_date": timezone.now()
+    }
+    form = BankControllerForm(data, instance=shipment)
+    if form.is_valid():
+        form.save()
+        return Response({"success": "Handover confirmed"})
+    else:
+        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
