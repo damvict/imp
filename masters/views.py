@@ -1307,12 +1307,13 @@ def clearing_agent_shipments(request):
 
 
 #### Upload assensment
-from django.utils import timezone
+# views.py
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from .models import Shipment
 
 @api_view(['POST'])
@@ -1323,30 +1324,27 @@ def upload_assessment_document(request, shipment_id):
         shipment = Shipment.objects.get(id=shipment_id)
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    # Get total_duty_value safely
+    
     total_duty = request.data.get("total_duty_value")
     file = request.FILES.get("assessment_document")
 
-    # ✅ Allow updating only duty value (no file required)
-    if not total_duty and not file:
-        return Response({"error": "Please provide total_duty_value or file"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if total_duty:
+    # ✅ Case 1: no file, only duty value update
+    if not file and total_duty:
         shipment.total_duty_value = total_duty
+        shipment.assessment_uploaded_date = timezone.now().date()
+        shipment.save()
+        return Response({"message": "Duty value updated successfully"}, status=status.HTTP_200_OK)
 
+    # ✅ Case 2: file uploaded + duty value
     if file:
         shipment.assessment_document = file
+        if total_duty:
+            shipment.total_duty_value = total_duty
         shipment.assessment_uploaded_date = timezone.now().date()
+        shipment.save()
+        return Response({"message": "File uploaded successfully"}, status=status.HTTP_200_OK)
 
-    shipment.save()
-
-    return Response({
-        "message": "Saved successfully",
-        "id": shipment.id,
-        "total_duty_value": shipment.total_duty_value,
-        "file_uploaded": bool(file),
-    }, status=status.HTTP_200_OK)
+    return Response({"error": "No data provided"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
