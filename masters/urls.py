@@ -31,6 +31,9 @@ from .views import incoterms
 from .views import transport_modes
 from .views import shipment_types
 from .views import confirm_handover
+
+
+
 from masters.views import confirm_handover
 
 
@@ -158,7 +161,7 @@ urlpatterns = [
 
     path('api/shipments/clearing-agent/', views.clearing_agent_shipments, name='clearing_agent_shipments'),
     ###path("api/shipments/<int:shipment_id>/upload/", views.upload_assessment_document, name="upload_assessment_document"),
-    path('api/upload-assessment/<int:shipment_id>/', upload_assessment_document, name='upload_assessment_document'),
+    path('api/upload-assessment/<int:shipment_id>/', views.upload_assessment_document, name='upload_assessment_document'),
 
 
     path('api/bank_manager/shipments/', views.bank_manager_shipments, name='bank_manager_shipments'),
