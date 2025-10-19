@@ -1324,15 +1324,14 @@ def upload_assessment_document(request, shipment_id):
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
     
-     # Debug: check what Django receives
-    print("DEBUG -> request.FILES:", request.FILES)
-    print("DEBUG -> request.data:", request.data)
-
     file = request.FILES.get("assessment_document")
+    total_duty = request.data.get("total_duty_value")  # ✅ add this
+
     if not file:
         return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
     shipment.assessment_document = file
+    shipment.total_duty_value = total_duty  # ✅ save total duty value
     shipment.assessment_uploaded_date = timezone.now().date()
     shipment.save()
     return Response(
