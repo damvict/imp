@@ -1307,43 +1307,47 @@ def clearing_agent_shipments(request):
 
 
 #### Upload assensment
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
-from django.utils import timezone
 from .models import Shipment
-from .serializers import BankManagerShipmentSerializer
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
+@parser_classes([MultiPartParser, FormParser])
 def upload_assessment_document(request, shipment_id):
     try:
         shipment = Shipment.objects.get(id=shipment_id)
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    file = request.FILES.get("assessment_document")
+
+    # Get total_duty_value safely
     total_duty = request.data.get("total_duty_value")
+    file = request.FILES.get("assessment_document")
 
-    # ✅ Must have at least total_duty_value (file is optional)
-    if not total_duty:
-        return Response({"error": "total_duty_value is required"}, status=status.HTTP_400_BAD_REQUEST)
+    # ✅ Allow updating only duty value (no file required)
+    if not total_duty and not file:
+        return Response({"error": "Please provide total_duty_value or file"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # ✅ Update total duty value
-    shipment.total_duty_value = total_duty
+    if total_duty:
+        shipment.total_duty_value = total_duty
 
-    # ✅ If file is uploaded, update file and upload date
     if file:
         shipment.assessment_document = file
         shipment.assessment_uploaded_date = timezone.now().date()
 
     shipment.save()
 
-    serializer = BankManagerShipmentSerializer(shipment)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({
+        "message": "Saved successfully",
+        "id": shipment.id,
+        "total_duty_value": shipment.total_duty_value,
+        "file_uploaded": bool(file),
+    }, status=status.HTTP_200_OK)
+
 
 
 
