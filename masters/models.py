@@ -68,6 +68,32 @@ class VehicleType(models.Model):
 
     def __str__(self):
         return self.type_name
+    
+class Supplier(models.Model):
+    supplier_code = models.CharField(max_length=20, unique=True)
+    supplier_name = models.CharField(max_length=100)
+    address = models.TextField(blank=True, null=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
+    contact_person = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return self.supplier_name
+    
+class ClearingAgent(models.Model):
+    agent_code = models.CharField(max_length=20, unique=True)
+    agent_name = models.CharField(max_length=100)
+    address = models.TextField(blank=True, null=True)
+    contact_person = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.agent_name
+
+
 
 
 class Bank(models.Model):
@@ -102,6 +128,12 @@ def shipment_upload_path(instance, filename):
     )
 
 
+
+
+
+
+
+
 #  Shipment
 class Shipment(models.Model):
     id = models.AutoField(primary_key=True)    
@@ -134,8 +166,10 @@ class Shipment(models.Model):
     reference_number = models.CharField(max_length=100, null=True, blank=True)
     send_to_clearing_agent = models.BooleanField(default=False)
     send_date = models.DateField(null=True, blank=True)
-
-    # Clearing agent part
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+     # Clearing agent part
+    clearing_agent = models.ForeignKey(ClearingAgent, on_delete=models.SET_NULL, null=True, blank=True)
+ 
     assessment_document = models.FileField(
         upload_to=shipment_upload_path,
         null=True,
