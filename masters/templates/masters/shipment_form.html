@@ -128,6 +128,22 @@
               </div>
             </div>
 
+                      <!-- Supplier & Clearing Agent -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label>Supplier</label>
+              {{ form.supplier }}
+              {{ form.supplier.errors }}
+            </div>
+            <div class="col-md-6">
+              <label>Clearing Agent</label>
+              {{ form.clearing_agent }}
+              {{ form.clearing_agent.errors }}
+            </div>
+          </div>
+
+
+
             <!-- Item & Warehouse Selection -->
             <h4>Item & Warehouse Selection</h4>
             {{ item_warehouse_form.as_p }}

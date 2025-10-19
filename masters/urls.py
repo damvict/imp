@@ -33,6 +33,21 @@ from .views import shipment_types
 from .views import confirm_handover
 from masters.views import confirm_handover
 
+
+from .views import (
+    SupplierListView,
+    SupplierCreateView,
+    SupplierUpdateView,
+    SupplierDeleteView,
+)
+
+from .views import (
+    ClearingAgentListView,
+    ClearingAgentCreateView,
+    ClearingAgentUpdateView,
+    ClearingAgentDeleteView
+)
+
 urlpatterns = [
     # Item Category URLs
     path('itemcategory/', views.itemcategory_list, name='itemcategory_list'),
@@ -66,6 +81,17 @@ urlpatterns = [
     #path('companies/add/', CompanyCreateView.as_view(), name='company_add'),
     #path('companies/<int:pk>/edit/', CompanyUpdateView.as_view(), name='company_edit'),
     #path('companies/<int:pk>/delete/', CompanyDeleteView.as_view(), name='company_delete'),
+
+    path('suppliers/', SupplierListView.as_view(), name='supplier_list'),
+    path('suppliers/create/', SupplierCreateView.as_view(), name='supplier_create'),
+    path('suppliers/<int:pk>/update/', SupplierUpdateView.as_view(), name='supplier_update'),
+    path('suppliers/<int:pk>/delete/', SupplierDeleteView.as_view(), name='supplier_delete'),
+
+
+    path('clearingagents/', ClearingAgentListView.as_view(), name='clearingagent_list'),
+    path('clearingagents/add/', ClearingAgentCreateView.as_view(), name='clearingagent_add'),
+    path('clearingagents/<int:pk>/edit/', ClearingAgentUpdateView.as_view(), name='clearingagent_edit'),
+    path('clearingagents/<int:pk>/delete/', ClearingAgentDeleteView.as_view(), name='clearingagent_delete'),
 
 
     path('shipments/', views.shipment_list, name='shipment_list'),

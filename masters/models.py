@@ -212,6 +212,8 @@ class Shipment(models.Model):
     origin_country = models.CharField(max_length=100, null=True, blank=True)
     destination_port = models.CharField(max_length=100, null=True, blank=True)
 
+    
+
 
     class Meta:
         permissions = [

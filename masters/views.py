@@ -689,8 +689,75 @@ class WarehouseDeleteView(DeleteView):
     template_name = 'masters/warehouse_confirm_delete.html'
     success_url = reverse_lazy('warehouse_list')
 
-#######################################################################################################
+#####################################     Supplier   ########################################################
+from .models import Supplier
+from .forms import SupplierForm  # you’ll create this next
 
+# --- List View ---
+class SupplierListView(ListView):
+    model = Supplier
+    template_name = 'masters/supplier_list.html'
+    context_object_name = 'suppliers'
+
+
+# --- Create View ---
+class SupplierCreateView(CreateView):
+    model = Supplier
+    form_class = SupplierForm
+    template_name = 'masters/supplier_form.html'
+    success_url = reverse_lazy('supplier_list')
+
+
+# --- Update View ---
+class SupplierUpdateView(UpdateView):
+    model = Supplier
+    form_class = SupplierForm
+    template_name = 'masters/supplier_form.html'
+    success_url = reverse_lazy('supplier_list')
+
+
+# --- Delete View ---
+class SupplierDeleteView(DeleteView):
+    model = Supplier
+    template_name = 'masters/supplier_confirm_delete.html'
+    success_url = reverse_lazy('supplier_list')
+
+
+############################  Clearing Agents #########
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from .models import ClearingAgent
+from .forms import ClearingAgentForm
+
+
+# List View
+class ClearingAgentListView(ListView):
+    model = ClearingAgent
+    template_name = 'masters/clearingagent_list.html'
+    context_object_name = 'agents'
+
+
+# Create View
+class ClearingAgentCreateView(CreateView):
+    model = ClearingAgent
+    form_class = ClearingAgentForm
+    template_name = 'masters/clearingagent_form.html'
+    success_url = reverse_lazy('clearingagent_list')
+
+
+# Update View
+class ClearingAgentUpdateView(UpdateView):
+    model = ClearingAgent
+    form_class = ClearingAgentForm
+    template_name = 'masters/clearingagent_form.html'
+    success_url = reverse_lazy('clearingagent_list')
+
+
+# Delete View
+class ClearingAgentDeleteView(DeleteView):
+    model = ClearingAgent
+    template_name = 'masters/clearingagent_confirm_delete.html'
+    success_url = reverse_lazy('clearingagent_list')
 
 
 ##################### Reports

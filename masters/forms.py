@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     ItemCategory, VehicleType, StatusColor, SalesDivision,
-    Shipment, ShipmentDetail, Warehouse
+    Shipment, ShipmentDetail, Warehouse, Supplier, ClearingAgent, User
 )
 
 # Ã°Å¸â€œÂ¦ Item Category Form
@@ -123,6 +123,21 @@ class ShipmentForm(forms.ModelForm):
         required=True
     )
 
+        # ✅ Supplier dropdown
+    supplier = forms.ModelChoiceField(
+        queryset=Supplier.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select select2'}),
+        required=False
+    )
+
+    # ✅ Clearing Agent dropdown
+    clearing_agent = forms.ModelChoiceField(
+        queryset=ClearingAgent.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select select2'}),
+        required=False
+    )
+
+
     class Meta:
         model = Shipment
         exclude = ['created_by', 'created_at']
@@ -239,15 +254,43 @@ class ShipmentDetailForm(forms.ModelForm):
         
 
 
-################shipment Arrivals
+################  supplier master   #################
+
+from django import forms
+from .models import Supplier
+
+class SupplierForm(forms.ModelForm):
+    class Meta:
+        model = Supplier
+        fields = '__all__'
+        widgets = {
+            'supplier_code': forms.TextInput(attrs={'class': 'form-control'}),
+            'supplier_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'country': forms.TextInput(attrs={'class': 'form-control'}),
+            'contact_person': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+################# clearing Agents #################
+
+from django import forms
+from .models import ClearingAgent
+
+class ClearingAgentForm(forms.ModelForm):
+    class Meta:
+        model = ClearingAgent
+        fields = ['agent_code', 'agent_name', 'address', 'contact_person', 'email', 'phone', 'active']
+        widgets = {
+            'address': forms.Textarea(attrs={'rows': 3}),
+        }
 
 
 
 
-
-
-
-###################
+##################################################
 
 #  Warehouse Form
 # ðŸ“¦ Warehouse Form

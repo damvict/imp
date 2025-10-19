@@ -154,6 +154,20 @@
                     </ul>
                   </li>
 
+                   <li><a>Supplier <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'supplier_create' %}">New</a></li>
+                      <li><a href="{% url 'supplier_list' %}">View</a></li>
+                    </ul>
+                  </li>
+
+                  <li><a>Clearing Agents <span class="fa fa-chevron-down"></span></a>
+                    <ul class="nav child_menu">
+                      <li><a href="{% url 'clearingagent_add' %}">New</a></li>
+                      <li><a href="{% url 'clearingagent_list' %}">View</a></li>
+                    </ul>
+                  </li>
+
                 </ul>
               </li>
               {% endif %}
