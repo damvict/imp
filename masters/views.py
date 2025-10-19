@@ -1309,15 +1309,16 @@ def clearing_agent_shipments(request):
 #### Upload assensment
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework import status
+from django.utils import timezone
 from .models import Shipment
 from .serializers import BankManagerShipmentSerializer
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def upload_assessment_document(request, shipment_id):
     try:
         shipment = Shipment.objects.get(id=shipment_id)
@@ -1325,19 +1326,25 @@ def upload_assessment_document(request, shipment_id):
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
     
     file = request.FILES.get("assessment_document")
-    total_duty = request.data.get("total_duty_value")  # ✅ add this
+    total_duty = request.data.get("total_duty_value")
 
-    if not file:
-        return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+    # ✅ Must have at least total_duty_value (file is optional)
+    if not total_duty:
+        return Response({"error": "total_duty_value is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    shipment.assessment_document = file
-    shipment.total_duty_value = total_duty  # ✅ save total duty value
-    shipment.assessment_uploaded_date = timezone.now().date()
+    # ✅ Update total duty value
+    shipment.total_duty_value = total_duty
+
+    # ✅ If file is uploaded, update file and upload date
+    if file:
+        shipment.assessment_document = file
+        shipment.assessment_uploaded_date = timezone.now().date()
+
     shipment.save()
-    return Response(
-        {"message": "File uploaded successfully", "file_url": shipment.assessment_document.url},
-        status=status.HTTP_200_OK,
-    )
+
+    serializer = BankManagerShipmentSerializer(shipment)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 #########
