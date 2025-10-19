@@ -157,8 +157,8 @@ urlpatterns = [
     path('users/<int:user_id>/change_password/', views.change_user_password, name='change_user_password'),
 
     path('api/shipments/clearing-agent/', views.clearing_agent_shipments, name='clearing_agent_shipments'),
-    path("api/shipments/<int:shipment_id>/upload/", views.upload_assessment_document, name="upload_assessment_document"),
-    ####path('api/upload-assessment/<int:shipment_id>/', upload_assessment_document, name='upload_assessment_document'),
+    ###path("api/shipments/<int:shipment_id>/upload/", views.upload_assessment_document, name="upload_assessment_document"),
+    path('api/upload-assessment/<int:shipment_id>/', upload_assessment_document, name='upload_assessment_document'),
 
 
     path('api/bank_manager/shipments/', views.bank_manager_shipments, name='bank_manager_shipments'),
