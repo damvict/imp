@@ -1751,3 +1751,53 @@ def confirm_handover(request, shipment_id):
         return Response({"success": "Handover confirmed"})
     else:
         return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+##################### Bank Manager API
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from .models import Shipment
+from .serializers import ShipmentSerializer
+
+# GET all shipments for bank manager
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bank_manager_shipments(request):
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=True,
+        payment_marked=False
+    )
+    serializer = ShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+# POST update shipment by bank manager
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def bank_manager_update(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+    
+    send_date = request.data.get("send_date")
+    payment_marked = request.data.get("payment_marked", False)
+    
+    shipment.send_date = send_date or None
+    
+    if payment_marked:
+        shipment.payment_marked = True
+        if not shipment.payment_marked_date:
+            shipment.payment_marked_date = timezone.now().date()
+    else:
+        shipment.payment_marked = False
+        shipment.payment_marked_date = None
+    
+    shipment.save()
+    
+    return Response({"success": True, "shipment_id": shipment.id})
+
+
+######## end of Bank Manager API
