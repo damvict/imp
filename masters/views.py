@@ -1590,7 +1590,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Bank, Company, ItemCategory, Warehouse,Supplier
-from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, SupplierSerializer
+from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, SupplierSerializer,ClearingAgentSerializer
 
 
 @api_view(['GET'])
@@ -1627,6 +1627,17 @@ def suppliers_list(request):
     suppliers = Supplier.objects.all()
     serializer = SupplierSerializer(suppliers, many=True)
     return Response(serializer.data)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def clearing_agents_list(request):
+    clearing_agents = ClearingAgent.objects.all()
+    serializer = ClearingAgentSerializer(clearing_agents, many=True)
+    return Response(serializer.data)
+
+
 
 def choice_list(choices):
     return [{'value': value, 'label': label} for value, label in choices]

@@ -73,7 +73,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 from rest_framework import serializers
-from .models import Bank, Company, ItemCategory, Warehouse, Supplier
+from .models import Bank, Company, ItemCategory, Warehouse, Supplier, ClearingAgent
 
 class BankSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,6 +104,13 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = '__all__'  # include all fields of the Supplier model
+
+
+
+class ClearingAgentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClearingAgent
+        fields = '__all__'  # include all ClearingAgent fields
 
 # ------------------ Shipments ------------------
 class ShipmentSerializer(serializers.ModelSerializer):
