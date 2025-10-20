@@ -1558,6 +1558,8 @@ def shipment_create_api(request):
             origin_country=data['origin_country'],
             destination_port=data['destination_port'],
             created_by=request.user
+            supplier_id=data.get('supplier'),               # NEW
+            clearing_agent_id=data.get('clearing_agent') 
         )
 
         default_status, _ = StatusColor.objects.get_or_create(
@@ -1587,8 +1589,9 @@ def shipment_create_api(request):
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Bank, Company, ItemCategory, Warehouse
-from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, WarehouseSerializer
+from .models import Bank, Company, ItemCategory, Warehouse,Supplier
+from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, SupplierSerializer
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -1616,6 +1619,13 @@ def items_list(request):
 def warehouses_list(request):
     warehouses = Warehouse.objects.all()
     serializer = WarehouseSerializer(warehouses, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def suppliers_list(request):
+    suppliers = Supplier.objects.all()
+    serializer = SupplierSerializer(suppliers, many=True)
     return Response(serializer.data)
 
 def choice_list(choices):
