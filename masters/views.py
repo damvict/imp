@@ -1557,7 +1557,7 @@ def shipment_create_api(request):
             transport_mode=data['transport_mode'],
             origin_country=data['origin_country'],
             destination_port=data['destination_port'],
-            created_by=request.user
+            #created_by=request.user
             supplier_id=data.get('supplier'),               # NEW
             clearing_agent_id=data.get('clearing_agent') 
         )
