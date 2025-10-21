@@ -37,7 +37,6 @@ class MDShipmentSerializer(serializers.ModelSerializer):
         model = Shipment
         fields = [
             "id",
-            "purchase_order_no",
             "supplier_invoice",
             "bank_doc_type",
             "assessment_document",

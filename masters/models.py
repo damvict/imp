@@ -130,10 +130,6 @@ def shipment_upload_path(instance, filename):
 
 
 
-
-
-
-
 #  Shipment
 class Shipment(models.Model):
     id = models.AutoField(primary_key=True)    
