@@ -1402,6 +1402,9 @@ def md_shipments(request):
     return Response(serializer.data)
 
 
+
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def approve_duty_paid(request, shipment_id):
@@ -1539,53 +1542,90 @@ def bank_dashboard(request):
 def shipment_create_api(request):
     data = request.data
     try:
-        # Save Shipment
-        shipment = Shipment.objects.create(
-            bank_doc_type=data['bank_doc_type'],
-            reference_number=data['reference_number'],
-            bank_id=data['bank'],
-            company_id=data['company'],
-            packing_list_ref=data['packing_list_ref'],
-            amount=data['amount'],
-            order_date=parse_date(data['order_date']),
-            supplier_invoice=data['supplier_invoice'],
-            expected_arrival_date=parse_date(data['expected_arrival_date']),
-            c_date=parse_date(data['c_date']),
-            remark=data.get('remark', ''),
-            shipment_type=data['shipment_type'],
-            incoterm=data['incoterm'],
-            transport_mode=data['transport_mode'],
-            origin_country=data['origin_country'],
-            destination_port=data['destination_port'],
-            #created_by=request.user
-            supplier_id=data.get('supplier'),               # NEW
-            clearing_agent_id=data.get('clearing_agent') 
-        )
+        stage = data.get('stage', 'arrival')  # 'arrival' or 'shipment'
 
-        default_status, _ = StatusColor.objects.get_or_create(
-            status_id=1,
-            defaults={'status_name': 'Pending', 'color_code': '#FFA500'}
-        )
-
-        for combo in data.get('item_warehouses', []):
-            item_id, warehouse_id = map(int, combo.split('_'))
-            item = ItemCategory.objects.get(pk=item_id)
-            warehouse = Warehouse.objects.get(pk=warehouse_id)
-            ShipmentDetail.objects.create(
-                shipment=shipment,
-                item_category=item,
-                warehouse=warehouse,
-                sales_division=item.sales_division,
-                status=default_status
+        # === STEP 1: CREATE NEW ARRIVAL NOTICE ===
+        if stage == 'arrival':
+            shipment = Shipment.objects.create(
+                bl=data.get('bl', '0'),
+                vessel=data.get('vessel', ' '),
+                supplier_invoice=data.get('supplier_invoice'),
+                order_date=parse_date(data['order_date']),
+                expected_arrival_date=parse_date(data['expected_arrival_date']),
+                cbm=data.get('cbm'),
+                remark=data.get('remark', ''),
+                company_id=data.get('company'),
+                supplier_id=data.get('supplier'),
+                created_by=request.user
             )
 
-        return Response({'success': True, 'shipment_id': shipment.id}, status=201)
+            # Create initial status
+            default_status, _ = StatusColor.objects.get_or_create(
+                status_id=1,
+                defaults={'status_name': 'New Arrival', 'color_code': '#FFA500'}
+            )
+            shipment_status = shipment.details.first().status if shipment.details.exists() else default_status
 
+            return Response({
+                'success': True,
+                'message': 'Arrival Notice created successfully',
+                'shipment_id': shipment.id,
+                'status': shipment_status.status_name
+            }, status=201)
+
+        # === STEP 2: UPDATE SHIPMENT DETAILS ===
+        elif stage == 'shipment':
+            shipment_id = data.get('shipment_id')
+            if not shipment_id:
+                return Response({'error': 'shipment_id is required for shipment stage'}, status=400)
+
+            shipment = Shipment.objects.get(id=shipment_id)
+
+            shipment.bank_doc_type = data.get('bank_doc_type')
+            shipment.reference_number = data.get('reference_number')
+            shipment.bank_id = data.get('bank')
+            shipment.amount = data.get('amount')
+            shipment.c_date = parse_date(data['c_date']) if data.get('c_date') else None
+            shipment.shipment_type = data.get('shipment_type')
+            shipment.incoterm = data.get('incoterm')
+            shipment.transport_mode = data.get('transport_mode')
+            shipment.origin_country = data.get('origin_country')
+            shipment.destination_port = data.get('destination_port')
+            shipment.clearing_agent_id = data.get('clearing_agent')
+            shipment.save()
+
+            # Create ShipmentDetail records
+            default_status, _ = StatusColor.objects.get_or_create(
+                status_id=1,
+                defaults={'status_name': 'Pending', 'color_code': '#FFA500'}
+            )
+            for combo in data.get('item_warehouses', []):
+                item_id, warehouse_id = map(int, combo.split('_'))
+                ShipmentDetail.objects.create(
+                    shipment=shipment,
+                    item_category_id=item_id,
+                    warehouse_id=warehouse_id,
+                    status=default_status
+                )
+
+            return Response({
+                'success': True,
+                'message': 'Shipment details added successfully',
+                'shipment_id': shipment.id,
+                'status': default_status.status_name
+            }, status=201)
+
+        else:
+            return Response({'error': 'Invalid stage value'}, status=400)
+
+    except Shipment.DoesNotExist:
+        return Response({'error': 'Shipment not found'}, status=404)
     except Exception as e:
+        # Catch all errors and return JSON
         return Response({'error': str(e)}, status=400)
 
 
-    # masters/views.py
+# masters/views.py
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

@@ -132,20 +132,26 @@ def shipment_upload_path(instance, filename):
 
 #  Shipment
 class Shipment(models.Model):
-    id = models.AutoField(primary_key=True)    
-    packing_list_ref = models.CharField(max_length=100)
+
+    ################# New Arrival Notice 
+    id = models.AutoField(primary_key=True)        
+    bl = models.CharField(max_length=100,default=0)
+    vessel = models.CharField(max_length=200,default=' ')
     supplier_invoice = models.CharField(max_length=100,null=True, blank=True)
-    order_date = models.DateField()
-    expected_arrival_date = models.DateField()
+    order_date = models.DateField()  ########### Notice  arival date
+    expected_arrival_date = models.DateField()  ############ ETA
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     remark = models.CharField(max_length=100,null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)   
-    c_date = models.DateField(null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)  
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    cbm = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
 
+    ############### 2nd stage Shiment 
+    packing_list_ref = models.CharField(max_length=100)
+    c_date = models.DateField(null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-
     BANK_DOC_TYPES = [
         ("DA", "DA"),
         ("DP", "DP"),
@@ -160,12 +166,14 @@ class Shipment(models.Model):
         blank=True
     )
     reference_number = models.CharField(max_length=100, null=True, blank=True)
+
+   #################   clearing Agent
     send_to_clearing_agent = models.BooleanField(default=False)
-    send_date = models.DateField(null=True, blank=True)
-    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
-     # Clearing agent part
+    send_date = models.DateField(null=True, blank=True)   
     clearing_agent = models.ForeignKey(ClearingAgent, on_delete=models.SET_NULL, null=True, blank=True)
+    
  
+    ############# CA send to us
     assessment_document = models.FileField(
         upload_to=shipment_upload_path,
         null=True,
@@ -177,6 +185,8 @@ class Shipment(models.Model):
     # Bank manager stage
     payment_marked = models.BooleanField(default=False)
     payment_marked_date = models.DateField(null=True, blank=True)
+    duty_paid_bank=models.CharField(max_length=200, null=True,blank=True)
+    send_to_clearing_agent_payment = models.BooleanField(default=False)
 
     # MD final approval
     duty_paid = models.BooleanField(default=False)
@@ -298,7 +308,6 @@ class ShipmentDetail(models.Model):
         return self.demurrage_start_date and self.demurrage_end_date and self.demurrage_start_date <= today <= self.demurrage_end_date
 
 
-
 #  Shipment Status History (audit trail)
 class ShipmentStatusHistory(models.Model):
     shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE)
@@ -306,12 +315,6 @@ class ShipmentStatusHistory(models.Model):
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(blank=True, null=True)
-
-
-
-
-
-
 
 
 #from .models import Warehouse
