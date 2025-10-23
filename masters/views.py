@@ -1556,7 +1556,7 @@ def shipment_create_api(request):
                 remark=data.get('remark', ''),
                 company_id=data.get('company'),
                 supplier_id=data.get('supplier'),
-                created_by=request.user
+                created_by=request.user,
                 ship_status=1
             )
 
@@ -1593,7 +1593,8 @@ def shipment_create_api(request):
             shipment.origin_country = data.get('origin_country')
             shipment.destination_port = data.get('destination_port')
             shipment.clearing_agent_id = data.get('clearing_agent')
-            ship_status=2
+            shipment.shipment_status = 1
+            
             shipment.save()
 
             # Create ShipmentDetail records
@@ -1607,7 +1608,7 @@ def shipment_create_api(request):
                     shipment=shipment,
                     item_category_id=item_id,
                     warehouse_id=warehouse_id,
-                    status=default_status
+                    
                 )
 
             return Response({
