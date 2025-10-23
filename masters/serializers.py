@@ -123,3 +123,9 @@ class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipment
         fields = '__all__'
+
+class arrival_notice_listSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
+        fields = '__all__'  # include all ClearingAgent fields
+               

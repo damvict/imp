@@ -199,6 +199,7 @@ urlpatterns = [
     path('api/confirm-handover/<int:shipment_id>/', confirm_handover, name='confirm-handover'),
     path('api/suppliers/', views.suppliers_list, name='suppliers_list'),
     path('api/clearingagents/', views.clearing_agents_list, name='clearing_agents_list'),
+    path('api/arrival_notice/', views.arrival_notice_list, name='arrival_notice_list'),
 
     path('api/bank-manager/', views.bank_manager_shipments, name='bank_manager_shipments'),
     path('api/bank-manager/update/<int:shipment_id>/', views.bank_manager_update, name='bank_manager_update'),

@@ -1287,7 +1287,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 #from .models import Shipment
-from .serializers import ClearingAgentShipmentSerializer
+from .serializers import ClearingAgentShipmentSerializer,arrival_notice_listSerializer
 from .serializers import MDShipmentSerializer
 
 from django.db.models import Q
@@ -1305,6 +1305,17 @@ def clearing_agent_shipments(request):
     return Response(serializer.data)
 
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def arrival_notice_list(request):
+    shipments = Shipment.objects.filter(
+       ship_status=1
+    ).filter(
+        Q(assessment_document__isnull=True) | Q(assessment_document='')
+    )
+    serializer = arrival_notice_listSerializer(shipments, many=True)
+    return Response(serializer.data)
 
 #### Upload assensment
 # views.py
@@ -1608,7 +1619,7 @@ def shipment_create_api(request):
                     shipment=shipment,
                     item_category_id=item_id,
                     warehouse_id=warehouse_id,
-                    
+                    status=default_status
                 )
 
             return Response({
