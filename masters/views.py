@@ -1557,6 +1557,7 @@ def shipment_create_api(request):
                 company_id=data.get('company'),
                 supplier_id=data.get('supplier'),
                 created_by=request.user
+                ship_status=1
             )
 
             # Create initial status
@@ -1592,6 +1593,7 @@ def shipment_create_api(request):
             shipment.origin_country = data.get('origin_country')
             shipment.destination_port = data.get('destination_port')
             shipment.clearing_agent_id = data.get('clearing_agent')
+            ship_status=2
             shipment.save()
 
             # Create ShipmentDetail records
