@@ -1604,7 +1604,7 @@ def shipment_create_api(request):
             shipment.origin_country = data.get('origin_country')
             shipment.destination_port = data.get('destination_port')
             shipment.clearing_agent_id = data.get('clearing_agent')
-            shipment.shipment_status = 1
+            shipment.shipment_status = 2
             
             shipment.save()
 
