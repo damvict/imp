@@ -1622,7 +1622,7 @@ def shipment_create_api(request):
             shipment.origin_country = data.get('origin_country')
             shipment.destination_port = data.get('destination_port')
             shipment.clearing_agent_id = data.get('clearing_agent') or None
-            shipment.shipment_status = 2
+            shipment.ship_status = 2
             shipment.packing_list_ref = data.get('packing_list_ref')
             shipment.supplier_invoice = data.get('supplier_invoice')
             shipment.save()
@@ -1655,6 +1655,52 @@ def shipment_create_api(request):
         return Response({'error': 'Shipment phase master not found'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=400)
+    
+###############################    PHASE DISPLAY   ################################
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Shipment, ShipmentPhase
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def shipment_detail_api(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+
+        # Get all phases for this shipment
+        phases = ShipmentPhase.objects.filter(shipment=shipment).order_by('order')
+        phases_data = [
+            {
+                "id": phase.id,
+                "title": phase.phase_name,
+                "completed": phase.completed,
+                "completed_at": phase.completed_at.strftime("%Y-%m-%d %H:%M:%S") if phase.completed_at else None
+            }
+            for phase in phases
+        ]
+
+        shipment_data = {
+            "bl": shipment.bl,
+            "vessel": shipment.vessel,
+            "amount": shipment.amount,
+            "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None
+        }
+
+        return Response({
+            "shipment": shipment_data,
+            "phases": phases_data
+        })
+
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=404)
+
+
+
+
+###################################
+
 
 # masters/views.py
 from rest_framework.decorators import api_view, permission_classes

@@ -51,6 +51,10 @@ from .views import (
     ClearingAgentDeleteView
 )
 
+
+from .views import shipment_detail_api
+
+
 urlpatterns = [
     # Item Category URLs
     path('itemcategory/', views.itemcategory_list, name='itemcategory_list'),
@@ -203,6 +207,8 @@ urlpatterns = [
 
     path('api/bank-manager/', views.bank_manager_shipments, name='bank_manager_shipments'),
     path('api/bank-manager/update/<int:shipment_id>/', views.bank_manager_update, name='bank_manager_update'),
+
+    path('api/shipment/<int:shipment_id>/', shipment_detail_api, name='shipment-detail'),
 ]       
 
 
