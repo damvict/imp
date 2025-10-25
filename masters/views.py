@@ -1932,4 +1932,21 @@ def bank_manager_update(request, shipment_id):
     return Response({"success": True, "shipment_id": shipment.id})
 
 
+#~~~~~~~~~~~~~ shipment List
+
+#from rest_framework.decorators import api_view, permission_classes
+#from rest_framework.permissions import IsAuthenticated
+#from rest_framework.response import Response
+#from masters.models import Shipment
+from masters.serializers import ShipmentSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def shipment_list(request):
+    shipments = Shipment.objects.all().order_by('-id')
+    serializer = ShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
 ######## end of Bank Manager API
+

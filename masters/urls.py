@@ -209,6 +209,7 @@ urlpatterns = [
     path('api/bank-manager/update/<int:shipment_id>/', views.bank_manager_update, name='bank_manager_update'),
 
     path('api/shipment-pahse/<int:shipment_id>/', shipment_detail_api, name='shipment-detail'),
+    path('api/shipment-list/', views.shipment_list, name='shipment-list'),
 ]       
 
 
