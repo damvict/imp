@@ -1701,7 +1701,7 @@ def shipment_detail_api(request, shipment_id):
             "vessel": shipment.vessel,
             "amount": shipment.amount,
             "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
-             "supplier_name": shipment.supplier.name if shipment.supplier else None 
+             "supplier": shipment.supplier.supplier_name 
         }
 
         return Response({
