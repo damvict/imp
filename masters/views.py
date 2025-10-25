@@ -1700,7 +1700,8 @@ def shipment_detail_api(request, shipment_id):
             "bl": shipment.bl,
             "vessel": shipment.vessel,
             "amount": shipment.amount,
-            "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None
+            "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
+             "supplier_name": shipment.supplier.name if shipment.supplier else None 
         }
 
         return Response({
@@ -1934,10 +1935,10 @@ def bank_manager_update(request, shipment_id):
 
 #~~~~~~~~~~~~~ shipment List
 
-#from rest_framework.decorators import api_view, permission_classes
-#from rest_framework.permissions import IsAuthenticated
-#from rest_framework.response import Response
-#from masters.models import Shipment
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from masters.models import Shipment
 from masters.serializers import ShipmentSerializer
 
 @api_view(['GET'])
