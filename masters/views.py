@@ -46,7 +46,12 @@ from .forms import (
 )
 
 from django.utils.dateparse import parse_date
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.utils import timezone
+from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, StatusColor
+from datetime import datetime
 
 
 def itemcategory_list(request):
@@ -1547,6 +1552,14 @@ def bank_dashboard(request):
 
 
 ################# API Data Entry
+def parse_date(date_str):
+    """Parse date from string, return None if invalid."""
+    try:
+        return datetime.strptime(date_str, '%Y-%m-%d').date()
+    except:
+        return None
+    
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -1560,9 +1573,8 @@ def shipment_create_api(request):
             shipment = Shipment.objects.create(
                 bl=data.get('bl', '0'),
                 vessel=data.get('vessel', ' '),
-                supplier_invoice=data.get('supplier_invoice'),
-                order_date=parse_date(data['order_date']),
-                expected_arrival_date=parse_date(data['expected_arrival_date']),
+                order_date=parse_date(data.get('order_date')),
+                expected_arrival_date=parse_date(data.get('expected_arrival_date')),
                 cbm=data.get('cbm'),
                 remark=data.get('remark', ''),
                 company_id=data.get('company'),
@@ -1571,21 +1583,26 @@ def shipment_create_api(request):
                 ship_status=1
             )
 
-            # Create initial status
-            default_status, _ = StatusColor.objects.get_or_create(
-                status_id=1,
-                defaults={'status_name': 'New Arrival', 'color_code': '#FFA500'}
+            # Create ShipmentPhase for Arrival Notice
+            phase_master = ShipmentPhaseMaster.objects.get(id=1)  # Phase 1
+            ShipmentPhase.objects.create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=request.user,
+                order=phase_master.order
             )
-            shipment_status = shipment.details.first().status if shipment.details.exists() else default_status
 
             return Response({
                 'success': True,
                 'message': 'Arrival Notice created successfully',
                 'shipment_id': shipment.id,
-                'status': shipment_status.status_name
+                'phase': phase_master.phase_name
             }, status=201)
 
-        # === STEP 2: UPDATE SHIPMENT DETAILS ===
+        # === STEP 2: UPDATE SHIPMENT DETAILS (Doc Collected & Shipments Created) ===
         elif stage == 'shipment':
             shipment_id = data.get('shipment_id')
             if not shipment_id:
@@ -1593,40 +1610,40 @@ def shipment_create_api(request):
 
             shipment = Shipment.objects.get(id=shipment_id)
 
+            # Update shipment fields
             shipment.bank_doc_type = data.get('bank_doc_type')
             shipment.reference_number = data.get('reference_number')
             shipment.bank_id = data.get('bank')
             shipment.amount = data.get('amount')
-            shipment.c_date = parse_date(data['c_date']) if data.get('c_date') else None
+            shipment.c_date = parse_date(data.get('c_date')) if data.get('c_date') else None
             shipment.shipment_type = data.get('shipment_type')
             shipment.incoterm = data.get('incoterm')
             shipment.transport_mode = data.get('transport_mode')
             shipment.origin_country = data.get('origin_country')
             shipment.destination_port = data.get('destination_port')
-            shipment.clearing_agent_id = data.get('clearing_agent')
+            shipment.clearing_agent_id = data.get('clearing_agent') or None
             shipment.shipment_status = 2
-            
+            shipment.packing_list_ref = data.get('packing_list_ref')
+            shipment.supplier_invoice = data.get('supplier_invoice')
             shipment.save()
 
-            # Create ShipmentDetail records
-            default_status, _ = StatusColor.objects.get_or_create(
-                status_id=1,
-                defaults={'status_name': 'Pending', 'color_code': '#FFA500'}
+            # Create ShipmentPhase for Doc Collected & Shipments Created
+            phase_master = ShipmentPhaseMaster.objects.get(id=2)  # Phase 2
+            ShipmentPhase.objects.create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=request.user,
+                order=phase_master.order
             )
-            for combo in data.get('item_warehouses', []):
-                item_id, warehouse_id = map(int, combo.split('_'))
-                ShipmentDetail.objects.create(
-                    shipment=shipment,
-                    item_category_id=item_id,
-                    warehouse_id=warehouse_id,
-                    status=default_status
-                )
 
             return Response({
                 'success': True,
-                'message': 'Shipment details added successfully',
+                'message': 'Shipment stage updated successfully',
                 'shipment_id': shipment.id,
-                'status': default_status.status_name
+                'phase': phase_master.phase_name
             }, status=201)
 
         else:
@@ -1634,10 +1651,10 @@ def shipment_create_api(request):
 
     except Shipment.DoesNotExist:
         return Response({'error': 'Shipment not found'}, status=404)
+    except ShipmentPhaseMaster.DoesNotExist:
+        return Response({'error': 'Shipment phase master not found'}, status=404)
     except Exception as e:
-        # Catch all errors and return JSON
         return Response({'error': str(e)}, status=400)
-
 
 # masters/views.py
 from rest_framework.decorators import api_view, permission_classes

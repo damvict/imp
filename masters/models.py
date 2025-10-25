@@ -389,3 +389,26 @@ def create_bank_document(sender, instance, created, **kwargs):
             due_date=None,  # No due date calculation
             created_by=instance.created_by
         )
+
+
+#######################################################################################
+class ShipmentPhaseMaster(models.Model):
+    phase_code = models.CharField(max_length=50, unique=True)  # e.g., ARRIVAL_NOTICE
+    phase_name = models.CharField(max_length=100)              # e.g., Arrival Notice Received
+    order = models.PositiveIntegerField(default=0)             # sequence of phase in journey
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.order} - {self.phase_name}"
+
+
+
+class ShipmentPhase(models.Model):
+    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE, related_name="phases")
+    phase_code = models.CharField(max_length=50)  # e.g., ARRIVAL_NOTICE
+    phase_name = models.CharField(max_length=100) # e.g., Arrival Notice Received
+    completed = models.BooleanField(default=False)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    remarks = models.TextField(blank=True, null=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)  # sequence in timeline
