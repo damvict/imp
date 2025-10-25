@@ -1627,16 +1627,31 @@ def shipment_create_api(request):
             shipment.supplier_invoice = data.get('supplier_invoice')
             shipment.save()
 
-            # Create ShipmentPhase for Doc Collected & Shipments Created
+            # ===== SHIPMENT PHASE =====
             phase_master = ShipmentPhaseMaster.objects.get(id=2)  # Phase 2
-            ShipmentPhase.objects.create(
+            shipment_phase, created = ShipmentPhase.objects.update_or_create(
                 shipment=shipment,
                 phase_code=phase_master.phase_code,
-                phase_name=phase_master.phase_name,
-                completed=True,
-                completed_at=timezone.now(),
-                updated_by=request.user,
-                order=phase_master.order
+                defaults={
+                    'phase_name': phase_master.phase_name,
+                    'completed': True,
+                    'completed_at': timezone.now(),
+                    'updated_by': request.user,
+                    'order': phase_master.order,
+                }
+            )
+
+            # ===== BANK DOCUMENT =====
+            bank_doc, created = BankDocument.objects.update_or_create(
+                shipment=shipment,
+                doc_type=data.get('bank_doc_type'),
+                defaults={
+                    'bank_id': data.get('bank'),
+                    'reference_number': data.get('reference_number'),
+                    'amount': data.get('amount'),
+                    'issue_date': parse_date(data.get('c_date')) if data.get('c_date') else timezone.now().date(),
+                    'created_by': request.user,
+                }
             )
 
             return Response({
