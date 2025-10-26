@@ -1350,6 +1350,20 @@ def upload_assessment_document(request, shipment_id):
         shipment.assessment_uploaded_date = timezone.now().date()
         shipment.save()
         return Response({"message": "Duty value updated successfully"}, status=status.HTTP_200_OK)
+    # ✅ Automatically create shipment phase record (handover phase)
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=4)  # adjust this ID to your actual handover phase
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        return Response({"error": "Phase master not found"}, status=status.HTTP_400_BAD_REQUEST)
 
     # ✅ Case 2: file uploaded + duty value
     if file:
