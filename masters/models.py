@@ -147,6 +147,7 @@ class Shipment(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
     cbm = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     ship_status=models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    Container=models.CharField(max_length=200,default=' ')
 
     ############### 2nd stage Shiment 
     packing_list_ref = models.CharField(max_length=100)
