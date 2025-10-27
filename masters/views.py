@@ -1595,7 +1595,8 @@ def shipment_create_api(request):
                 supplier_id=data.get('supplier'),
                 created_by=request.user,
                 ship_status=1,
-                Container=data.get('Container', ' ')
+                container=data.get('container', ' ')
+
             )
 
             # Create ShipmentPhase for Arrival Notice
