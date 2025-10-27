@@ -111,21 +111,44 @@ class ClearingAgentSerializer(serializers.ModelSerializer):
         model = ClearingAgent
         fields = '__all__'  # include all ClearingAgent fields
 
-# ------------------ Shipments ------------------
-class ShipmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Shipment
-        fields = '__all__'
 
-# ---------------- Bank MAnager
 
-class ShipmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Shipment
-        fields = '__all__'
 
 class arrival_notice_listSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipment
         fields = '__all__'  # include all ClearingAgent fields
-               
+
+
+# --------------------  Shipmet list
+
+class ShipmentSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    amount = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = Shipment
+        fields = [
+            'id',
+            'bl',
+            'supplier_name',
+            'ship_status',
+            'amount',
+            'order_date',
+            'container'
+        ]
+
+
+# -------------------- shipment phase
+
+from .models import  ShipmentPhase
+
+class ShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
+        fields = '__all__'  # or select specific fields you need
+
+#class ShipmentPhaseSerializer(serializers.ModelSerializer):
+    #class Meta:
+       # model = ShipmentPhase
+        #fields = '__all__'
