@@ -1594,7 +1594,7 @@ def shipment_create_api(request):
                 company_id=data.get('company'),
                 supplier_id=data.get('supplier'),
                 created_by=request.user,
-                ship_status=1
+                ship_status=1,
                 Container=data.get('Container', ' ')
             )
 
