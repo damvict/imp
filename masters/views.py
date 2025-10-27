@@ -1667,6 +1667,7 @@ def shipment_create_api(request):
                     'amount': data.get('amount'),
                     'issue_date': parse_date(data.get('c_date')) if data.get('c_date') else timezone.now().date(),
                     'created_by': request.user,
+                    'due_date': parse_date(data.get('due_date')) if data.get('due_date') else timezone.now().date(),
                 }
             )
 
