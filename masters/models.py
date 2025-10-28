@@ -152,7 +152,7 @@ class Shipment(models.Model):
 
     ############### 2nd stage Shiment 
     packing_list_ref = models.CharField(max_length=100)
-    c_date = models.DateField(null=True, blank=True)
+    c_date = models.DateTimeField(null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     BANK_DOC_TYPES = [
@@ -172,7 +172,7 @@ class Shipment(models.Model):
 
    #################   clearing Agent
     send_to_clearing_agent = models.BooleanField(default=False)
-    send_date = models.DateField(null=True, blank=True)   
+    send_date = models.DateTimeField(null=True, blank=True)   
     clearing_agent = models.ForeignKey(ClearingAgent, on_delete=models.SET_NULL, null=True, blank=True)
     
  
@@ -182,18 +182,18 @@ class Shipment(models.Model):
         null=True,
         blank=True
     )
-    assessment_uploaded_date = models.DateField(null=True, blank=True)
+    assessment_uploaded_date = models.DateTimeField(null=True, blank=True)
     total_duty_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)  # NEW
 
     # Bank manager stage
     payment_marked = models.BooleanField(default=False)
-    payment_marked_date = models.DateField(null=True, blank=True)
+    payment_marked_date = models.DateTimeField(null=True, blank=True)
     duty_paid_bank=models.CharField(max_length=200, null=True,blank=True)
     send_to_clearing_agent_payment = models.BooleanField(default=False)
 
     # MD final approval
     duty_paid = models.BooleanField(default=False)
-    duty_paid_date = models.DateField(null=True, blank=True)
+    duty_paid_date = models.DateTimeField(null=True, blank=True)
 
     # --- (NEW) ---
     SHIPMENT_TYPES = [
