@@ -1402,7 +1402,8 @@ from rest_framework import status
 @permission_classes([IsAuthenticated])
 def mark_payment_done(request, shipment_id):
     """
-    Marks the shipment as paid and updates bank/payment info.
+    Marks the shipment as paid, updates bank/payment info,
+    and logs the shipment phase (handover to next stage).
     Expects JSON payload:
     {
         "duty_paid_bank": "Bank ABC",
@@ -1432,6 +1433,22 @@ def mark_payment_done(request, shipment_id):
     shipment.payment_marked = True
     shipment.payment_marked_date = timezone.now()
     shipment.save()
+
+    # ---- Create ShipmentPhase record for handover ----
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=5)  # adjust ID
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        # Optional: skip or log error if phase master not found
+        pass
 
     serializer = BankManagerShipmentSerializer(shipment)
     return Response(
