@@ -1474,8 +1474,6 @@ def md_shipments(request):
 
 
 
-
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def approve_duty_paid(request, shipment_id):
@@ -1490,29 +1488,30 @@ def approve_duty_paid(request, shipment_id):
     shipment.duty_paid = True
     shipment.duty_paid_date = timezone.now().date()
     shipment.save()
-       # Create ShipmentPhase entry safely
+
+    # Create ShipmentPhase safely
     try:
-        phase_master = ShipmentPhaseMaster.objects.get(id=6)  # adjust the ID as needed
+        phase_master = ShipmentPhaseMaster.objects.get(id=6)
         ShipmentPhase.objects.create(
             shipment=shipment,
             phase_code=phase_master.phase_code,
             phase_name=phase_master.phase_name,
             completed=True,
             completed_at=timezone.now(),
-            updated_by=request.user,
+            updated_by=request.user if request.user.is_authenticated else None,
             order=phase_master.order,
         )
     except ShipmentPhaseMaster.DoesNotExist:
-        # If phase master not found, log or return a warning but continue
-        return Response({"warning": "Phase master with ID 6 not found. Duty approved anyway."},
-                        status=200)
+        # Just log the warning, don't return early
+        print("Phase master with ID 6 not found")
+    except Exception as e:
+        print("Error creating ShipmentPhase:", e)
 
     serializer = MDShipmentSerializer(shipment)
     return Response(
         {"message": "Duty approved successfully", "shipment": serializer.data},
         status=200
     )
-
 
 
 
