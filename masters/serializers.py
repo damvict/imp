@@ -38,6 +38,9 @@ class BankManagerShipmentSerializer(serializers.ModelSerializer):
             "send_to_clearing_agent",
             "payment_marked",
             "payment_marked_date",
+            "duty_paid_bank",    # NEW
+            "payment_type",      # NEW
+            "pay_note", 
         ]
 
 ######################################### MD ################

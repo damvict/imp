@@ -1294,6 +1294,8 @@ from rest_framework.response import Response
 #from .models import Shipment
 from .serializers import ClearingAgentShipmentSerializer,arrival_notice_listSerializer
 from .serializers import MDShipmentSerializer
+from .serializers import BankManagerShipmentSerializer
+from .serializers import WarehouseSerializer
 
 from django.db.models import Q
 
@@ -1399,14 +1401,36 @@ from rest_framework import status
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def mark_payment_done(request, shipment_id):
+    """
+    Marks the shipment as paid and updates bank/payment info.
+    Expects JSON payload:
+    {
+        "duty_paid_bank": "Bank ABC",
+        "payment_type": "BT",  # BT / LC / CP
+        "pay_note": "Some notes"
+    }
+    """
     try:
         shipment = Shipment.objects.get(id=shipment_id)
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    data = request.data
+    duty_paid_bank = data.get("duty_paid_bank")
+    payment_type = data.get("payment_type")
+    pay_note = data.get("pay_note")
+
+    # Update payment info if provided
+    if duty_paid_bank is not None:
+        shipment.duty_paid_bank = duty_paid_bank
+    if payment_type in dict(Shipment.PAYMENT_TYPES):
+        shipment.payment_type = payment_type
+    if pay_note is not None:
+        shipment.pay_note = pay_note
+
     # Mark payment done
     shipment.payment_marked = True
-    shipment.payment_marked_date = timezone.now().date()
+    shipment.payment_marked_date = timezone.now()
     shipment.save()
 
     serializer = BankManagerShipmentSerializer(shipment)
