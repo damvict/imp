@@ -134,7 +134,8 @@ def shipment_upload_path(instance, filename):
 class Shipment(models.Model):
 
     ################# New Arrival Notice 
-    id = models.AutoField(primary_key=True)        
+    id = models.AutoField(primary_key=True)  
+    shipment_code = models.CharField(max_length=20, unique=True, blank=True, null=True)      
     bl = models.CharField(max_length=100,default=0)
     vessel = models.CharField(max_length=200,default=' ')
     supplier_invoice = models.CharField(max_length=100,null=True, blank=True)
@@ -270,6 +271,10 @@ class Shipment(models.Model):
             return f"{shipment_status} - Awaiting Duty Payment"
         if self.duty_paid:
             return f"{shipment_status} - Duty Paid"
+    def save(self, *args, **kwargs):
+        if not self.shipment_code:
+            self.shipment_code = generate_shipment_code(self.shipment_type)
+        super().save(*args, **kwargs)
 
 # Shipment Detail (line items / consignments)
 class ShipmentDetail(models.Model):
@@ -413,3 +418,35 @@ class ShipmentPhase(models.Model):
     remarks = models.TextField(blank=True, null=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     order = models.PositiveIntegerField(default=0)  # sequence in timeline
+
+
+
+
+###################################### Functions
+
+from django.db.models import Max
+
+def generate_shipment_code(shipment_type):
+    """
+    Generates a shipment code like IMP-2025-001.
+    Resets the sequence each year.
+    """
+    year = timezone.now().year
+    prefix = shipment_type or "IMP"
+
+    # Get the last code for the same year and type
+    last_code = Shipment.objects.filter(
+        shipment_type=shipment_type,
+        shipment_code__startswith=f"{prefix}-{year}-"
+    ).aggregate(Max("shipment_code"))["shipment_code__max"]
+
+    if last_code:
+        try:
+            last_number = int(last_code.split("-")[-1])
+        except ValueError:
+            last_number = 0
+    else:
+        last_number = 0
+
+    new_number = last_number + 1
+    return f"{prefix}-{year}-{new_number:03d}"
