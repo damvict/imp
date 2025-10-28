@@ -190,6 +190,13 @@ class Shipment(models.Model):
     payment_marked_date = models.DateTimeField(null=True, blank=True)
     duty_paid_bank=models.CharField(max_length=200, null=True,blank=True)
     send_to_clearing_agent_payment = models.BooleanField(default=False)
+    PAYMENT_TYPES = [
+        ("BT", "Bank Transfer"),
+        ("LC", "Letter of Credit"),
+        ("CP", "Cash Payment"),
+    ]
+    payment_type = models.CharField(max_length=2, choices=PAYMENT_TYPES, null=True, blank=True)
+    pay_note = models.TextField(null=True, blank=True)
 
     # MD final approval
     duty_paid = models.BooleanField(default=False)
