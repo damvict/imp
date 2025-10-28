@@ -14,7 +14,12 @@ class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
             "bl",
             "send_date",
             "amount",
+            "packing_list_ref",
+            "send_date"
+
         ]
+
+
 
 
 
