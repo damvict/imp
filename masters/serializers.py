@@ -31,7 +31,7 @@ class BankManagerShipmentSerializer(serializers.ModelSerializer):
         model = Shipment
         fields = [
             "id",
-            "purchase_order_no",
+            "shipment_code",
             "supplier_invoice",
             "bank_doc_type",
             "assessment_document",
