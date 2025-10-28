@@ -1483,7 +1483,7 @@ def approve_duty_paid(request, shipment_id):
             return Response({"error": "Payment not marked yet"}, status=400)
 
         shipment.duty_paid = True
-        shipment.duty_paid_date = timezone.now().date()
+        shipment.duty_paid_date = timezone.now() 
         shipment.save()
 
         # ShipmentPhase creation
