@@ -3,12 +3,17 @@ from .models import Shipment
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+
     class Meta:
         model = Shipment
         fields = [
             "id",
-            "bank_doc_type",
-            "reference_number",
+            "shipment_code",
+            "supplier_name",
+            "bl",
+            "send_date",
+            "amount",
         ]
 
 
