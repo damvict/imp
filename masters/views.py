@@ -1479,18 +1479,14 @@ def md_shipments(request):
 def approve_duty_paid(request, shipment_id):
     try:
         shipment = Shipment.objects.get(id=shipment_id)
-    except Shipment.DoesNotExist:
-        return Response({"error": "Shipment not found"}, status=404)
+        if not shipment.payment_marked:
+            return Response({"error": "Payment not marked yet"}, status=400)
 
-    if not shipment.payment_marked:
-        return Response({"error": "Payment not marked yet"}, status=400)
+        shipment.duty_paid = True
+        shipment.duty_paid_date = timezone.now().date()
+        shipment.save()
 
-    shipment.duty_paid = True
-    shipment.duty_paid_date = timezone.now().date()
-    shipment.save()
-
-    # Create ShipmentPhase safely
-    try:
+        # ShipmentPhase creation
         phase_master = ShipmentPhaseMaster.objects.get(id=6)
         ShipmentPhase.objects.create(
             shipment=shipment,
@@ -1498,21 +1494,20 @@ def approve_duty_paid(request, shipment_id):
             phase_name=phase_master.phase_name,
             completed=True,
             completed_at=timezone.now(),
-            updated_by=request.user if request.user.is_authenticated else None,
+            updated_by=request.user,
             order=phase_master.order,
         )
+
+        serializer = MDShipmentSerializer(shipment)
+        return Response({"message": "Duty approved successfully", "shipment": serializer.data})
+
     except ShipmentPhaseMaster.DoesNotExist:
-        # Just log the warning, don't return early
-        print("Phase master with ID 6 not found")
+        return Response({"warning": "Phase master with ID 6 not found. Duty approved anyway."}, status=200)
+
     except Exception as e:
-        print("Error creating ShipmentPhase:", e)
-
-    serializer = MDShipmentSerializer(shipment)
-    return Response(
-        {"message": "Duty approved successfully", "shipment": serializer.data},
-        status=200
-    )
-
+        # Print the actual error
+        print("ERROR IN APPROVE DUTY:", e)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
 
 
 
