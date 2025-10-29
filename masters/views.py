@@ -1489,7 +1489,7 @@ def bm_update_payment_ref(request, shipment_id):
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data
-    shipment.send_to_clearing_agent_payment = 1,    
+    shipment.send_to_clearing_agent_payment = True,    
     shipment.send_to_clearing_agent_payment_date = timezone.now()
     shipment.save()
 
