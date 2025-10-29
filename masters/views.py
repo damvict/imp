@@ -1325,6 +1325,57 @@ def clearing_agent_shipments_pay_uploaded(request):
     serializer = ClearingAgentShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
+
+
+### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Clearing Agent Inttiate Clearence ~~~~~~~~~~~~~~~~~~~~~~
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def C_Process_Initiated(request, shipment_id):
+  
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+       
+    shipment.C_Process_Initiated = True
+    shipment.C_Process_Initiated_date = timezone.now()
+    shipment.save()
+
+    # ---- Create ShipmentPhase record for handover ----
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=8)  # adjust ID
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        # Optional: skip or log error if phase master not found
+        pass
+
+    serializer = ClearingAgentSerializer(shipment)
+    return Response(
+        {"message": "Clearing Process Initiated successfully", "shipment": serializer.data},
+        status=status.HTTP_200_OK
+    )
+
+
+
+
+
+
+
+
+
+
+    ################################
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def arrival_notice_list(request):

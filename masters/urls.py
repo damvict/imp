@@ -166,6 +166,8 @@ urlpatterns = [
     path('api/shipments/clearing-agent/', views.clearing_agent_shipments, name='clearing_agent_shipments'),
     ###path("api/shipments/<int:shipment_id>/upload/", views.upload_assessment_document, name="upload_assessment_document"),
     path('api/upload-assessment/<int:shipment_id>/', views.upload_assessment_document, name='upload_assessment_document'),
+    path('api/C_Process_Initiated/<int:shipment_id>/', views.C_Process_Initiated, name='C_Process_Initiated'),
+    
 
 
     path('api/bank_manager/shipments/', views.bank_manager_shipments, name='bank_manager_shipments'),

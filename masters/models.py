@@ -192,8 +192,6 @@ class Shipment(models.Model):
     grn_complete_at_warehouse_date= models.DateTimeField(null=True, blank=True)  
 
 
-
-
     ############# CA send to us
     assessment_document = models.FileField(
         upload_to=shipment_upload_path,
