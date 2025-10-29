@@ -174,8 +174,26 @@ class Shipment(models.Model):
     send_to_clearing_agent = models.BooleanField(default=False)
     send_date = models.DateTimeField(null=True, blank=True)   
     clearing_agent = models.ForeignKey(ClearingAgent, on_delete=models.SET_NULL, null=True, blank=True)
-    
- 
+    C_Process_Initiated= models.BooleanField(default=False)
+    C_Process_Initiated_date = models.DateTimeField(null=True, blank=True)   
+    C_Process_completed= models.BooleanField(default=False)
+    C_Process_completed_date = models.DateTimeField(null=True, blank=True)  
+
+    arrival_at_warehouse= models.BooleanField(default=False)
+    arrival_at_warehouse_date= models.DateTimeField(null=True, blank=True) 
+
+    departure_at_warehouse= models.BooleanField(default=False)
+    departure_at_warehouse_date= models.DateTimeField(null=True, blank=True)  
+
+    grn_upload_at_warehouse= models.BooleanField(default=False)
+    grn_upload_at_warehouse_date= models.DateTimeField(null=True, blank=True)  
+
+    grn_complete_at_warehouse= models.BooleanField(default=False)
+    grn_complete_at_warehouse_date= models.DateTimeField(null=True, blank=True)  
+
+
+
+
     ############# CA send to us
     assessment_document = models.FileField(
         upload_to=shipment_upload_path,
