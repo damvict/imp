@@ -46,7 +46,8 @@ class BankManagerShipmentSerializer(serializers.ModelSerializer):
 
 
 class BankManagerpaySerializer(serializers.ModelSerializer):
-    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    supplier_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Shipment
         fields = [
@@ -56,8 +57,10 @@ class BankManagerpaySerializer(serializers.ModelSerializer):
             "supplier_name",
             "total_duty_value",
             "Duty_paid_date",
-           
         ]
+
+    def get_supplier_name(self, obj):
+        return obj.supplier.supplier_name if obj.supplier else None
 
 ######################################### MD ################
 
