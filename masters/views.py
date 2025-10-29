@@ -1476,6 +1476,47 @@ def mark_payment_done(request, shipment_id):
         status=status.HTTP_200_OK
     )
 
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def bm_update_payment_ref(request, shipment_id):
+
+
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+    shipment.send_to_clearing_agent_payment = 1,    
+    shipment.send_to_clearing_agent_payment_date = timezone.now()
+    shipment.save()
+
+    # ---- Create ShipmentPhase record for handover ----
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=7)  # adjust ID
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        # Optional: skip or log error if phase master not found
+        pass
+
+    serializer = BankManagerShipmentSerializer(shipment)
+    return Response(
+        {"message": "Payment marked successfully", "shipment": serializer.data},
+        status=status.HTTP_200_OK
+    )
+
+
+
 ###############################################
 
 

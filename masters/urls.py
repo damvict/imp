@@ -171,6 +171,8 @@ urlpatterns = [
     path('api/bank_manager/shipments/', views.bank_manager_shipments, name='bank_manager_shipments'),
     path('api/bank_manager/mark_payment/<int:shipment_id>/', views.mark_payment_done, name='mark_payment_done'),
     path('api/bank_manager/payment_ref/', views.bank_manager_payment_reference, name='bank_manager_payment_reference'),
+    path('api/bank_manager/bm_update_payment_ref/<int:shipment_id>/', views.bm_update_payment_ref, name='bm_update_payment_ref'),
+
 
     
 
