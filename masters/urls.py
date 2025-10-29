@@ -170,6 +170,9 @@ urlpatterns = [
 
     path('api/bank_manager/shipments/', views.bank_manager_shipments, name='bank_manager_shipments'),
     path('api/bank_manager/mark_payment/<int:shipment_id>/', views.mark_payment_done, name='mark_payment_done'),
+    path('api/bank_manager/payment_ref/', views.bank_manager_payment_reference, name='bank_manager_payment_reference'),
+
+    
 
     path('api/md/shipments/', views.md_shipments, name='md_shipments'),
     path('api/md/approve_duty/<int:shipment_id>/', views.approve_duty_paid, name='approve_duty_paid'),

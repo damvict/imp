@@ -43,7 +43,25 @@ class BankManagerShipmentSerializer(serializers.ModelSerializer):
             "pay_note", 
         ]
 
+
+
+class BankManagerpaySerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    class Meta:
+        model = Shipment
+        fields = [
+            "id",
+            "shipment_code",
+            "vessel",
+            "supplier_name",
+            "total_duty_value",
+            "Duty_paid_date",
+           
+        ]
+
 ######################################### MD ################
+
+
 
 class MDShipmentSerializer(serializers.ModelSerializer):
     class Meta:

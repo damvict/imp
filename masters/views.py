@@ -1349,7 +1349,7 @@ def upload_assessment_document(request, shipment_id):
     # ✅ Case 1: no file, only duty value update
     if not file and total_duty:
         shipment.total_duty_value = total_duty
-        shipment.assessment_uploaded_date = timezone.now().date()
+        shipment.assessment_uploaded_date =  timezone.now()
         shipment.save()
         return Response({"message": "Duty value updated successfully"}, status=status.HTTP_200_OK)
     # ✅ Automatically create shipment phase record (handover phase)
@@ -1394,6 +1394,24 @@ def bank_manager_shipments(request):
     )
     serializer = BankManagerShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
+
+#----------------------------------
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bank_manager_payment_reference(request):
+    """
+    List shipments that have assessment document uploaded but payment not marked yet
+    """
+    shipments = Shipment.objects.filter(
+        duty_paid=True,
+        send_to_clearing_agent_payment=False
+    )
+    serializer = BankManagerShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
+
 
 
 from rest_framework import status
