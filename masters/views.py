@@ -1488,7 +1488,7 @@ def bm_update_payment_ref(request, shipment_id):
 
     file = request.FILES.get("payref_document")
     if file:
-        shipment.payment_reference_document = file  # adjust field name
+        shipment.payref_document = file  # adjust field name
 
     shipment.send_to_clearing_agent_payment = True
     shipment.send_to_clearing_agent_payment_date = timezone.now()
