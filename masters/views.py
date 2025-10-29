@@ -1296,6 +1296,8 @@ from .serializers import ClearingAgentShipmentSerializer,arrival_notice_listSeri
 from .serializers import MDShipmentSerializer
 from .serializers import BankManagerShipmentSerializer
 from .serializers import WarehouseSerializer
+from .serializers import BankManagerpaySerializer
+
 
 from django.db.models import Q
 
@@ -1407,7 +1409,7 @@ def bank_manager_payment_reference(request):
         duty_paid=True,
         send_to_clearing_agent_payment=False
     )
-    serializer = BankManagerShipmentSerializer(shipments, many=True)
+    serializer = BankManagerpaySerializer(shipments, many=True)
     return Response(serializer.data)
 
 
