@@ -190,7 +190,7 @@ class Shipment(models.Model):
     payment_marked_date = models.DateTimeField(null=True, blank=True)
     duty_paid_bank=models.CharField(max_length=200, null=True,blank=True)
     send_to_clearing_agent_payment = models.BooleanField(default=False)
-    end_to_clearing_agent_payment_date = models.DateTimeField(null=True, blank=True)
+    send_to_clearing_agent_payment_date = models.DateTimeField(null=True, blank=True)
 
     PAYMENT_TYPES = [
         ("BT", "Bank Transfer"),
