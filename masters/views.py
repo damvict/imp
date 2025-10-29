@@ -1313,7 +1313,17 @@ def clearing_agent_shipments(request):
     serializer = ClearingAgentShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
-
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def clearing_agent_shipments_pay_uploaded(request):
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent_payment=True,
+        C_Process_Initiated=False
+    ).filter(
+        Q(assessment_document__isnull=True) | Q(assessment_document='')
+    )
+    serializer = ClearingAgentShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

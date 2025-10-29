@@ -209,6 +209,7 @@ urlpatterns = [
     path('api/suppliers/', views.suppliers_list, name='suppliers_list'),
     path('api/clearingagents/', views.clearing_agents_list, name='clearing_agents_list'),
     path('api/arrival_notice/', views.arrival_notice_list, name='arrival_notice_list'),
+    path('api/ca_pay_uploaded/', views.clearing_agent_shipments_pay_uploaded, name='clearing_agent_shipments_pay_uploaded'),
 
     path('api/bank-manager/', views.bank_manager_shipments, name='bank_manager_shipments'),
     path('api/bank-manager/update/<int:shipment_id>/', views.bank_manager_update, name='bank_manager_update'),
