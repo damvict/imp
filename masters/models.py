@@ -191,7 +191,11 @@ class Shipment(models.Model):
     duty_paid_bank=models.CharField(max_length=200, null=True,blank=True)
     send_to_clearing_agent_payment = models.BooleanField(default=False)
     send_to_clearing_agent_payment_date = models.DateTimeField(null=True, blank=True)
-
+    payref_document = models.FileField(
+        upload_to=shipment_upload_path,
+        null=True,
+        blank=True
+    )
     PAYMENT_TYPES = [
         ("BT", "Bank Transfer"),
         ("LC", "Letter of Credit"),

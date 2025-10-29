@@ -1481,21 +1481,22 @@ def mark_payment_done(request, shipment_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def bm_update_payment_ref(request, shipment_id):
-
-
     try:
         shipment = Shipment.objects.get(id=shipment_id)
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    data = request.data
-    shipment.send_to_clearing_agent_payment = True,    
+    file = request.FILES.get("payref_document")
+    if file:
+        shipment.payment_reference_document = file  # adjust field name
+
+    shipment.send_to_clearing_agent_payment = True
     shipment.send_to_clearing_agent_payment_date = timezone.now()
     shipment.save()
 
-    # ---- Create ShipmentPhase record for handover ----
+    # Create ShipmentPhase record
     try:
-        phase_master = ShipmentPhaseMaster.objects.get(id=7)  # adjust ID
+        phase_master = ShipmentPhaseMaster.objects.get(id=7)
         ShipmentPhase.objects.create(
             shipment=shipment,
             phase_code=phase_master.phase_code,
@@ -1506,7 +1507,6 @@ def bm_update_payment_ref(request, shipment_id):
             order=phase_master.order,
         )
     except ShipmentPhaseMaster.DoesNotExist:
-        # Optional: skip or log error if phase master not found
         pass
 
     serializer = BankManagerShipmentSerializer(shipment)
