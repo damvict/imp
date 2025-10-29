@@ -1486,10 +1486,13 @@ def bm_update_payment_ref(request, shipment_id):
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    
+    data = request.data
+    payref_document_ref = data.get("payref_document_ref")
     file = request.FILES.get("payref_document")
     if file:
         shipment.payref_document = file  # adjust field name
-
+    shipment.payref_document_ref=payref_document_ref
     shipment.send_to_clearing_agent_payment = True
     shipment.send_to_clearing_agent_payment_date = timezone.now()
     shipment.save()
