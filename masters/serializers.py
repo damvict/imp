@@ -47,16 +47,32 @@ class BankManagerShipmentSerializer(serializers.ModelSerializer):
 
 
 class BankManagerpaySerializer(serializers.ModelSerializer):
-  payref_document_url = serializers.SerializerMethodField()
-
-class Meta:
+   #supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    class Meta:
         model = Shipment
-        fields = ["id", "shipment_code", "vessel", "total_duty_value", "duty_paid_date", "payref_document", "payref_document_ref", "payref_document_url"]
+        fields = [
+            "id",
+            "shipment_code",
+            "vessel",           
+            "total_duty_value",
+            "duty_paid_date",
+           
+        ]
 
-def get_payref_document_url(self, obj):
-        if obj.payref_document:
-            return obj.payref_document.url
-        return None
+
+class BankManagerpayrefSerializer(serializers.ModelSerializer):
+   #supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    class Meta:
+        model = Shipment
+        fields = [
+            "id",
+            "shipment_code",
+            "vessel",           
+            "total_duty_value",
+            "duty_paid_date",
+           "payref_document_ref",
+             "payref_document_url"
+        ]
 
 ######################################### MD ################
 

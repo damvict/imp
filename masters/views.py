@@ -1538,7 +1538,8 @@ def mark_payment_done(request, shipment_id):
     )
 
 
-
+import uuid
+import os
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def bm_update_payment_ref(request, shipment_id):
@@ -1556,6 +1557,9 @@ def bm_update_payment_ref(request, shipment_id):
     if file:
         if file.size > 10*1024*1024:
             return Response({"error": "File too large"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if shipment.payref_document and os.path.isfile(shipment.payref_document.path):
+            os.remove(shipment.payref_document.path)
         shipment.payref_document = file
 
     shipment.payref_document_ref = payref_document_ref
@@ -1583,7 +1587,7 @@ def bm_update_payment_ref(request, shipment_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    serializer = BankManagerShipmentSerializer(shipment)
+    serializer = BankManagerpayrefSerializer(shipment)
     return Response(
         {"message": "Payment marked successfully", "shipment": serializer.data},
         status=status.HTTP_200_OK
@@ -1925,7 +1929,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Bank, Company, ItemCategory, Warehouse,Supplier
-from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, SupplierSerializer,ClearingAgentSerializer
+from .serializers import BankSerializer, CompanySerializer, ItemCategorySerializer, SupplierSerializer,ClearingAgentSerializer,BankManagerpayrefSerializer,BankManagerpaySerializer
+
 
 
 @api_view(['GET'])
