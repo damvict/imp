@@ -1540,6 +1540,17 @@ def mark_payment_done(request, shipment_id):
 
 import uuid
 import os
+import os
+from django.utils import timezone
+from django.db import transaction
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from masters.models import Shipment, ShipmentPhase, ShipmentPhaseMaster
+from masters.serializers import BankManagerpayrefSerializer
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def bm_update_payment_ref(request, shipment_id):
@@ -1555,22 +1566,25 @@ def bm_update_payment_ref(request, shipment_id):
         return Response({"error": "Payment reference is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     if file:
-        if file.size > 10*1024*1024:
-            return Response({"error": "File too large"}, status=status.HTTP_400_BAD_REQUEST)
+        if file.size > 10 * 1024 * 1024:
+            return Response({"error": "File too large (limit 10MB)"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if shipment.payref_document and os.path.isfile(shipment.payref_document.path):
+        # Delete old document if exists
+        if shipment.payref_document and hasattr(shipment.payref_document, "path") and os.path.isfile(shipment.payref_document.path):
             os.remove(shipment.payref_document.path)
+
         shipment.payref_document = file
 
     shipment.payref_document_ref = payref_document_ref
     shipment.send_to_clearing_agent_payment = True
     shipment.send_to_clearing_agent_payment_date = timezone.now()
 
-    # Wrap in a transaction
-    from django.db import transaction
+    # Save safely in transaction
     try:
         with transaction.atomic():
             shipment.save()
+
+            # Optional phase tracking
             try:
                 phase_master = ShipmentPhaseMaster.objects.get(id=7)
                 ShipmentPhase.objects.create(
@@ -1584,17 +1598,17 @@ def bm_update_payment_ref(request, shipment_id):
                 )
             except ShipmentPhaseMaster.DoesNotExist:
                 pass
-    except Exception as e:
-##return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        serializer = BankManagerpayrefSerializer(shipment, context={"request": request})
-        return Response(
-                {"message": "✅ Payment reference and document updated successfully", "shipment": serializer.data},
-             status=status.HTTP_200_OK,
-        )
 
     except Exception as e:
-         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # ✅ Always return response after try block
+    serializer = BankManagerpayrefSerializer(shipment, context={"request": request})
+    return Response(
+        {"message": "✅ Payment marked successfully", "shipment": serializer.data},
+        status=status.HTTP_200_OK,
+    )
+
 ###############################################
 
 
