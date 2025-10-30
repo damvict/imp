@@ -1316,12 +1316,13 @@ def clearing_agent_shipments(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def clearing_agent_shipments_pay_uploaded(request):
+    # Filter shipments: payment sent to clearing agent, clearing not initiated
     shipments = Shipment.objects.filter(
-        send_to_clearing_agent_payment=True,
-        C_Process_Initiated=False
+        send_to_clearing_agent_payment=True
     ).filter(
-        Q(assessment_document__isnull=True) | Q(assessment_document='')
+        ~Q(C_Process_Initiated=True)  # C_Process_Initiated != True
     )
+
     serializer = ClearingAgentShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
