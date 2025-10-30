@@ -240,7 +240,7 @@ class Shipment(models.Model):
         ("IMP", "Imp"),
         ("EXP", "Exp"),
     ]
-    shipment_type = models.CharField(max_length=10, choices=SHIPMENT_TYPES, default="IMPORT")
+    shipment_type = models.CharField(max_length=10, choices=SHIPMENT_TYPES, default="IMP")
 
     INCOTERMS = [
         ("FOB", "Free On Board"),
@@ -281,7 +281,7 @@ class Shipment(models.Model):
         ]
 
     def __str__(self):
-        return f"PO: {self.purchase_order_no}"
+        return f"{self.shipment_code or 'Unassigned'}"
     
 
     def get_status(self):
