@@ -1547,38 +1547,47 @@ def bm_update_payment_ref(request, shipment_id):
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    
-    data = request.data
-    payref_document_ref = data.get("payref_document_ref")
+    payref_document_ref = request.data.get("payref_document_ref")
     file = request.FILES.get("payref_document")
+
+    if not payref_document_ref:
+        return Response({"error": "Payment reference is required"}, status=status.HTTP_400_BAD_REQUEST)
+
     if file:
-        shipment.payref_document = file  # adjust field name
-    shipment.payref_document_ref=payref_document_ref
+        if file.size > 10*1024*1024:
+            return Response({"error": "File too large"}, status=status.HTTP_400_BAD_REQUEST)
+        shipment.payref_document = file
+
+    shipment.payref_document_ref = payref_document_ref
     shipment.send_to_clearing_agent_payment = True
     shipment.send_to_clearing_agent_payment_date = timezone.now()
-    shipment.save()
 
-    # Create ShipmentPhase record
+    # Wrap in a transaction
+    from django.db import transaction
     try:
-        phase_master = ShipmentPhaseMaster.objects.get(id=7)
-        ShipmentPhase.objects.create(
-            shipment=shipment,
-            phase_code=phase_master.phase_code,
-            phase_name=phase_master.phase_name,
-            completed=True,
-            completed_at=timezone.now(),
-            updated_by=request.user,
-            order=phase_master.order,
-        )
-    except ShipmentPhaseMaster.DoesNotExist:
-        pass
+        with transaction.atomic():
+            shipment.save()
+            try:
+                phase_master = ShipmentPhaseMaster.objects.get(id=7)
+                ShipmentPhase.objects.create(
+                    shipment=shipment,
+                    phase_code=phase_master.phase_code,
+                    phase_name=phase_master.phase_name,
+                    completed=True,
+                    completed_at=timezone.now(),
+                    updated_by=request.user,
+                    order=phase_master.order,
+                )
+            except ShipmentPhaseMaster.DoesNotExist:
+                pass
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     serializer = BankManagerShipmentSerializer(shipment)
     return Response(
         {"message": "Payment marked successfully", "shipment": serializer.data},
         status=status.HTTP_200_OK
     )
-
 
 
 ###############################################
