@@ -18,8 +18,7 @@ class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
             "send_date",
             "send_to_clearing_agent_payment",
             "payref_document",
-            "send_to_clearing_agent_payment_date",
-            "payref_document_ref"
+           
 
         ]
 
@@ -73,6 +72,9 @@ class BankManagerpayrefSerializer(serializers.ModelSerializer):
             "vessel",           
             "total_duty_value",
             "duty_paid_date",
+            "send_to_clearing_agent_payment_date",
+            "payref_document_ref",
+            "payref_document"
            
         ]
 
