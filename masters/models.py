@@ -128,6 +128,16 @@ def shipment_upload_path(instance, filename):
     )
 
 
+def shipment_payref_upload_path(instance, filename):
+    """
+    Store file in: shipments/payref/shipment_<id>/<original_filename>
+    """
+    return os.path.join(
+        "shipments",
+        "payref",
+        f"shipment_{instance.id}",
+        filename
+    )
 
 
 #  Shipment
@@ -209,7 +219,7 @@ class Shipment(models.Model):
     send_to_clearing_agent_payment_date = models.DateTimeField(null=True, blank=True)
     payref_document_ref = models.CharField(max_length=100,blank=True, null=True) 
     payref_document = models.FileField(
-        upload_to=shipment_upload_path,
+        upload_to=shipment_payref_upload_path,
         null=True,
         blank=True
     )
