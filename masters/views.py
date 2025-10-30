@@ -1297,7 +1297,7 @@ from .serializers import MDShipmentSerializer
 from .serializers import BankManagerShipmentSerializer
 from .serializers import WarehouseSerializer
 from .serializers import BankManagerpaySerializer
-
+from .serializers import BankManagerpayrefSerializer
 
 from django.db.models import Q
 
@@ -1585,11 +1585,16 @@ def bm_update_payment_ref(request, shipment_id):
             except ShipmentPhaseMaster.DoesNotExist:
                 pass
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+##return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-   
+        serializer = BankManagerpayrefSerializer(shipment, context={"request": request})
+        return Response(
+                {"message": "✅ Payment reference and document updated successfully", "shipment": serializer.data},
+             status=status.HTTP_200_OK,
+        )
 
-
+    except Exception as e:
+         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 ###############################################
 
 
