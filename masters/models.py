@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models,IntegrityError, transaction
 from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
@@ -237,8 +237,8 @@ class Shipment(models.Model):
 
     # --- (NEW) ---
     SHIPMENT_TYPES = [
-        ("IMPORT", "Import"),
-        ("EXPORT", "Export"),
+        ("IMP", "Import"),
+        ("EXP", "Export"),
     ]
     shipment_type = models.CharField(max_length=10, choices=SHIPMENT_TYPES, default="IMPORT")
 
@@ -311,9 +311,23 @@ class Shipment(models.Model):
             return f"{shipment_status} - Awaiting Duty Payment"
         if self.duty_paid:
             return f"{shipment_status} - Duty Paid"
-    def save(self, *args, **kwargs):
-        if not self.shipment_code:
+    from django.db import IntegrityError, transaction
+
+def save(self, *args, **kwargs):
+    if not self.shipment_code:
+        for _ in range(5):  # Try up to 5 times if a duplicate happens
             self.shipment_code = generate_shipment_code(self.shipment_type)
+            try:
+                with transaction.atomic():
+                    super().save(*args, **kwargs)
+                break  # Success → exit the loop
+            except IntegrityError:
+                # A duplicate shipment_code was generated — retry
+                continue
+        else:
+            # If still failing after retries, raise an explicit error
+            raise IntegrityError("Failed to generate a unique shipment code after several attempts.")
+    else:
         super().save(*args, **kwargs)
 
 # Shipment Detail (line items / consignments)
