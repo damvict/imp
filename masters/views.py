@@ -2191,3 +2191,16 @@ def shipment_list(request):
 
 ######## end of Bank Manager API
 
+
+
+################## CA 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def clearing_agent_dispatch(request):
+    shipments = Shipment.objects.filter(
+        C_Process_Initiated=True,
+        C_Process_completed=False
+    )
+    serializer = ShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
