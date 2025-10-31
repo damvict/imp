@@ -168,6 +168,9 @@ urlpatterns = [
     path('api/upload-assessment/<int:shipment_id>/', views.upload_assessment_document, name='upload_assessment_document'),
     path('api/C_Process_Initiated/<int:shipment_id>/', views.C_Process_Initiated, name='C_Process_Initiated'),
     path('api/shipments/dispatch/', views.clearing_agent_dispatch, name='clearing_agent_dispatch'),
+     path('api/truck/arrivals/', views.truck_arrivals, name='truck_arrivals'),
+
+
     
     path('api/bank_manager/shipments/', views.bank_manager_shipments, name='bank_manager_shipments'),
     path('api/bank_manager/mark_payment/<int:shipment_id>/', views.mark_payment_done, name='mark_payment_done'),

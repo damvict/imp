@@ -4,49 +4,86 @@
 <div class="container mt-4">
   <h2>Create New User</h2>
 
+  <!-- Display general messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
   <form method="post">
     {% csrf_token %}
 
-    {{ form.non_field_errors }}
+    <!-- Non-field errors -->
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
     <div class="row">
       <div class="col-md-6">
         {{ form.username.label_tag }} {{ form.username }}
+        {% if form.username.errors %}
+          <div class="text-danger">{{ form.username.errors|striptags }}</div>
+        {% endif %}
       </div>
       <div class="col-md-6">
         {{ form.email.label_tag }} {{ form.email }}
+        {% if form.email.errors %}
+          <div class="text-danger">{{ form.email.errors|striptags }}</div>
+        {% endif %}
       </div>
     </div>
 
     <div class="row mt-2">
       <div class="col-md-6">
         {{ form.first_name.label_tag }} {{ form.first_name }}
+        {% if form.first_name.errors %}
+          <div class="text-danger">{{ form.first_name.errors|striptags }}</div>
+        {% endif %}
       </div>
       <div class="col-md-6">
         {{ form.last_name.label_tag }} {{ form.last_name }}
+        {% if form.last_name.errors %}
+          <div class="text-danger">{{ form.last_name.errors|striptags }}</div>
+        {% endif %}
       </div>
     </div>
 
     <div class="row mt-2">
       <div class="col-md-6">
         {{ form.password.label_tag }} {{ form.password }}
+        {% if form.password.errors %}
+          <div class="text-danger">{{ form.password.errors|striptags }}</div>
+        {% endif %}
       </div>
       <div class="col-md-6">
         {{ form.confirm_password.label_tag }} {{ form.confirm_password }}
+        {% if form.confirm_password.errors %}
+          <div class="text-danger">{{ form.confirm_password.errors|striptags }}</div>
+        {% endif %}
       </div>
     </div>
 
     <div class="mt-3">
       <label>Select Roles (Groups)</label>
       {{ form.groups }}
+      {% if form.groups.errors %}
+        <div class="text-danger">{{ form.groups.errors|striptags }}</div>
+      {% endif %}
     </div>
-    
+
     <div class="row mt-2">
-    <div class="col-md-6">
-    {{ form.warehouse.label_tag }} {{ form.warehouse }}
+      <div class="col-md-6">
+        {{ form.warehouse.label_tag }} {{ form.warehouse }}
+        {% if form.warehouse.errors %}
+          <div class="text-danger">{{ form.warehouse.errors|striptags }}</div>
+        {% endif %}
+      </div>
     </div>
-    </div>
-
-
 
     <button type="submit" class="btn btn-primary mt-3">Create User</button>
   </form>

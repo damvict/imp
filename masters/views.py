@@ -813,6 +813,8 @@ def create_user(request):
 
             messages.success(request, 'User created successfully.')
             return redirect('user_list')  # or wherever you want
+        else:
+             messages.error(request, 'Please correct the errors below.')
     else:
         form = UserCreateForm()
 
@@ -2219,8 +2221,48 @@ class ShipmentDispatchCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        # Get shipment_id from URL
         shipment_id = self.kwargs.get("shipment_id")
-        serializer.save(
+
+        # Save ShipmentDispatch
+        dispatch = serializer.save(
             created_by=self.request.user,
             shipment_id=shipment_id
         )
+
+        # Automatically create a ShipmentPhase for handover
+        try:
+            # Replace '8' with the correct phase master ID for dispatch/handover
+            phase_master = ShipmentPhaseMaster.objects.get(id=9)
+            ShipmentPhase.objects.create(
+                shipment=dispatch.shipment,  # link to the shipment
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=self.request.user,
+                order=phase_master.order
+            )
+        except ShipmentPhaseMaster.DoesNotExist:
+            # Optional: handle if phase master not found
+            pass
+
+
+
+
+        ############### Truck Arrivals
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def truck_arrivals(request):
+    shipments = Shipment.objects.filter(
+        C_Process_completed=True,
+        arrival_at_warehouse=False
+    )
+    serializer = ShipmentSerializer(shipments, many=True)
+    return Response(serializer.data)
+
+
+
+############_-------------------------------
