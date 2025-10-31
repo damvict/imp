@@ -2256,11 +2256,11 @@ class ShipmentDispatchCreateView(generics.CreateAPIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def truck_arrivals(request):
-    ShipmentDispatch = Shipment.objects.filter(
+    shipments = ShipmentDispatch.objects.filter(
         truck_arrived=True,
         truck_depature=False
     )
-    serializer = ShipmentDispatch(ShipmentDispatch, many=True)
+    serializer = ShipmentDispatchSerializer(shipments, many=True)  # <-- use serializer
     return Response(serializer.data)
 
 
