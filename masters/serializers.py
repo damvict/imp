@@ -185,7 +185,8 @@ class ShipmentSerializer(serializers.ModelSerializer):
             'ship_status',
             'amount',
             'order_date',
-            'container'
+            'container',
+            'shipment_code',
         ]
 
 

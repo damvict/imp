@@ -2258,8 +2258,7 @@ class ShipmentDispatchCreateView(generics.CreateAPIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def truck_arrivals(request):
-    shipments = ShipmentDispatch.objects.filter(
-        truck_arrived=True,
+    shipments = ShipmentDispatch.objects.filter(        
         truck_depature=False
     )
     serializer = ShipmentDispatchSerializer(shipments, many=True)
@@ -2267,3 +2266,50 @@ def truck_arrivals(request):
 
 
 ############_-------------------------------
+
+from .models import ShipmentDispatch, Shipment
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def record_arrival(request, shipment_id):
+    try:
+        # Update ShipmentDispatch
+        dispatch = ShipmentDispatch.objects.get(id=shipment_id)
+        dispatch.truck_arrived = True
+        dispatch.truck_arrived_date = timezone.now()
+        dispatch.save()
+
+        # Update Shipment - only departure fields
+        shipment = dispatch.shipment  # assuming OneToOneField or ForeignKey
+        shipment. arrival_at_warehouse = True
+        shipment.arrival_at_warehouse_date = timezone.now()
+        shipment.save(update_fields=['arrival_at_warehouse', 'arrival_at_warehouse_date'])
+
+        return Response({'status': 'success', 'message': 'Arrival recorded successfully.'})
+    except ShipmentDispatch.DoesNotExist:
+        return Response({'status': 'error', 'message': 'Arrivals not found.'}, status=404)
+
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def record_departure(request, shipment_id):
+    try:
+        # Update ShipmentDispatch
+        dispatch = ShipmentDispatch.objects.get(id=shipment_id)
+        dispatch.truck_depature = True
+        dispatch.truck_depature_date = timezone.now()
+        dispatch.save()
+
+        # Update Shipment - only departure fields
+        shipment = dispatch.shipment  # assuming OneToOneField or ForeignKey
+        shipment.departure_at_warehouse = True
+        shipment.departure_at_warehouse_date = timezone.now()
+        shipment.save(update_fields=['departure_at_warehouse', 'departure_at_warehouse_date'])
+
+        return Response({'status': 'success', 'message': 'Departure recorded successfully.'})
+    except ShipmentDispatch.DoesNotExist:
+        return Response({'status': 'error', 'message': 'ShipmentDispatch not found.'}, status=404)
