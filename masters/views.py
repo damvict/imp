@@ -2204,3 +2204,23 @@ def clearing_agent_dispatch(request):
     )
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
+
+
+
+############_-------------------------------
+
+from rest_framework import generics, permissions
+from .models import ShipmentDispatch
+from .serializers import ShipmentDispatchSerializer
+
+class ShipmentDispatchCreateView(generics.CreateAPIView):
+    queryset = ShipmentDispatch.objects.all()
+    serializer_class = ShipmentDispatchSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        shipment_id = self.kwargs.get("shipment_id")
+        serializer.save(
+            created_by=self.request.user,
+            shipment_id=shipment_id
+        )

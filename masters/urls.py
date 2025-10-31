@@ -32,7 +32,7 @@ from .views import transport_modes
 from .views import shipment_types
 from .views import confirm_handover
 
-
+from .views import ShipmentDispatchCreateView
 
 from masters.views import confirm_handover
 
@@ -217,6 +217,10 @@ urlpatterns = [
 
     path('api/shipment-phase/<int:shipment_id>/', shipment_detail_api, name='shipment-detail'),
     path('api/shipment-list/', views.shipment_list, name='shipment-list'),
+
+
+    ############ Dispatch
+     path("api/dispatch/<int:shipment_id>/", ShipmentDispatchCreateView.as_view(), name="shipment-dispatch"),
 ]       
 
 

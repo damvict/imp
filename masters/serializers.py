@@ -202,3 +202,17 @@ class ShipmentSerializer(serializers.ModelSerializer):
     #class Meta:
        # model = ShipmentPhase
         #fields = '__all__'
+
+
+
+#------------------------------ Shipment dispatch
+
+from .models import ShipmentDispatch
+
+class ShipmentDispatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShipmentDispatch
+        fields = "__all__"
+        read_only_fields = ["created_by", "created_at", "updated_at"]
+
+        

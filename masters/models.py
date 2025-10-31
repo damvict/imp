@@ -460,6 +460,34 @@ class ShipmentPhase(models.Model):
     order = models.PositiveIntegerField(default=0)  # sequence in timeline
 
 
+from django.utils import timezone
+
+class ShipmentDispatch(models.Model):
+    shipment = models.OneToOneField(Shipment, on_delete=models.CASCADE, related_name="dispatch")
+    truck_no = models.CharField(max_length=100)
+    driver_name = models.CharField(max_length=100)
+    driver_license = models.CharField(max_length=100)
+    driver_phone = models.CharField(max_length=20)
+    transport_company = models.CharField(max_length=150)
+    estimated_delivery = models.DateTimeField()
+    delivery_address = models.TextField()
+    special_instructions = models.TextField(blank=True, null=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Dispatch for {self.shipment.shipment_code}"
+
+    def save(self, *args, **kwargs):
+        """Whenever dispatch is created or updated, mark shipment process completed."""
+        is_new = self._state.adding  # True if creating new record
+        super().save(*args, **kwargs)
+        if is_new:
+            self.shipment.C_Process_completed = True
+            self.shipment.C_Process_completed_date = timezone.now()
+            self.shipment.save(update_fields=["C_Process_completed", "C_Process_completed_date"])
 
 
 ###################################### Functions
