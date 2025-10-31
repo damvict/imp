@@ -190,6 +190,7 @@ class ShipmentSerializer(serializers.ModelSerializer):
         ]
 
 
+
 # -------------------- shipment phase
 
 from .models import  ShipmentPhase
