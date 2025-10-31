@@ -2253,6 +2253,8 @@ class ShipmentDispatchCreateView(generics.CreateAPIView):
         ############### Truck Arrivals
 
 
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def truck_arrivals(request):
@@ -2260,9 +2262,8 @@ def truck_arrivals(request):
         truck_arrived=True,
         truck_depature=False
     )
-    serializer = ShipmentDispatchSerializer(shipments, many=True)  # <-- use serializer
+    serializer = ShipmentDispatchSerializer(shipments, many=True)
     return Response(serializer.data)
-
 
 
 ############_-------------------------------
