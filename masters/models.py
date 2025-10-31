@@ -473,6 +473,11 @@ class ShipmentDispatch(models.Model):
     delivery_address = models.TextField()
     special_instructions = models.TextField(blank=True, null=True)
 
+    truck_arrived = models.BooleanField(default=False)
+    truck_arrived_date = models.DateTimeField(null=True, blank=True)
+    truck_depature = models.BooleanField(default=False)
+    truck_depature_date = models.DateTimeField(null=True, blank=True)
+
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
