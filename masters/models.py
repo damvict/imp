@@ -4,12 +4,11 @@ from datetime import timedelta
 from django.utils import timezone
 from datetime import datetime
 import os
-
-from django.db.models import Max
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 ################ functions
-
 def generate_shipment_code(shipment_type):
     """
     Generate a unique shipment_code and shipment_sequence safely.
@@ -34,7 +33,8 @@ def generate_shipment_code(shipment_type):
 
 
 
-################## end functions
+
+################## end
 
 
 
@@ -344,12 +344,13 @@ class Shipment(models.Model):
             return f"{shipment_status} - Awaiting Duty Payment"
         if self.duty_paid:
             return f"{shipment_status} - Duty Paid"
+        
     def save(self, *args, **kwargs):
-            if not self.shipment_code:
-                code, seq = generate_shipment_code(self.shipment_type)
-                self.shipment_code = code
-                self.shipment_sequence = seq
-            super().save(*args, **kwargs)
+        if not self.shipment_code:
+            code, seq = generate_shipment_code(self.shipment_type)
+            self.shipment_code = code
+            self.shipment_sequence = seq
+        super().save(*args, **kwargs)
 
 # Shipment Detail (line items / consignments)
 class ShipmentDetail(models.Model):
