@@ -312,12 +312,12 @@ class Shipment(models.Model):
             return f"{shipment_status} - Awaiting Duty Payment"
         if self.duty_paid:
             return f"{shipment_status} - Duty Paid"
-def save(self, *args, **kwargs):
-    if not self.shipment_code:
-        code, seq = generate_shipment_code(self.shipment_type)
-        self.shipment_code = code
-        self.shipment_sequence = seq
-    super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        if not self.shipment_code:
+            code, seq = generate_shipment_code(self.shipment_type)
+            self.shipment_code = code
+            self.shipment_sequence = seq
+        super().save(*args, **kwargs)
 
 # Shipment Detail (line items / consignments)
 class ShipmentDetail(models.Model):
