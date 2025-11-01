@@ -173,6 +173,7 @@ class arrival_notice_listSerializer(serializers.ModelSerializer):
 # --------------------  Shipmet list
 
 class ShipmentSerializer(serializers.ModelSerializer):
+    
     supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
     amount = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
 

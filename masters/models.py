@@ -145,6 +145,7 @@ class Shipment(models.Model):
 
     ################# New Arrival Notice 
     id = models.AutoField(primary_key=True)  
+    shipment_sequence = models.IntegerField(default=0)
     shipment_code = models.CharField(max_length=20, unique=True, blank=True, null=True)      
     bl = models.CharField(max_length=100,default=0)
     vessel = models.CharField(max_length=200,default=' ')
@@ -311,10 +312,12 @@ class Shipment(models.Model):
             return f"{shipment_status} - Awaiting Duty Payment"
         if self.duty_paid:
             return f"{shipment_status} - Duty Paid"
-    def save(self, *args, **kwargs):
-        if not self.shipment_code:
-            self.shipment_code = generate_shipment_code(self.shipment_type)
-        super().save(*args, **kwargs)
+def save(self, *args, **kwargs):
+    if not self.shipment_code:
+        code, seq = generate_shipment_code(self.shipment_type)
+        self.shipment_code = code
+        self.shipment_sequence = seq
+    super().save(*args, **kwargs)
 
 # Shipment Detail (line items / consignments)
 class ShipmentDetail(models.Model):
@@ -500,26 +503,14 @@ class ShipmentDispatch(models.Model):
 from django.db.models import Max
 
 def generate_shipment_code(shipment_type):
-    """
-    Generates a shipment code like IMP-2025-001.
-    Resets the sequence each year.
-    """
     year = timezone.now().year
     prefix = shipment_type or "IMP"
 
-    # Get the last code for the same year and type
-    last_code = Shipment.objects.filter(
+    last_sequence = Shipment.objects.filter(
         shipment_type=shipment_type,
         shipment_code__startswith=f"{prefix}-{year}-"
-    ).aggregate(Max("shipment_code"))["shipment_code__max"]
+    ).aggregate(Max("shipment_sequence"))["shipment_sequence__max"] or 0
 
-    if last_code:
-        try:
-            last_number = int(last_code.split("-")[-1])
-        except ValueError:
-            last_number = 0
-    else:
-        last_number = 0
+    new_sequence = last_sequence + 1
+    return f"{prefix}-{year}-{new_sequence:03d}", new_sequence
 
-    new_number = last_number + 1
-    return f"{prefix}-{year}-{new_number:03d}"
