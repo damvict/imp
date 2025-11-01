@@ -1,11 +1,43 @@
-from django.db import models
+from django.db import models,transaction
 from django.contrib.auth.models import User
 from datetime import timedelta
 from django.utils import timezone
 from datetime import datetime
 import os
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
+from django.db.models import Max
+
+
+################ functions
+
+def generate_shipment_code(shipment_type):
+    """
+    Generate a unique shipment_code and shipment_sequence safely.
+    Format: <TYPE>-<YEAR>-<SEQUENCE>
+    Example: IMP-2025-001
+    """
+    year = timezone.now().year
+    prefix = shipment_type or "IMP"
+
+    # Start a transaction to prevent race conditions
+    with transaction.atomic():
+        # Lock the relevant rows to avoid duplicates
+        last_sequence = (
+            Shipment.objects
+            .select_for_update()
+            .filter(shipment_type=shipment_type, shipment_code__startswith=f"{prefix}-{year}-")
+            .aggregate(max_seq=Max("shipment_sequence"))["max_seq"] or 0
+        )
+        new_sequence = last_sequence + 1
+        shipment_code = f"{prefix}-{year}-{new_sequence:03d}"
+        return shipment_code, new_sequence
+
+
+
+################## end functions
+
+
+
 
 #### Company
 class Company(models.Model):
@@ -313,11 +345,11 @@ class Shipment(models.Model):
         if self.duty_paid:
             return f"{shipment_status} - Duty Paid"
     def save(self, *args, **kwargs):
-        if not self.shipment_code:
-            code, seq = generate_shipment_code(self.shipment_type)
-            self.shipment_code = code
-            self.shipment_sequence = seq
-        super().save(*args, **kwargs)
+            if not self.shipment_code:
+                code, seq = generate_shipment_code(self.shipment_type)
+                self.shipment_code = code
+                self.shipment_sequence = seq
+            super().save(*args, **kwargs)
 
 # Shipment Detail (line items / consignments)
 class ShipmentDetail(models.Model):
@@ -499,18 +531,4 @@ class ShipmentDispatch(models.Model):
 
 
 ###################################### Functions
-
-from django.db.models import Max
-
-def generate_shipment_code(shipment_type):
-    year = timezone.now().year
-    prefix = shipment_type or "IMP"
-
-    last_sequence = Shipment.objects.filter(
-        shipment_type=shipment_type,
-        shipment_code__startswith=f"{prefix}-{year}-"
-    ).aggregate(Max("shipment_sequence"))["shipment_sequence__max"] or 0
-
-    new_sequence = last_sequence + 1
-    return f"{prefix}-{year}-{new_sequence:03d}", new_sequence
 
