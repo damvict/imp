@@ -54,6 +54,7 @@ from .views import (
 
 from .views import shipment_detail_api
 
+from .views import record_grn_upload
 
 urlpatterns = [
     # Item Category URLs
@@ -169,12 +170,15 @@ urlpatterns = [
     path('api/C_Process_Initiated/<int:shipment_id>/', views.C_Process_Initiated, name='C_Process_Initiated'),
     path('api/shipments/dispatch/', views.clearing_agent_dispatch, name='clearing_agent_dispatch'),
     path('api/truck/arrivals/', views.truck_arrivals, name='truck_arrivals'),
-     path('api/grn/record/', views.grn_record, name='grn_record'),
+    path('api/grn/record/', views.grn_record, name='grn_record'),
+    path('api/grn/confirm/', views.grn_confirm, name='grn_confirm'),
 
     path('api/record_arrival/<int:shipment_id>/', views.record_arrival, name='record_arrival'),
     path('api/record_departure/<int:shipment_id>/', views.record_departure, name='record_departure'),
     path('api/record_grn_upload/<int:shipment_id>/', views.record_grn_upload, name='record_grn_upload'),
 
+
+    
     
     path('api/bank_manager/shsrk_payment/<int:shipment_id>/', views.mark_payment_done, name='mark_payment_done'),
     path('api/bank_manager/payment_ref/', views.bank_manager_payment_reference, name='bank_manager_payment_reference'),
