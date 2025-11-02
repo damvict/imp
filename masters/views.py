@@ -2354,6 +2354,6 @@ def grn_record(request):
         grn_upload_at_warehouse=False
 
     )
-    serializer = ShipmentDispatchSerializer(shipments, many=True)
+    serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
