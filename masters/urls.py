@@ -173,6 +173,7 @@ urlpatterns = [
 
     path('api/record_arrival/<int:shipment_id>/', views.record_arrival, name='record_arrival'),
     path('api/record_departure/<int:shipment_id>/', views.record_departure, name='record_departure'),
+     path('api/record_grn_upload/<int:shipment_id>/', views.record_grn_upload, name='record_grn_upload'),
 
     
     path('api/bank_manager/shsrk_payment/<int:shipment_id>/', views.mark_payment_done, name='mark_payment_done'),

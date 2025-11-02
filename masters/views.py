@@ -2357,3 +2357,40 @@ def grn_record(request):
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def record_grn_upload(request, shipment_id):
+  
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+       
+    shipment.grn_upload_at_warehouse = True
+    shipment.grn_upload_at_warehouse_date = timezone.now()
+    shipment.save()
+
+    # ---- Create ShipmentPhase record for handover ----
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=12)  # adjust ID
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        # Optional: skip or log error if phase master not found
+        pass
+
+    serializer = ShipmentSerializer(shipment)
+    return Response(
+        {"message": "GRN Uploaded successfully", "shipment": serializer.data},
+        status=status.HTTP_200_OK
+    )
+
