@@ -2233,16 +2233,16 @@ class ShipmentDispatchCreateView(generics.CreateAPIView):
         # Automatically create a ShipmentPhase for handover
         try:
             # Replace '8' with the correct phase master ID for dispatch/handover
-            phase_master = ShipmentPhaseMaster.objects.get(id=9)
-            ShipmentPhase.objects.create(
-                shipment=dispatch.shipment,  # link to the shipment
-                phase_code=phase_master.phase_code,
-                phase_name=phase_master.phase_name,
-                completed=True,
-                completed_at=timezone.now(),
-                updated_by=self.request.user,
-                order=phase_master.order
-            )
+                phase_master = ShipmentPhaseMaster.objects.get(id=9)
+                ShipmentPhase.objects.create(
+                    shipment=dispatch.shipment,  # link to the shipment
+                    phase_code=phase_master.phase_code,
+                    phase_name=phase_master.phase_name,
+                    completed=True,
+                    completed_at=timezone.now(),
+                    updated_by=self.request.user,
+                    order=phase_master.order
+                )
         except ShipmentPhaseMaster.DoesNotExist:
             # Optional: handle if phase master not found
             pass
@@ -2263,6 +2263,11 @@ def truck_arrivals(request):
     )
     serializer = ShipmentDispatchSerializer(shipments, many=True)
     return Response(serializer.data)
+
+
+
+
+
 
 
 ############_-------------------------------
@@ -2287,6 +2292,18 @@ def record_arrival(request, shipment_id):
         shipment.arrival_at_warehouse_date = timezone.now()
         shipment.save(update_fields=['arrival_at_warehouse', 'arrival_at_warehouse_date'])
 
+        # Record shipment phase
+        phase_master = ShipmentPhaseMaster.objects.get(id=10)
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+
         return Response({'status': 'success', 'message': 'Arrival recorded successfully.'})
     except ShipmentDispatch.DoesNotExist:
         return Response({'status': 'error', 'message': 'Arrivals not found.'}, status=404)
@@ -2309,6 +2326,17 @@ def record_departure(request, shipment_id):
         shipment.departure_at_warehouse = True
         shipment.departure_at_warehouse_date = timezone.now()
         shipment.save(update_fields=['departure_at_warehouse', 'departure_at_warehouse_date'])
+
+        phase_master = ShipmentPhaseMaster.objects.get(id=11)
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
 
         return Response({'status': 'success', 'message': 'Departure recorded successfully.'})
     except ShipmentDispatch.DoesNotExist:
