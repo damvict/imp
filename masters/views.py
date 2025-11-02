@@ -2341,3 +2341,19 @@ def record_departure(request, shipment_id):
         return Response({'status': 'success', 'message': 'Departure recorded successfully.'})
     except ShipmentDispatch.DoesNotExist:
         return Response({'status': 'error', 'message': 'ShipmentDispatch not found.'}, status=404)
+    
+
+
+
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def grn_record(request):
+    shipments = Shipment.objects.filter(     
+        arrival_at_warehouse=True,
+        grn_upload_at_warehouse=False
+
+    )
+    serializer = ShipmentDispatchSerializer(shipments, many=True)
+    return Response(serializer.data)
+

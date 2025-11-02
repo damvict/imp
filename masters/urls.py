@@ -169,6 +169,7 @@ urlpatterns = [
     path('api/C_Process_Initiated/<int:shipment_id>/', views.C_Process_Initiated, name='C_Process_Initiated'),
     path('api/shipments/dispatch/', views.clearing_agent_dispatch, name='clearing_agent_dispatch'),
     path('api/truck/arrivals/', views.truck_arrivals, name='truck_arrivals'),
+     path('api/grn/record/', views.grn_record, name='grn_record'),
 
     path('api/record_arrival/<int:shipment_id>/', views.record_arrival, name='record_arrival'),
     path('api/record_departure/<int:shipment_id>/', views.record_departure, name='record_departure'),
