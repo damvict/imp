@@ -1802,8 +1802,7 @@ def shipment_create_api(request):
                 supplier_id=data.get('supplier'),
                 created_by=request.user,
                 ship_status=1,
-                container=data.get('container', ' ')
-                
+                container=data.get('container', ' ')              
 
             )
 
@@ -2047,7 +2046,9 @@ def bank_controller_shipments(request):
     if not request.user.groups.filter(name="Bank Controller").exists():
         return Response({"detail": "Permission denied"}, status=403)
     
-    shipments = Shipment.objects.filter(send_to_clearing_agent=False)
+  
+    shipments = Shipment.objects.filter(send_to_clearing_agent=False, ship_status=1)
+    
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
