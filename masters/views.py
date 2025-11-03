@@ -2450,3 +2450,25 @@ def record_grn_confirm(request, shipment_id):
         {"message": "GRN Confirm successfully", "shipment": serializer.data},
         status=status.HTTP_200_OK
     )
+
+
+
+############# dashboards API
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def clearing_agent_summary(request):
+    # Optional: filter only the logged-in clearing agent’s shipments
+    shipments = Shipment.objects.all()
+
+    completed = shipments.filter(ship_status=13).count()
+    active = shipments.filter(ship_status__lt=13).count()
+    overdue = shipments.filter(
+        ship_status__lt=13,
+        expected_arrival_date__gt=F('c_process_completed_date')
+    ).count()
+
+    return Response({
+        "active": active,
+        "completed": completed,
+        "overdue": overdue
+    })
