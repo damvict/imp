@@ -2146,7 +2146,7 @@ from .serializers import ShipmentSerializer
 # GET all shipments for bank manager
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def bank_manager_shipments(request):
+def bank_manager_shipments_initiate(request):
     shipments = Shipment.objects.filter(
         send_to_clearing_agent=True,
         payment_marked=False
