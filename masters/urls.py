@@ -168,7 +168,7 @@ urlpatterns = [
     ###path("api/shipments/<int:shipment_id>/upload/", views.upload_assessment_document, name="upload_assessment_document"),
     path('api/upload-assessment/<int:shipment_id>/', views.upload_assessment_document, name='upload_assessment_document'),
     path('api/C_Process_Initiated/<int:shipment_id>/', views.C_Process_Initiated, name='C_Process_Initiated'),
-    path('api/shipments/dispatch/', views.cleayring_agent_dispatch, name='clearing_agent_dispatch'),
+    path('api/shipments/dispatch/', views.clearing_agent_dispatch, name='clearing_agent_dispatch'),
     path('api/truck/arrivals/', views.truck_arrivals, name='truck_arrivals'),
     path('api/grn/record/', views.grn_record, name='grn_record'),
     path('api/grn/confirm/', views.grn_confirm, name='grn_confirm'),
@@ -231,10 +231,11 @@ urlpatterns = [
 
 
     ############ Dispatch
-    path("api/dispatch/<int:shipment_id>/", ShipmentDispatchCreateView.as_view(), name="shipment-dispatch"),
+     path("api/dispatch/<int:shipment_id>/", ShipmentDispatchCreateView.as_view(), name="shipment-dispatch"),
 
-     ################# dash boards
-    path('shipments/clearing-agent-summary/', views.clearing_agent_summary, name='clearing-agent-summary'),
+
+      path('shipments/clearing-agent-summary/', views.clearing_agent_summary, name='clearing-agent-summary'),
+
 ]       
 
 
