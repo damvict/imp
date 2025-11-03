@@ -2047,7 +2047,7 @@ def bank_controller_shipments(request):
         return Response({"detail": "Permission denied"}, status=403)
     
   
-    shipments = Shipment.objects.filter(send_to_clearing_agent=False, ship_status=1)
+    shipments = Shipment.objects.filter(send_to_clearing_agent=False, ship_status=2)
     
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
