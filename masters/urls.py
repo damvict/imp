@@ -234,7 +234,7 @@ urlpatterns = [
      path("api/dispatch/<int:shipment_id>/", ShipmentDispatchCreateView.as_view(), name="shipment-dispatch"),
 
 
-      path('shipments/clearing-agent-summary/', views.clearing_agent_summary, name='clearing-agent-summary'),
+      path('api/shipments/clearing-agent-summary/', views.clearing_agent_summary, name='clearing-agent-summary'),
 
 ]       
 
