@@ -1788,7 +1788,7 @@ def shipment_create_api(request):
     data = request.data
     try:
         stage = data.get('stage', 'arrival')  # 'arrival' or 'shipment'
-
+        shipment_code = data.get('shipment_code') or None
         # === STEP 1: CREATE NEW ARRIVAL NOTICE ===
         if stage == 'arrival':
             shipment = Shipment.objects.create(
@@ -1823,6 +1823,7 @@ def shipment_create_api(request):
                 'success': True,
                 'message': 'Arrival Notice created successfully',
                 'shipment_id': shipment.id,
+                'shipment_code': shipment.shipment_code, 
                 'phase': phase_master.phase_name
             }, status=201)
 
