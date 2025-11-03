@@ -2464,7 +2464,7 @@ def clearing_agent_summary(request):
     active = shipments.filter(ship_status__lt=13).count()
     overdue = shipments.filter(
         ship_status__lt=13,
-        expected_arrival_date__gt=F('c_process_completed_date')
+        expected_arrival_date__gt=F('C_Process_completed_date')
     ).count()
 
     return Response({
