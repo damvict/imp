@@ -10,21 +10,26 @@ from django.db.models import Max
 
 ################ functions
 def generate_shipment_code(shipment_type):
-    from datetime import date
-    from .models import Shipment  # ensure local import if needed
-    year = date.today().year
+    """
+    Generate a unique shipment_code and shipment_sequence safely.
+    Format: <TYPE>-<YEAR>-<SEQUENCE>
+    Example: IMP-2025-001
+    """
+    year = timezone.now().year
+    prefix = shipment_type or "IMP"
 
-    # find last sequence for this year
-    last = Shipment.objects.filter(
-        created_at__year=year
-    ).order_by('-shipment_sequence').first()
-
-    next_seq = 1 if not last else last.shipment_sequence + 1
-
-    code_prefix = shipment_type or "IMP"
-    code = f"{code_prefix}-{year}-{next_seq:03d}"
-
-    return code, next_seq
+    # Start a transaction to prevent race conditions
+    with transaction.atomic():
+        # Lock the relevant rows to avoid duplicates
+        last_sequence = (
+            Shipment.objects
+            .select_for_update()
+            .filter(shipment_type=shipment_type, shipment_code__startswith=f"{prefix}-{year}-")
+            .aggregate(max_seq=Max("shipment_sequence"))["max_seq"] or 0
+        )
+        new_sequence = last_sequence + 1
+        shipment_code = f"{prefix}-{year}-{new_sequence:03d}"
+        return shipment_code, new_sequence
 
 
 
