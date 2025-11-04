@@ -2513,7 +2513,7 @@ def dashboard_view(request):
     pending_grn = Shipment.objects.filter(arrival_at_warehouse=True, grn_complete_at_warehouse=False).count()
     total_grn_value_month = (
         Shipment.objects.filter(grn_complete_at_warehouse_date__month=today.month)
-        .aggregate(total=Sum('value'))['total'] or 0
+        .aggregate(total=Sum('amount'))['total'] or 0
     )
 
     # Invoice data
