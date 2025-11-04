@@ -2490,6 +2490,8 @@ def dashboard_view(request):
     total_shipments_month = Shipment.objects.filter(current_month_filter).count()
     completed_shipments = Shipment.objects.filter(ship_status=13).count()
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
+
+    
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
     ).exclude(ship_status=13).count()
@@ -2546,6 +2548,10 @@ def dashboard_view(request):
             "clearance_completed": clearance_completed,
             "pending_grn": pending_grn,
             "total_grn_value_month": f"{total_grn_value_month:,.2f}",
+            "completed_shipments": completed_shipments,
+             "total_invoice_value": f"{total_invoice_value:,.2f}",
+             "approved_duty_payments": approved_duty_payments,
+             "pending_bank_docs" : Shipment.objects.filter(ship_status=1).count(),
         }
 
     if user.groups.filter(name="Bank Manager").exists():
