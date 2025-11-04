@@ -2472,3 +2472,111 @@ def clearing_agent_summary(request):
         "completed": completed,
         "overdue": overdue
     })
+
+
+
+###################### Dashboard KPI ########
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard_view(request):
+    user = request.user
+    today = timezone.now().date()
+    first_day = today.replace(day=1)
+
+    # Common date filters
+    current_month_filter = Q(order_date__month=today.month, order_date__year=today.year)
+
+    # Common shipment stats
+    total_shipments_month = Shipment.objects.filter(current_month_filter).count()
+    completed_shipments = Shipment.objects.filter(ship_status=13).count()
+    active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
+    overdue_shipments = Shipment.objects.filter(
+        expected_arrival_date__lt=today,
+    ).exclude(ship_status=13).count()
+    on_the_way_shipments = Shipment.objects.filter(C_Process_Initiated=False).count()
+
+    # Clearance stats
+    clearance_initiated = Shipment.objects.filter(
+        C_Process_Initiated=True, C_Process_completed=False
+    ).count()
+    clearance_completed = Shipment.objects.filter(C_Process_completed=True).count()
+    goods_at_port = Shipment.objects.filter(C_Process_Initiated=False).count()
+
+    # Bank data
+    pending_bank_docs = Shipment.objects.filter(ship_status=1).count()
+    total_amount_pending = (
+        BankDocument.objects.filter(settled=False).aggregate(total=Sum('amount'))['total'] or 0
+    )
+    approved_duty_payments = Shipment.objects.filter(duty_paid=True).count()
+
+    # GRN data
+    pending_grn = Shipment.objects.filter(arrival_at_warehouse=True, grn_complete_at_warehouse=False).count()
+    total_grn_value_month = (
+        Shipment.objects.filter(grn_complete_at_warehouse_date__month=today.month)
+        .aggregate(total=Sum('value'))['total'] or 0
+    )
+
+    # Invoice data
+    total_invoice_value = (
+        Shipment.objects.aggregate(total=Sum('amount'))['total'] or 0
+    )
+
+    # Build metrics per user group
+    data = {
+        "common": {
+            "total_shipments_month": total_shipments_month,
+            "completed_shipments": completed_shipments,
+            "active_shipments": active_shipments,
+            "overdue_shipments": overdue_shipments,
+            "on_the_way_shipments": on_the_way_shipments,
+        }
+    }
+
+    if user.groups.filter(name="Bank Controller").exists():
+        data["bank"] = {
+            "pending_bank_docs": pending_bank_docs,
+            "total_amount_pending": f"{total_amount_pending:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
+        }
+
+    if user.groups.filter(name="Import Department").exists():
+        data["import"] = {
+            "goods_at_port": goods_at_port,
+            "clearance_initiated": clearance_initiated,
+            "clearance_completed": clearance_completed,
+            "pending_grn": pending_grn,
+            "total_grn_value_month": f"{total_grn_value_month:,.2f}",
+        }
+
+    if user.groups.filter(name="Bank Manager").exists():
+        data["bm"] = {
+            "total_invoice_value": f"{total_invoice_value:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
+        }
+
+    if user.groups.filter(name="Clearing Agent").exists():
+        data["ca"] = {
+            "total_invoice_value": f"{total_invoice_value:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
+        }
+
+    if user.groups.filter(name="Managing Director").exists():
+        data["md"] = {
+            "total_invoice_value": f"{total_invoice_value:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
+        }   
+
+    if user.groups.filter(name="Security Guard").exists():
+        data["sg"] = {
+            "total_invoice_value": f"{total_invoice_value:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
+        }
+
+    if user.groups.filter(name="Warehouse Staff").exists():
+        data["ws"] = {
+            "total_invoice_value": f"{total_invoice_value:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
+        }
+
+
+    return Response(data)
