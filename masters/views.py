@@ -1999,7 +1999,7 @@ def shipment_detail_api(request, shipment_id):
 
             # --- Phase 4–6: Payment Processing ---
             {
-                "phase_code": 456
+                "phase_code": 456,
                 "title": "Payment Process",
                 "details": {
                     "Payment Marked": "Yes" if shipment.payment_marked else "No",
