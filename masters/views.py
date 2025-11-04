@@ -1929,12 +1929,114 @@ def shipment_detail_api(request, shipment_id):
 
         # ✅ Shipment details
         shipment_data = {
+            "shipment_code":shipment.shipment_code,
             "bl": shipment.bl,
             "vessel": shipment.vessel,
+            "container": shipment.container,
             "amount": shipment.amount,
             "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
             "supplier": shipment.supplier.supplier_name,
         }
+
+        ##########################################
+         # ✅ Journey Summary for all 9 phases
+        journey_summary = [
+
+            # --- Phase 0: Shipment Info ---
+            {
+                "phase_code": 0,
+                "title": "Shipment Information",
+                "details": {
+                    "Shipment Code": shipment.shipment_code,
+                    "Vessel": shipment.vessel,
+                    "BL": shipment.bl,
+                    "Container": shipment.container,
+                    "Expected Arrival": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
+                }
+            },
+
+            # --- Phase 1: Invoice & Bank Details ---
+            {
+                "phase_code": 1,
+                "title": "Invoice and Bank Information",
+                "details": {
+                    "Supplier Invoice": shipment.supplier_invoice,
+                    "Supplier": shipment.supplier.supplier_name if shipment.supplier else None,
+                    "Bank": shipment.bank.bank_name if shipment.bank else None,
+                    "Packing List Ref": shipment.packing_list_ref,
+                    "Gross Weight": shipment.cbm,  # Assuming CBM ≈ volume
+                    "Bank Doc Type": shipment.bank_doc_type,
+                    "Reference Number": shipment.reference_number,
+                    "Payment Type": shipment.payment_type,
+                }
+            },
+
+            # --- Phase 2: Clearing Agent Process ---
+            {
+                "phase_code": 2,
+                "title": "Clearing Agent Process",
+                "details": {
+                    "Sent to Clearing Agent": "Yes" if shipment.send_to_clearing_agent else "No",
+                    "Clearing Agent": shipment.clearing_agent.agent_name if shipment.clearing_agent else None,
+                    "Process Initiated": shipment.C_Process_Initiated_date.strftime("%Y-%m-%d %H:%M") if shipment.C_Process_Initiated_date else None,
+                    "Process Completed": shipment.C_Process_completed_date.strftime("%Y-%m-%d %H:%M") if shipment.C_Process_completed_date else None,
+                }
+            },
+
+            # --- Phase 3: Duty Assessment ---
+            {
+                "phase_code": 3,
+                "title": "Duty Assessment",
+                "details": {
+                    "Assessment Uploaded": "Yes" if shipment.assessment_document else "No",
+                    "Assessment Upload Date": shipment.assessment_uploaded_date.strftime("%Y-%m-%d %H:%M") if shipment.assessment_uploaded_date else None,
+                    "Total Duty": shipment.total_duty_value,
+                    "Assessment PDF": shipment.assessment_document.url if shipment.assessment_document else None,
+                }
+            },
+
+            # --- Phase 4–6: Payment Processing ---
+            {
+                "phase_code": 4,
+                "title": "Payment Process",
+                "details": {
+                    "Payment Marked": "Yes" if shipment.payment_marked else "No",
+                    "Payment Marked Date": shipment.payment_marked_date.strftime("%Y-%m-%d %H:%M") if shipment.payment_marked_date else None,
+                    "Payment Type": shipment.payment_type,
+                    "Bank Name": shipment.duty_paid_bank,
+                    "Reference ID": shipment.payref_document_ref,
+                    "Payment Proof": shipment.payref_document.url if shipment.payref_document else None,
+                    "MD Approval": "Approved" if shipment.duty_paid else "Pending",
+                    "Payment Finalized Date": shipment.duty_paid_date.strftime("%Y-%m-%d %H:%M") if shipment.duty_paid_date else None,
+                }
+            },
+
+            # --- Phase 7: Transportation & Warehouse ---
+            {
+                "phase_code": 7,
+                "title": "Transportation & Warehouse",
+                "details": {
+                    "Arrival at Warehouse": shipment.arrival_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.arrival_at_warehouse_date else None,
+                    "Departure at Warehouse": shipment.departure_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.departure_at_warehouse_date else None,
+                    "Condition on Departure": "Good",
+                }
+            },
+
+            # --- Phase 8: GRN (Goods Received Note) ---
+            {
+                "phase_code": 8,
+                "title": "GRN Confirmation",
+                "details": {
+                    "GRN Uploaded": "Yes" if shipment.grn_upload_at_warehouse else "No",
+                    "GRN Upload Date": shipment.grn_upload_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.grn_upload_at_warehouse_date else None,
+                    "GRN Confirmed": "Yes" if shipment.grn_complete_at_warehouse else "No",
+                    "GRN Confirm Date": shipment.grn_complete_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.grn_complete_at_warehouse_date else None,
+                }
+            },
+        ]
+
+
+        ######################################
 
         return Response({
             "shipment": shipment_data,
