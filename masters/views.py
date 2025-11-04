@@ -1962,7 +1962,7 @@ def shipment_detail_api(request, shipment_id):
                 "details": {
                     "Supplier Invoice": shipment.supplier_invoice,
                     "Supplier": shipment.supplier.supplier_name if shipment.supplier else None,
-                    "Bank": shipment.bank.bank_name if shipment.bank else None,
+                   "bank_name": shipment.bank.b_name if shipment.bank else None,
                     "Packing List Ref": shipment.packing_list_ref,
                     "Gross Weight": shipment.cbm,  # Assuming CBM ≈ volume
                     "Bank Doc Type": shipment.bank_doc_type,
