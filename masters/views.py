@@ -1945,7 +1945,7 @@ def shipment_detail_api(request, shipment_id):
             # --- Phase 0: Shipment Info ---
             {
                 "phase_code": 0,
-                "title": "Shipment Information",
+                "title": "Arrival Notice",
                 "details": {
                     "Shipment Code": shipment.shipment_code,
                     "Vessel": shipment.vessel,
@@ -1958,9 +1958,10 @@ def shipment_detail_api(request, shipment_id):
             # --- Phase 1: Invoice & Bank Details ---
             {
                 "phase_code": 1,
-                "title": "Invoice and Bank Information",
+                "title": " Document Collected",
                 "details": {
                     "Supplier Invoice": shipment.supplier_invoice,
+                    "Amount $": shipment.amount,
                     "Supplier": shipment.supplier.supplier_name if shipment.supplier else None,
                    "bank_name": shipment.bank.b_name if shipment.bank else None,
                     "Packing List Ref": shipment.packing_list_ref,
@@ -1968,13 +1969,14 @@ def shipment_detail_api(request, shipment_id):
                     "Bank Doc Type": shipment.bank_doc_type,
                     "Reference Number": shipment.reference_number,
                     "Payment Type": shipment.payment_type,
+                    "Amount $": shipment.amount,
                 }
             },
 
             # --- Phase 2: Clearing Agent Process ---
             {
                 "phase_code": 2,
-                "title": "Clearing Agent Process",
+                "title": "Document Handover",
                 "details": {
                     "Sent to Clearing Agent": "Yes" if shipment.send_to_clearing_agent else "No",
                     "Clearing Agent": shipment.clearing_agent.agent_name if shipment.clearing_agent else None,
@@ -1997,7 +1999,7 @@ def shipment_detail_api(request, shipment_id):
 
             # --- Phase 4–6: Payment Processing ---
             {
-                "phase_code": 4,
+                "phase_code": 4-6,
                 "title": "Payment Process",
                 "details": {
                     "Payment Marked": "Yes" if shipment.payment_marked else "No",
@@ -2014,7 +2016,7 @@ def shipment_detail_api(request, shipment_id):
             # --- Phase 7: Transportation & Warehouse ---
             {
                 "phase_code": 7,
-                "title": "Transportation & Warehouse",
+                "title": "Dispatch",
                 "details": {
                     "Arrival at Warehouse": shipment.arrival_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.arrival_at_warehouse_date else None,
                     "Departure at Warehouse": shipment.departure_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.departure_at_warehouse_date else None,
@@ -2025,7 +2027,7 @@ def shipment_detail_api(request, shipment_id):
             # --- Phase 8: GRN (Goods Received Note) ---
             {
                 "phase_code": 8,
-                "title": "GRN Confirmation",
+                "title": "GRN Process",
                 "details": {
                     "GRN Uploaded": "Yes" if shipment.grn_upload_at_warehouse else "No",
                     "GRN Upload Date": shipment.grn_upload_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.grn_upload_at_warehouse_date else None,
