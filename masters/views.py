@@ -2040,7 +2040,8 @@ def shipment_detail_api(request, shipment_id):
 
         return Response({
             "shipment": shipment_data,
-            "phases": phases_data
+            "phases": phases_data,
+             "journey_summary": journey_summary,  # ✅ Added this line
         })
 
     except Shipment.DoesNotExist:
