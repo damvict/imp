@@ -1909,24 +1909,31 @@ def shipment_detail_api(request, shipment_id):
     try:
         shipment = Shipment.objects.get(id=shipment_id)
 
-        # Get all phases for this shipment
-        phases = ShipmentPhase.objects.filter(shipment=shipment).order_by('order')
-        phases_data = [
-            {
-                "id": phase.id,
-                "title": phase.phase_name,
-                "completed": phase.completed,
-                "completed_at": phase.completed_at.strftime("%Y-%m-%d %H:%M:%S") if phase.completed_at else None
-            }
-            for phase in phases
-        ]
+        # ✅ Get all master phases (the full list of possible phases)
+        master_phases = ShipmentPhaseMaster.objects.all().order_by('order')
 
+        # ✅ Get this shipment’s completed phases
+        shipment_phases = ShipmentPhase.objects.filter(shipment=shipment)
+        completed_map = {p.phase_name: p for p in shipment_phases}
+
+        # ✅ Build full list: all master phases, mark completed if in ShipmentPhase
+        phases_data = []
+        for master_phase in master_phases:
+            matched = completed_map.get(master_phase.phase_name)
+            phases_data.append({
+                "id": master_phase.id,
+                "title": master_phase.phase_name,
+                "completed": True if matched else False,
+                "completed_at": matched.completed_at.strftime("%Y-%m-%d %H:%M:%S") if matched and matched.completed_at else None
+            })
+
+        # ✅ Shipment details
         shipment_data = {
             "bl": shipment.bl,
             "vessel": shipment.vessel,
             "amount": shipment.amount,
             "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
-             "supplier": shipment.supplier.supplier_name 
+            "supplier": shipment.supplier.supplier_name,
         }
 
         return Response({
