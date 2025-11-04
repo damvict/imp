@@ -2003,7 +2003,7 @@ def shipment_detail_api(request, shipment_id):
                     "Payment Marked": "Yes" if shipment.payment_marked else "No",
                     "Payment Marked Date": shipment.payment_marked_date.strftime("%Y-%m-%d %H:%M") if shipment.payment_marked_date else None,
                     "Payment Type": shipment.payment_type,
-                    "Bank Name": shipment.duty_paid_bank,
+                    "bank_name": shipment.bank.b_name if shipment.bank else None,
                     "Reference ID": shipment.payref_document_ref,
                     "Payment Proof": shipment.payref_document.url if shipment.payref_document else None,
                     "MD Approval": "Approved" if shipment.duty_paid else "Pending",
