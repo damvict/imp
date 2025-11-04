@@ -2541,7 +2541,7 @@ def dashboard_view(request):
             "approved_duty_payments": approved_duty_payments,
         }
 
-    if user.groups.filter(name="Import Department").exists():
+    if user.groups.filter(name="Imports Department").exists():
         data["import"] = {
             "goods_at_port": goods_at_port,
             "clearance_initiated": clearance_initiated,
