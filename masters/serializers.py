@@ -213,6 +213,7 @@ class ShipmentSerializer(serializers.ModelSerializer):
 from .models import ShipmentDispatch
 
 class ShipmentDispatchSerializer(serializers.ModelSerializer):
+    shipment_code = serializers.CharField(source='shipment.shipment_code', read_only=True)
     class Meta:
         model = ShipmentDispatch
         fields = "__all__"

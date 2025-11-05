@@ -2610,7 +2610,7 @@ def dashboard_view(request):
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
     ).exclude(ship_status=13).count()
-    on_the_way_shipments = Shipment.objects.filter(C_Process_Initiated=False).count()
+  ### on_the_way_shipments = Shipment.objects.filter(C_Process_Initiated=False).count()
 
     # Clearance stats
     clearance_initiated = Shipment.objects.filter(
@@ -2690,6 +2690,7 @@ def dashboard_view(request):
         data["md"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
+            
         }   
 
     if user.groups.filter(name="Security Guard").exists():
@@ -2697,6 +2698,7 @@ def dashboard_view(request):
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
             "on_the_way_shipment":on_the_way_shipment,
+            "total_shipments_month":total_shipments_month,
         }
 
     if user.groups.filter(name="Warehouse Staff").exists():
