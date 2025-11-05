@@ -25,6 +25,7 @@ def generate_shipment_code(shipment_type):
             Shipment.objects
             .select_for_update()
             .filter(shipment_type=shipment_type, shipment_code__startswith=f"{prefix}-{year}-")
+            
             .aggregate(max_seq=Max("shipment_sequence"))["max_seq"] or 0
         )
         new_sequence = last_sequence + 1
@@ -270,8 +271,8 @@ class Shipment(models.Model):
 
     # --- (NEW) ---
     SHIPMENT_TYPES = [
-        ("IMP", "Imp"),
-        ("EXP", "Exp"),
+        ("IMP", "IMP"),
+        ("EXP", "EXP"),
     ]
     shipment_type = models.CharField(max_length=10, choices=SHIPMENT_TYPES, default="IMP")
 
