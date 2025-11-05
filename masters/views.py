@@ -2707,3 +2707,26 @@ def dashboard_view(request):
 
 
     return Response(data)
+
+
+
+
+
+################ shipment code
+from django.db.models import Max
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_next_shipment_code(request):
+    shipment_type = request.query_params.get("type", "IMP")
+    year = timezone.now().year
+    prefix = shipment_type or "IMP"
+
+    last_seq = (
+        Shipment.objects
+        .filter(shipment_type=shipment_type, shipment_code__startswith=f"{prefix}-{year}-")
+        .aggregate(max_seq=Max("shipment_sequence"))["max_seq"] or 0
+    )
+    next_seq = last_seq + 1
+    next_code = f"{prefix}-{year}-{next_seq:03d}"
+
+    return Response({"next_code": next_code})

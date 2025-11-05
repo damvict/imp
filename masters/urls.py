@@ -55,6 +55,7 @@ from .views import (
 from .views import shipment_detail_api
 
 from .views import record_grn_upload
+from .views import get_next_shipment_code
 
 urlpatterns = [
     # Item Category URLs
@@ -206,7 +207,7 @@ urlpatterns = [
     ####################### API #############################
     path('api/bank-dashboard/', bank_dashboard, name='bank_dashboard'),
     path('api/dashboard/', views.dashboard_view, name='dashboard'),
-
+    path('api/shipments/next-code/', get_next_shipment_code),
 
     path('api/shipment-create/', views.shipment_create_api, name='shipment-create-api'), 
 
