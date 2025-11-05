@@ -2694,7 +2694,8 @@ def dashboard_view(request):
 
     if user.groups.filter(name="Security Guard").exists():
         data["sg"] = {
-            "total_invoice_value": f"{total_invoice_value:,.2f}",           
+            "total_invoice_value": f"{total_invoice_value:,.2f}",
+            "approved_duty_payments": approved_duty_payments,
             "on_the_way_shipment":on_the_way_shipment,
         }
 
