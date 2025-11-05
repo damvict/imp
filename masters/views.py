@@ -2619,10 +2619,6 @@ def dashboard_view(request):
     clearance_completed = Shipment.objects.filter(C_Process_completed=True).count()
     goods_at_port = Shipment.objects.filter(C_Process_Initiated=False).count()
 
-    on_the_way_shipment = Shipment.objects.filter(
-        C_Process_completed=True, arrival_at_warehouse=False
-    ).count()
-
     # Bank data
     pending_bank_docs = Shipment.objects.filter(ship_status=1).count()
     total_amount_pending = (
@@ -2696,7 +2692,6 @@ def dashboard_view(request):
         data["sg"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
-            "on_the_way_shipment":on_the_way_shipment,
         }
 
     if user.groups.filter(name="Warehouse Staff").exists():
