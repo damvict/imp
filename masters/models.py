@@ -19,13 +19,11 @@ def generate_shipment_code(shipment_type):
     prefix = shipment_type or "IMP"
 
     # Start a transaction to prevent race conditions
+
     with transaction.atomic():
-        # Lock the relevant rows to avoid duplicates
         last_sequence = (
             Shipment.objects
             .select_for_update()
-            .filter(shipment_type=shipment_type, shipment_code__startswith=f"{prefix}-{year}-")
-            
             .aggregate(max_seq=Max("shipment_sequence"))["max_seq"] or 0
         )
         new_sequence = last_sequence + 1
