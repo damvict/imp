@@ -1978,10 +1978,10 @@ def shipment_detail_api(request, shipment_id):
                 "phase_code": 2,
                 "title": "Document Handover",
                 "details": {
-                    "Sent to Clearing Agent": "Yes" if shipment.send_to_clearing_agent else "No",
+                  
                     "Clearing Agent": shipment.clearing_agent.agent_name if shipment.clearing_agent else None,
-                    "Process Initiated": shipment.C_Process_Initiated_date.strftime("%Y-%m-%d %H:%M") if shipment.C_Process_Initiated_date else None,
-                    "Process Completed": shipment.C_Process_completed_date.strftime("%Y-%m-%d %H:%M") if shipment.C_Process_completed_date else None,
+                    "Date & Time": shipment.send_date.strftime("%Y-%m-%d %H:%M") if shipment.C_Process_Initiated_date else None,
+                    
                 }
             },
 
@@ -1990,10 +1990,11 @@ def shipment_detail_api(request, shipment_id):
                 "phase_code": 3,
                 "title": "Duty Assessment",
                 "details": {
-                    "Assessment Uploaded": "Yes" if shipment.assessment_document else "No",
+                   
                     "Assessment Upload Date": shipment.assessment_uploaded_date.strftime("%Y-%m-%d %H:%M") if shipment.assessment_uploaded_date else None,
-                    "Total Duty": shipment.total_duty_value,
+                    "Total Duty LKR": shipment.total_duty_value,
                     "Assessment PDF": shipment.assessment_document.url if shipment.assessment_document else None,
+                    "Clearing Agent": shipment.clearing_agent.agent_name if shipment.clearing_agent else None,
                 }
             },
 
@@ -2002,14 +2003,15 @@ def shipment_detail_api(request, shipment_id):
                 "phase_code": 456,
                 "title": "Payment Process",
                 "details": {
-                    "Payment Marked": "Yes" if shipment.payment_marked else "No",
-                    "Payment Marked Date": shipment.payment_marked_date.strftime("%Y-%m-%d %H:%M") if shipment.payment_marked_date else None,
-                    "Payment Type": shipment.payment_type,
-                    "bank_name": shipment.bank.b_name if shipment.bank else None,
-                    "Reference ID": shipment.payref_document_ref,
+                   
+                    "Payment Request Date": shipment.payment_marked_date.strftime("%Y-%m-%d %H:%M") if shipment.payment_marked_date else None,
+                    "Payment Method": shipment.payment_type,
+                    "bank Name": shipment.bank.b_name if shipment.bank else None,
+                    "Payment Ref ID": shipment.payref_document_ref,
                     "Payment Proof": shipment.payref_document.url if shipment.payref_document else None,
                     "MD Approval": "Approved" if shipment.duty_paid else "Pending",
                     "Payment Finalized Date": shipment.duty_paid_date.strftime("%Y-%m-%d %H:%M") if shipment.duty_paid_date else None,
+                    "Proof Downloaded":shipment.C_Process_Initiated.strftime("%Y-%m-%d %H:%M"),
                 }
             },
 
@@ -2018,6 +2020,7 @@ def shipment_detail_api(request, shipment_id):
                 "phase_code": 7,
                 "title": "Dispatch",
                 "details": {
+                   
                     "Arrival at Warehouse": shipment.arrival_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.arrival_at_warehouse_date else None,
                     "Departure at Warehouse": shipment.departure_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.departure_at_warehouse_date else None,
                     "Condition on Departure": "Good",
@@ -2616,6 +2619,10 @@ def dashboard_view(request):
     clearance_completed = Shipment.objects.filter(C_Process_completed=True).count()
     goods_at_port = Shipment.objects.filter(C_Process_Initiated=False).count()
 
+    on_the_way_shipment = Shipment.objects.filter(
+        C_Process_completed=True, arrival_at_warehouse=False
+    ).count()
+
     # Bank data
     pending_bank_docs = Shipment.objects.filter(ship_status=1).count()
     total_amount_pending = (
@@ -2687,8 +2694,8 @@ def dashboard_view(request):
 
     if user.groups.filter(name="Security Guard").exists():
         data["sg"] = {
-            "total_invoice_value": f"{total_invoice_value:,.2f}",
-            "approved_duty_payments": approved_duty_payments,
+            "total_invoice_value": f"{total_invoice_value:,.2f}",           
+            "on_the_way_shipment":on_the_way_shipment,
         }
 
     if user.groups.filter(name="Warehouse Staff").exists():
