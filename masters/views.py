@@ -2500,11 +2500,11 @@ def record_grn_upload(request, shipment_id):
     shipment.grn_number = grn_number
     shipment.receiving_notes = receiving_notes
     shipment.physical_stock_verified = physical_stock_verified
-    shipment.grn_uploaded = grn_uploaded
+    shipment.grn_uploaded = grn_uploaded 
 
     if physical_stock_verified and grn_uploaded:
-        shipment.grn_complete_at_warehouse = True
-        shipment.grn_complete_at_warehouse_date = timezone.now()
+        shipment.grn_upload_at_warehouse = True
+        shipment.grn_upload_at_warehouse_date = timezone.now()
 
     shipment.save()
 
