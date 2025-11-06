@@ -2666,7 +2666,7 @@ def dashboard_view(request):
             "completed_shipments": completed_shipments,
             "active_shipments": active_shipments,
             "overdue_shipments": overdue_shipments,
-            "on_the_way_shipments": on_the_way_shipments,
+            "on_the_way_shipment":on_the_way_shipment,
         }
     }
 
@@ -2707,6 +2707,10 @@ def dashboard_view(request):
         data["md"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
+            "clearance_initiated": clearance_initiated,
+            "clearance_completed": clearance_completed,
+             "pending_grn":pending_grn,
+             "total_grn_value_month":total_grn_value_month,
             
         }   
 
