@@ -2460,20 +2460,18 @@ def record_departure(request, shipment_id):
     except ShipmentDispatch.DoesNotExist:
         return Response({'status': 'error', 'message': 'ShipmentDispatch not found.'}, status=404)
     
-
-
-
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def grn_record(request):
-    shipments = Shipment.objects.filter(     
+    shipments = Shipment.objects.filter(
         arrival_at_warehouse=True,
         grn_upload_at_warehouse=False
+    ).select_related('dispatch')  # ✅ One-to-one join for performance
 
-    )
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
+
 
 
 @api_view(['POST'])
@@ -2486,8 +2484,28 @@ def record_grn_upload(request, shipment_id):
         return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
 
        
-    shipment.grn_upload_at_warehouse = True
-    shipment.grn_upload_at_warehouse_date = timezone.now()
+    ###shipment.grn_upload_at_warehouse = True
+    #####shipment.grn_upload_at_warehouse_date = timezone.now()
+ 
+
+   # Get values from request
+    grn_number = request.data.get("grn_number", "")
+    receiving_notes = request.data.get("receiving_notes", "")
+    physical_stock_verified = request.data.get("physical_stock_verified", False)
+    grn_uploaded = request.data.get("grn_uploaded", False)
+
+       # Save to shipment
+    ###shipment.grn_upload_at_warehouse = True
+    ####shipment.grn_upload_at_warehouse_date = timezone.now()
+    shipment.grn_number = grn_number
+    shipment.receiving_notes = receiving_notes
+    shipment.physical_stock_verified = physical_stock_verified
+    shipment.grn_uploaded = grn_uploaded
+
+    if physical_stock_verified and grn_uploaded:
+        shipment.grn_complete_at_warehouse = True
+        shipment.grn_complete_at_warehouse_date = timezone.now()
+
     shipment.save()
 
     # ---- Create ShipmentPhase record for handover ----
@@ -2513,8 +2531,6 @@ def record_grn_upload(request, shipment_id):
     )
 
 
-
-
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -2526,6 +2542,7 @@ def grn_confirm(request):
     )
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
+
 
 
 
