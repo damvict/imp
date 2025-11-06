@@ -2,25 +2,25 @@ from rest_framework import serializers
 from .models import Shipment
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
-    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+#### ##class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
+    #### ##supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
 
-    class Meta:
-        model = Shipment
-        fields = [
-            "id",
-            "shipment_code",
-            "supplier_name",
-            "bl",
-            "send_date",
-            "amount",
-            "packing_list_ref",
-            "send_date",
-            "send_to_clearing_agent_payment",
-            "payref_document",
+    #### ##class Meta:
+       #### ## model = Shipment
+        #### ##fields = [
+          #### ##  "id",
+          #### ##  "shipment_code",
+           #### ## "supplier_name",
+           #### ## "bl",
+           #### ## "send_date",
+           #### ## "amount",
+           #### ## "packing_list_ref",
+           #### ## "send_date",
+           #### ## "send_to_clearing_agent_payment",
+           #### ## "payref_document",
            
 
-        ]
+      #### ##  ]
 
 
 
@@ -207,6 +207,9 @@ from .models import  ShipmentPhase
 
 class ShipmentSerializer(serializers.ModelSerializer):
     dispatch = ShipmentDispatchSerializer_type2(read_only=True)
+       
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    amount = serializers.DecimalField(max_digits=15, decimal_places=2, read_only=True)
     class Meta:
         model = Shipment
         fields = '__all__'  # or select specific fields you need
