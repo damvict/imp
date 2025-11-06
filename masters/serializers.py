@@ -194,9 +194,19 @@ class ShipmentSerializer(serializers.ModelSerializer):
 
 # -------------------- shipment phase
 
+from .models import ShipmentDispatch
+
+class ShipmentDispatchSerializer_type2(serializers.ModelSerializer):
+   
+    class Meta:
+        model = ShipmentDispatch
+        fields = "__all__"
+        read_only_fields = ["created_by", "created_at", "updated_at"]
+
 from .models import  ShipmentPhase
 
 class ShipmentSerializer(serializers.ModelSerializer):
+    dispatch = ShipmentDispatchSerializer_type2(read_only=True)
     class Meta:
         model = Shipment
         fields = '__all__'  # or select specific fields you need
