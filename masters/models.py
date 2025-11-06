@@ -233,6 +233,11 @@ class Shipment(models.Model):
     grn_complete_at_warehouse= models.BooleanField(default=False)
     grn_complete_at_warehouse_date= models.DateTimeField(null=True, blank=True)  
 
+    grn_number = models.CharField(max_length=50, blank=True, null=True)  # GRN Number
+    receiving_notes = models.TextField(blank=True, null=True)           # Notes about received items
+    physical_stock_verified = models.BooleanField(default=False)        # Physical stock count verified
+    grn_uploaded = models.BooleanField(default=False)                   # GRN uploaded into system
+
 
     ############# CA send to us
     assessment_document = models.FileField(
