@@ -537,3 +537,40 @@ class ShipmentDispatch(models.Model):
 
 ###################################### Functions
 
+#############  Bank settlement 
+
+class Settlement(models.Model):
+    """Records how each BankDocument is settled — Import Loan, Deposit, Set Off, etc."""
+
+    SETTLEMENT_TYPES = [
+        ('IMP', 'Import Loan'),
+        ('DEPOSIT', 'Bank Deposit'),
+        ('SET_OFF', 'Set Off'),
+        ('EXCH_DIFF', 'Exchange Difference'),
+    ]
+
+    # 🔗 Link to your existing BankDocument model
+    document = models.ForeignKey(
+        'BankDocument',  # use string to avoid circular import
+        on_delete=models.CASCADE,
+        related_name='settlements'
+    )
+
+    settlement_type = models.CharField(max_length=20, choices=SETTLEMENT_TYPES)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    settlement_date = models.DateField()
+
+    # Optional references for traceability
+    reference_number = models.CharField(max_length=100, blank=True, null=True)
+    remarks = models.TextField(blank=True, null=True)
+
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.settlement_type} - {self.amount} ({self.settlement_date})"
+
+    class Meta:
+        ordering = ['-settlement_date']
+        verbose_name = 'Bank Document Settlement'
+        verbose_name_plural = 'Bank Document Settlements'

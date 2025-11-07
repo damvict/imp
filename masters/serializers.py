@@ -234,3 +234,22 @@ class ShipmentDispatchSerializer(serializers.ModelSerializer):
 
 
 
+#################### Bank settlement
+
+from .models import BankDocument, Settlement
+
+class BankDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankDocument
+        fields = '__all__'
+
+
+class SettlementSerializer(serializers.ModelSerializer):
+    document_details = BankDocumentSerializer(source='document', read_only=True)
+
+    class Meta:
+        model = Settlement
+        fields = '__all__'
+
+def perform_create(self, serializer):
+    serializer.save(created_by=self.request.user if self.request.user.is_authenticated else None)

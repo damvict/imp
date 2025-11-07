@@ -57,6 +57,14 @@ from .views import shipment_detail_api
 from .views import record_grn_upload
 from .views import get_next_shipment_code
 
+from rest_framework.routers import DefaultRouter
+from .views import BankDocumentViewSet, SettlementViewSet
+
+router = DefaultRouter()
+router.register(r'bank-documents', BankDocumentViewSet)
+router.register(r'settlements', SettlementViewSet)
+
+
 urlpatterns = [
     # Item Category URLs
     path('itemcategory/', views.itemcategory_list, name='itemcategory_list'),
@@ -240,7 +248,7 @@ urlpatterns = [
 
       path('api/shipments/clearing-agent-summary/', views.clearing_agent_summary, name='clearing-agent-summary'),
 
-]       
+]  + router.urls
 
 
 if settings.DEBUG:

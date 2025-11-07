@@ -2753,3 +2753,35 @@ def get_next_shipment_code(request):
     next_code = f"{prefix}-{year}-{next_seq:03d}"
 
     return Response({"next_code": next_code})
+
+
+
+
+
+####################### Settlements
+from rest_framework import viewsets
+from .models import BankDocument, Settlement
+from .serializers import BankDocumentSerializer, SettlementSerializer
+
+class BankDocumentViewSet(viewsets.ModelViewSet):
+    queryset = BankDocument.objects.all()
+    serializer_class = BankDocumentSerializer
+
+
+class SettlementViewSet(viewsets.ModelViewSet):
+    queryset = Settlement.objects.all()
+    serializer_class = SettlementSerializer
+
+
+
+
+
+class SettlementViewSet(viewsets.ModelViewSet):
+    serializer_class = SettlementSerializer
+
+    def get_queryset(self):
+        queryset = Settlement.objects.all()
+        document_id = self.request.query_params.get('document')
+        if document_id:
+            queryset = queryset.filter(document_id=document_id)
+        return queryset
