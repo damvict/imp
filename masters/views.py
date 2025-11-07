@@ -2846,7 +2846,7 @@ def settlements_list(request):
                     doc_type='IMP',
                     reference_number=settlement.reference_number,
                     amount=settlement.amount,
-                    issue_date=settlement.settlement_date,
+                    issue_date=timezone.now().date(),
                     due_date=settlement.due_date,
                     bank=settlement.document.bank if settlement.document else None,
                     company=settlement.document.company if settlement.document else None,
