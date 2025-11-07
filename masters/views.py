@@ -2832,33 +2832,34 @@ def settlements_list(request):
         serializer = SettlementSerializer(settlements, many=True)
         return Response(serializer.data)
 
+@api_view(['GET', 'POST'])
+def settlements_list(request):
+    if request.method == 'GET':
+        settlements = Settlement.objects.select_related('document').all()
+        serializer = SettlementSerializer(settlements, many=True)
+        return Response(serializer.data)
+
     elif request.method == 'POST':
         serializer = SettlementSerializer(data=request.data)
         if serializer.is_valid():
-            try:
-                settlement = serializer.save()
-                
-                if settlement.settlement_type == 'IMP':
-                    BankDocument.objects.update_or_create(
-                        id=settlement.document.id,
-                        defaults={
-                            'reference_number': settlement.reference_number,
-                            'amount': settlement.amount,
-                            'due_date': settlement.due_date,
-                            'issue_date': settlement.settlement_date,
-                            'bank': settlement.document.bank,
-                            'company': settlement.document.company,
-                            'created_by': settlement.document.created_by,
-                            'doc_type': 'IMP',
-                        }
-                    )
-                
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            settlement = serializer.save()  # Save settlement first
 
-            except Exception as e:
-                print("Error saving settlement:", e)  # logs to console
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # If it's an Import Loan settlement, create/update BankDocument
+            if settlement.settlement_type == 'IMP':
+                BankDocument.objects.update_or_create(
+                    reference_number=settlement.reference_number,
+                    defaults={
+                        'doc_type': 'IMP',
+                        'amount': settlement.amount,
+                        'issue_date': settlement.settlement_date,
+                        'due_date': settlement.due_date,
+                        'bank': settlement.document.bank if settlement.document else '',
+                        'company': settlement.document.company if settlement.document else '',
+                        'created_by': settlement.document.created_by if settlement.document else None,
+                    }
+                )
 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
