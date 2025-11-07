@@ -439,7 +439,7 @@ class BankDocument(models.Model):
     blank=True   # allows the form to accept empty values
 )
     issue_date = models.DateField()
-    due_date = models.DateField(null=True, blank=True)  # e.g. LC maturity, IMP loan repayment
+    due_date = models.DateField(blank=True, null=True)
     settled = models.BooleanField(default=False)
     settlement_date = models.DateField(null=True, blank=True)
 

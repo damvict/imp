@@ -273,6 +273,6 @@ class SettlementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settlement
         fields = '__all__'
-from .models import BankDocument
+
 
 
