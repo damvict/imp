@@ -2759,29 +2759,90 @@ def get_next_shipment_code(request):
 
 
 ####################### Settlements
-from rest_framework import viewsets
+# -------------------------------
+# BANK DOCUMENT ENDPOINTS
+# -------------------------------
+@api_view(['GET', 'POST'])
+def bank_documents_list(request):
+    """List all bank documents or create a new one."""
+    if request.method == 'GET':
+        docs = BankDocument.objects.all()
+        serializer = BankDocumentSerializer(docs, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = BankDocumentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def bank_document_detail(request, pk):
+    """Retrieve, update, or delete a specific bank document."""
+    try:
+        doc = BankDocument.objects.get(pk=pk)
+    except BankDocument.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = BankDocumentSerializer(doc)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = BankDocumentSerializer(doc, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        doc.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# -------------------------------
+# SETTLEMENT ENDPOINTS
+# -------------------------------
 from .models import BankDocument, Settlement
 from .serializers import BankDocumentSerializer, SettlementSerializer
 
-class BankDocumentViewSet(viewsets.ModelViewSet):
-    queryset = BankDocument.objects.all()
-    serializer_class = BankDocumentSerializer
+@api_view(['GET', 'POST'])
+def settlements_list(request):
+    """List all settlements or create a new one."""
+    if request.method == 'GET':
+        settlements = Settlement.objects.select_related('document').all()
+        serializer = SettlementSerializer(settlements, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = SettlementSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SettlementViewSet(viewsets.ModelViewSet):
-    queryset = Settlement.objects.all()
-    serializer_class = SettlementSerializer
+@api_view(['GET', 'PUT', 'DELETE'])
+def settlement_detail(request, pk):
+    """Retrieve, update, or delete a specific settlement record."""
+    try:
+        settlement = Settlement.objects.get(pk=pk)
+    except Settlement.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    if request.method == 'GET':
+        serializer = SettlementSerializer(settlement)
+        return Response(serializer.data)
 
+    elif request.method == 'PUT':
+        serializer = SettlementSerializer(settlement, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-class SettlementViewSet(viewsets.ModelViewSet):
-    serializer_class = SettlementSerializer
-
-    def get_queryset(self):
-        queryset = Settlement.objects.all()
-        document_id = self.request.query_params.get('document')
-        if document_id:
-            queryset = queryset.filter(document_id=document_id)
-        return queryset
+    elif request.method == 'DELETE':
+        settlement.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

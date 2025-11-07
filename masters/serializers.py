@@ -250,6 +250,3 @@ class SettlementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settlement
         fields = '__all__'
-
-def perform_create(self, serializer):
-    serializer.save(created_by=self.request.user if self.request.user.is_authenticated else None)
