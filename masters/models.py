@@ -429,6 +429,7 @@ class BankDocument(models.Model):
 
     doc_type = models.CharField(max_length=10, choices=DOC_TYPES)
     reference_number = models.CharField(max_length=100, blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)  # <-- added company link
 
    # amount = models.DecimalField(max_digits=15, decimal_places=2)
     amount = models.DecimalField(
