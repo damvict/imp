@@ -239,9 +239,30 @@ class ShipmentDispatchSerializer(serializers.ModelSerializer):
 from .models import BankDocument, Settlement
 
 class BankDocumentSerializer(serializers.ModelSerializer):
+    company_name = serializers.CharField(source='shipment.company.name', read_only=True)
+    customer = serializers.CharField(source='shipment.supplier.name', read_only=True)  # optional if you want supplier/customer name
+
     class Meta:
         model = BankDocument
-        fields = '__all__'
+        fields = [
+            'id',
+            'reference_number',
+            'customer',       # supplier/customer
+            'company_name',   # new
+            'amount',
+            'balance',
+            'issue_date',
+            'due_date',
+            'settled',
+            'settlement_date',
+            'doc_type',
+            'bank_id',
+            'converted_to_imp',
+            'imp_reference',
+            'created_by',
+            'created_at',
+        ]
+
 
 
 class SettlementSerializer(serializers.ModelSerializer):
