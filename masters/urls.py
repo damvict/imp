@@ -62,7 +62,7 @@ from .views import BankDocumentViewSet, SettlementViewSet
 
 router = DefaultRouter()
 router.register(r'bank-documents', BankDocumentViewSet)
-router.register(r'settlements', SettlementViewSet)
+router.register(r'settlements', SettlementViewSet, basename='settlement')
 
 
 urlpatterns = [
