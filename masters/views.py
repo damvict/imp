@@ -2833,15 +2833,14 @@ def settlements_list(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = SettlementSerializer(data=request.data)
-        if serializer.is_valid():
-            settlement = serializer.save()  # Save the settlement
-
-            # Check if settlement type is IMP → create/update BankDocument
+    serializer = SettlementSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            settlement = serializer.save()
+            
             if settlement.settlement_type == 'IMP':
                 BankDocument.objects.update_or_create(
-                    shipment=settlement.document.shipment,  # link to same shipment
-                    doc_type='IMP',
+                    id=settlement.document.id,
                     defaults={
                         'reference_number': settlement.reference_number,
                         'amount': settlement.amount,
@@ -2850,13 +2849,17 @@ def settlements_list(request):
                         'bank': settlement.document.bank,
                         'company': settlement.document.company,
                         'created_by': settlement.document.created_by,
+                        'doc_type': 'IMP',
                     }
                 )
-
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            print("Error saving settlement:", e)  # logs to console
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def settlement_detail(request, pk):
