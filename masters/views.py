@@ -2835,8 +2835,26 @@ def settlements_list(request):
     elif request.method == 'POST':
         serializer = SettlementSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            settlement = serializer.save()  # Save the settlement
+
+            # Check if settlement type is IMP → create/update BankDocument
+            if settlement.settlement_type == 'IMP':
+                BankDocument.objects.update_or_create(
+                    shipment=settlement.document.shipment,  # link to same shipment
+                    doc_type='IMP',
+                    defaults={
+                        'reference_number': settlement.reference_number,
+                        'amount': settlement.amount,
+                        'due_date': settlement.due_date,
+                        'issue_date': settlement.settlement_date,
+                        'bank': settlement.document.bank,
+                        'company': settlement.document.company,
+                        'created_by': settlement.document.created_by,
+                    }
+                )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

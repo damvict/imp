@@ -462,9 +462,8 @@ def create_bank_document(sender, instance, created, **kwargs):
     if created and instance.bank_doc_type and instance.bank:
         # Use the amount entered in Shipment form
         amount = instance.amount or 0
-
-        # Use c_date or order_date or today as issue_date
-        issue_date = instance.c_date or instance.order_date or timezone.now().date()
+        issue_date =  timezone.now().date()
+        due_date = None
 
         BankDocument.objects.create(
             shipment=instance,
