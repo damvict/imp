@@ -251,8 +251,7 @@ class BankDocumentSerializer(serializers.ModelSerializer):
             'reference_number',
             'customer',       # supplier/customer
             'company_name',   # new
-            'amount',
-            'balance',
+            'amount',           
             'issue_date',
             'due_date',
             'settled',
@@ -274,10 +273,6 @@ class SettlementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settlement
         fields = '__all__'
+from .models import BankDocument
 
 
-
-def get_balance(self, obj):
-        # Sum of all settlements for this document
-        total_settled = obj.settlements.aggregate(total=models.Sum('amount'))['total'] or 0
-        return obj.amount - total_settled if obj.amount else 0
