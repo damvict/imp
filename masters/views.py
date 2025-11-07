@@ -53,6 +53,11 @@ from django.utils import timezone
 from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, StatusColor
 from datetime import datetime
 
+from rest_framework import status
+from .models import BankDocument, Settlement
+from django.db import models
+
+
 
 def itemcategory_list(request):
     categories = ItemCategory.objects.all()
@@ -2763,13 +2768,23 @@ def get_next_shipment_code(request):
 # -------------------------------
 # BANK DOCUMENT ENDPOINTS
 # -------------------------------
+
+
 @api_view(['GET', 'POST'])
 def bank_documents_list(request):
     """List all bank documents or create a new one."""
     if request.method == 'GET':
         docs = BankDocument.objects.all()
-        serializer = BankDocumentSerializer(docs, many=True)
-        return Response(serializer.data)
+        result = []
+
+        for doc in docs:
+            # Calculate total settled amount
+            total_settled = Settlement.objects.filter(document=doc).aggregate(total=models.Sum('amount'))['total'] or 0
+            doc_data = BankDocumentSerializer(doc).data
+            doc_data['balance'] = float(doc.amount or 0) - float(total_settled)  # compute balance
+            result.append(doc_data)
+
+        return Response(result)
 
     elif request.method == 'POST':
         serializer = BankDocumentSerializer(data=request.data)
