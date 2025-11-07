@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Shipment
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.db.models import Sum  # <-- import Sum
+
 
 class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
     supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
@@ -261,6 +263,7 @@ class BankDocumentSerializer(serializers.ModelSerializer):
             'imp_reference',
             'created_by',
             'created_at',
+            
         ]
 
 
@@ -271,3 +274,10 @@ class SettlementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settlement
         fields = '__all__'
+
+
+
+def get_balance(self, obj):
+        # Sum of all settlements for this document
+        total_settled = obj.settlements.aggregate(total=models.Sum('amount'))['total'] or 0
+        return obj.amount - total_settled if obj.amount else 0
