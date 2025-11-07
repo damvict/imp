@@ -2824,13 +2824,7 @@ def bank_document_detail(request, pk):
 from .models import BankDocument, Settlement
 from .serializers import BankDocumentSerializer, SettlementSerializer
 
-@api_view(['GET', 'POST'])
-def settlements_list(request):
-    """List all settlements or create a new one."""
-    if request.method == 'GET':
-        settlements = Settlement.objects.select_related('document').all()
-        serializer = SettlementSerializer(settlements, many=True)
-        return Response(serializer.data)
+
 
 @api_view(['GET', 'POST'])
 def settlements_list(request):
@@ -2842,24 +2836,26 @@ def settlements_list(request):
     elif request.method == 'POST':
         serializer = SettlementSerializer(data=request.data)
         if serializer.is_valid():
-            settlement = serializer.save()  # Save settlement first
+            settlement = serializer.save()
 
-            # If it's an Import Loan settlement, create/update BankDocument
+            # Only create a new IMP BankDocument if settlement_type is IMP
             if settlement.settlement_type == 'IMP':
-                BankDocument.objects.update_or_create(
+                # Create a new BankDocument for this IMP settlement
+                BankDocument.objects.create(
+                    shipment=settlement.document.shipment if settlement.document else None,
+                    doc_type='IMP',
                     reference_number=settlement.reference_number,
-                    defaults={
-                        'doc_type': 'IMP',
-                        'amount': settlement.amount,
-                        'issue_date': settlement.settlement_date,
-                        'due_date': settlement.due_date,
-                        'bank': settlement.document.bank if settlement.document else '',
-                        'company': settlement.document.company if settlement.document else '',
-                        'created_by': settlement.document.created_by if settlement.document else None,
-                    }
+                    amount=settlement.amount,
+                    issue_date=settlement.settlement_date,
+                    due_date=settlement.due_date,
+                    bank=settlement.document.bank if settlement.document else None,
+                    company=settlement.document.company if settlement.document else None,
+                    created_by=settlement.document.created_by if settlement.document else None,
+                    settlement_date=settlement.settlement_date,
                 )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
