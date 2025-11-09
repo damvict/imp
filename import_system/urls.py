@@ -21,7 +21,7 @@ from django.shortcuts import redirect
 from rest_framework_simplejwt.views import TokenObtainPairView
 from masters.views import MyTokenObtainPairView
 #from masters.views import bank_dashboard  # adjust import if needed
-
+from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),    
@@ -37,5 +37,7 @@ urlpatterns = [
 
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
    # path('api/bank-dashboard/', bank_dashboard, name='bank_dashboard'),
+
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 ]
