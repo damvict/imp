@@ -1913,45 +1913,43 @@ from .models import Shipment, ShipmentPhase
 @permission_classes([IsAuthenticated])
 def shipment_detail_api(request, shipment_id):
     try:
-
+        # Helper functions
         format_date = lambda d, fmt="%Y-%m-%d": d.strftime(fmt) if d else None
         format_datetime = lambda d, fmt="%Y-%m-%d %H:%M": d.strftime(fmt) if d else None
+
         shipment = Shipment.objects.get(id=shipment_id)
 
-        # ✅ Get all master phases (the full list of possible phases)
+        # Master phases
         master_phases = ShipmentPhaseMaster.objects.all().order_by('order')
 
-        # ✅ Get this shipment’s completed phases
+        # Completed shipment phases
         shipment_phases = ShipmentPhase.objects.filter(shipment=shipment)
         completed_map = {p.phase_name: p for p in shipment_phases}
 
-        # ✅ Build full list: all master phases, mark completed if in ShipmentPhase
+        # Build full list of phases
         phases_data = []
         for master_phase in master_phases:
             matched = completed_map.get(master_phase.phase_name)
             phases_data.append({
                 "id": master_phase.id,
                 "title": master_phase.phase_name,
-                "completed": True if matched else False,
-                "completed_at": matched.completed_at.strftime("%Y-%m-%d %H:%M:%S") if matched and matched.completed_at else None
+                "completed": bool(matched),
+                "completed_at": format_datetime(matched.completed_at) if matched else None
             })
 
-        # ✅ Shipment details
+        # Shipment details
         shipment_data = {
-            "shipment_code":shipment.shipment_code,
+            "shipment_code": shipment.shipment_code,
             "bl": shipment.bl,
             "vessel": shipment.vessel,
             "container": shipment.container,
             "amount": shipment.amount,
-            "expected_arrival_date": shipment.expected_arrival_date.format_date(shipment.expected_arrival_date) if shipment.expected_arrival_date else None,
-            "supplier": shipment.supplier.supplier_name,
+            "expected_arrival_date": format_date(shipment.expected_arrival_date),
+            "supplier": shipment.supplier.supplier_name if shipment.supplier else None,
         }
 
-        ##########################################
-         # ✅ Journey Summary for all 9 phases
+        # Journey summary
         journey_summary = [
-
-            # --- Phase 0: Shipment Info ---
             {
                 "phase_code": 0,
                 "title": "Arrival Notice",
@@ -1960,109 +1958,85 @@ def shipment_detail_api(request, shipment_id):
                     "Vessel": shipment.vessel,
                     "BL": shipment.bl,
                     "Container": shipment.container,
-                    "Expected Arrival": shipment.expected_arrival_date.format_date(shipment.expected_arrival_date) if shipment.expected_arrival_date else None,
+                    "Expected Arrival": format_date(shipment.expected_arrival_date),
                 }
             },
-
-            # --- Phase 1: Invoice & Bank Details ---
             {
                 "phase_code": 1,
-                "title": " Document Collected",
+                "title": "Document Collected",
                 "details": {
                     "Supplier Invoice": shipment.supplier_invoice,
                     "Amount $": shipment.amount,
                     "Supplier": shipment.supplier.supplier_name if shipment.supplier else None,
-                   "bank_name": shipment.bank.b_name if shipment.bank else None,
+                    "Bank Name": shipment.bank.b_name if shipment.bank else None,
                     "Packing List Ref": shipment.packing_list_ref,
-                    "Gross Weight": shipment.cbm,  # Assuming CBM ≈ volume
+                    "Gross Weight": shipment.cbm,
                     "Bank Doc Type": shipment.bank_doc_type,
                     "Reference Number": shipment.reference_number,
                     "Payment Type": shipment.payment_type,
-                    "Amount $": shipment.amount,
                 }
             },
-
-            # --- Phase 2: Clearing Agent Process ---
             {
                 "phase_code": 2,
                 "title": "Document Handover",
                 "details": {
-                  
                     "Clearing Agent": shipment.clearing_agent.agent_name if shipment.clearing_agent else None,
-                    "Date & Time": shipment.send_date.strftime("%Y-%m-%d %H:%M") if shipment.C_Process_Initiated_date else None,
-                    
+                    "Date & Time": format_datetime(shipment.C_Process_Initiated_date),
                 }
             },
-
-            # --- Phase 3: Duty Assessment ---
             {
                 "phase_code": 3,
                 "title": "Duty Assessment",
                 "details": {
-                   
-                    "Assessment Upload Date": shipment.assessment_uploaded_date.strftime("%Y-%m-%d %H:%M") if shipment.assessment_uploaded_date else None,
+                    "Assessment Upload Date": format_datetime(shipment.assessment_uploaded_date),
                     "Total Duty LKR": shipment.total_duty_value,
                     "Assessment PDF": shipment.assessment_document.url if shipment.assessment_document else None,
                     "Clearing Agent": shipment.clearing_agent.agent_name if shipment.clearing_agent else None,
                 }
             },
-
-            # --- Phase 4–6: Payment Processing ---
             {
                 "phase_code": 456,
                 "title": "Payment Process",
                 "details": {
-                   
-                    "Payment Request Date": shipment.payment_marked_date.strftime("%Y-%m-%d %H:%M") if shipment.payment_marked_date else None,
+                    "Payment Request Date": format_datetime(shipment.payment_marked_date),
                     "Payment Method": shipment.payment_type,
-                    "bank Name": shipment.bank.b_name if shipment.bank else None,
+                    "Bank Name": shipment.bank.b_name if shipment.bank else None,
                     "Payment Ref ID": shipment.payref_document_ref,
                     "Payment Proof": shipment.payref_document.url if shipment.payref_document else None,
                     "MD Approval": "Approved" if shipment.duty_paid else "Pending",
-                    "Payment Finalized Date": shipment.duty_paid_date.strftime("%Y-%m-%d %H:%M") if shipment.duty_paid_date else None,
-                    "Proof Downloaded":shipment.C_Process_Initiated_date.strftime("%Y-%m-%d %H:%M"),
+                    "Payment Finalized Date": format_datetime(shipment.duty_paid_date),
+                    "Proof Downloaded": format_datetime(shipment.C_Process_Initiated_date),
                 }
             },
-
-            # --- Phase 7: Transportation & Warehouse ---
             {
                 "phase_code": 7,
                 "title": "Dispatch",
                 "details": {
-                   
-                    "Arrival at Warehouse": shipment.arrival_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.arrival_at_warehouse_date else None,
-                    "Departure at Warehouse": shipment.departure_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.departure_at_warehouse_date else None,
+                    "Arrival at Warehouse": format_datetime(shipment.arrival_at_warehouse_date),
+                    "Departure at Warehouse": format_datetime(shipment.departure_at_warehouse_date),
                     "Condition on Departure": "Good",
                 }
             },
-
-            # --- Phase 8: GRN (Goods Received Note) ---
             {
                 "phase_code": 8,
                 "title": "GRN Process",
                 "details": {
                     "GRN Uploaded": "Yes" if shipment.grn_upload_at_warehouse else "No",
-                    "GRN Upload Date": shipment.grn_upload_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.grn_upload_at_warehouse_date else None,
+                    "GRN Upload Date": format_datetime(shipment.grn_upload_at_warehouse_date),
                     "GRN Confirmed": "Yes" if shipment.grn_complete_at_warehouse else "No",
-                    "GRN Confirm Date": shipment.grn_complete_at_warehouse_date.strftime("%Y-%m-%d %H:%M") if shipment.grn_complete_at_warehouse_date else None,
+                    "GRN Confirm Date": format_datetime(shipment.grn_complete_at_warehouse_date),
                 }
             },
         ]
 
-
-        ######################################
-
         return Response({
             "shipment": shipment_data,
             "phases": phases_data,
-             "journey_summary": journey_summary,  # ✅ Added this line
+            "journey_summary": journey_summary,
         })
 
     except Shipment.DoesNotExist:
         return Response({"error": "Shipment not found"}, status=404)
-
-
-
 
 ###################################
 
