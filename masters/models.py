@@ -189,7 +189,8 @@ class Shipment(models.Model):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)  
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
     cbm = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
-    ship_status=models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    #ship_status=models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    ship_status = models.IntegerField(null=True, blank=True)
     container=models.CharField(max_length=200,default=' ')
 
     ############### 2nd stage Shiment 
