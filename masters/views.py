@@ -1913,6 +1913,9 @@ from .models import Shipment, ShipmentPhase
 @permission_classes([IsAuthenticated])
 def shipment_detail_api(request, shipment_id):
     try:
+
+        format_date = lambda d, fmt="%Y-%m-%d": d.strftime(fmt) if d else None
+        format_datetime = lambda d, fmt="%Y-%m-%d %H:%M": d.strftime(fmt) if d else None
         shipment = Shipment.objects.get(id=shipment_id)
 
         # ✅ Get all master phases (the full list of possible phases)
@@ -1940,7 +1943,7 @@ def shipment_detail_api(request, shipment_id):
             "vessel": shipment.vessel,
             "container": shipment.container,
             "amount": shipment.amount,
-            "expected_arrival_date": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
+            "expected_arrival_date": shipment.expected_arrival_date.format_date(shipment.expected_arrival_date) if shipment.expected_arrival_date else None,
             "supplier": shipment.supplier.supplier_name,
         }
 
@@ -1957,7 +1960,7 @@ def shipment_detail_api(request, shipment_id):
                     "Vessel": shipment.vessel,
                     "BL": shipment.bl,
                     "Container": shipment.container,
-                    "Expected Arrival": shipment.expected_arrival_date.strftime("%Y-%m-%d") if shipment.expected_arrival_date else None,
+                    "Expected Arrival": shipment.expected_arrival_date.format_date(shipment.expected_arrival_date) if shipment.expected_arrival_date else None,
                 }
             },
 
