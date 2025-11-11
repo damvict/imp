@@ -56,6 +56,7 @@ from .views import shipment_detail_api
 
 from .views import record_grn_upload
 from .views import get_next_shipment_code
+from .views import bank_documents_summary
 
 urlpatterns = [
     # Item Category URLs
@@ -245,6 +246,7 @@ urlpatterns = [
      # Bank Document & Settlement APIs
 path('api/bank-documents/', views.bank_documents_list, name='bank_documents_list'),
 path('api/bank-documents/<int:pk>/', views.bank_document_detail, name='bank_document_detail'),
+ path('api/bank-summary/', bank_documents_summary, name='bank_documents_summary'),
 
 path('api/settlements/', views.settlements_list, name='settlements_list'),
 path('api/settlements/<int:pk>/', views.settlement_detail, name='settlement_detail'), 

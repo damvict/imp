@@ -2859,3 +2859,51 @@ def settlement_detail(request, pk):
     elif request.method == 'DELETE':
         settlement.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+################# Bank balances display
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.db.models import Sum, Q, F
+from .models import Bank, BankDocument, Settlement
+
+@api_view(['GET'])
+def bank_documents_summary(request):
+    """
+    Display each bank with OD/LC/IMP/DA values
+    and show current balance of LC/DA/IMP from settlements.
+    """
+    banks = Bank.objects.all()
+    result = []
+
+    for bank in banks:
+        # Base data from the bank table
+        bank_data = {
+            "bank_name": bank.b_name,
+            "accno": bank.accno,
+            "branch": bank.branch,
+            "od": float(bank.od or 0),
+            "lc": float(bank.lc or 0),
+            "imp": float(bank.imp or 0),
+            "da": float(bank.da or 0),
+        }
+
+        # For each doc type (LC, DA, IMP) calculate total outstanding balance
+        balances = {}
+        for doc_type in ["LC", "DA", "IMP"]:
+            total_doc_amount = (
+                BankDocument.objects.filter(bank=bank, doc_type=doc_type)
+                .aggregate(total=Sum("amount"))["total"] or 0
+            )
+
+            total_settled = (
+                Settlement.objects.filter(document__bank=bank, document__doc_type=doc_type)
+                .aggregate(total=Sum("amount"))["total"] or 0
+            )
+
+            balances[doc_type] = float(total_doc_amount) - float(total_settled)
+
+        bank_data["current_balances"] = balances
+        result.append(bank_data)
+
+    return Response(result)
