@@ -85,6 +85,7 @@ class BankManagerpayrefSerializer(serializers.ModelSerializer):
 
 
 class MDShipmentSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
     class Meta:
         model = Shipment
         fields = [
@@ -96,6 +97,10 @@ class MDShipmentSerializer(serializers.ModelSerializer):
             "payment_marked_date",
             "duty_paid",
             "duty_paid_date",
+            "shipment_code",
+            "vessel",
+            "duty_paid_bank",
+            "supplier_name",
         ]
 
 
