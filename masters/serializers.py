@@ -20,7 +20,10 @@ class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
             "send_date",
             "send_to_clearing_agent_payment",
             "payref_document",
-           
+            "total_duty_value",
+            "amount",
+            "send_to_clearing_agent_payment_date",
+            
 
         ]
 
