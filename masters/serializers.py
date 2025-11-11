@@ -101,6 +101,8 @@ class MDShipmentSerializer(serializers.ModelSerializer):
             "vessel",
             "duty_paid_bank",
             "supplier_name",
+            "total_duty_value",
+            "amount",
         ]
 
 
