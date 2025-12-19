@@ -2191,42 +2191,66 @@ from .forms import BankControllerForm
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def confirm_handover(request, shipment_id):
-    """
-    Confirm shipment handover: sets send_to_clearing_agent=True, send_date=now,
-    and creates a ShipmentPhase record for 'Arrival Notice' or the handover phase.
-    """
     try:
         shipment = Shipment.objects.get(id=shipment_id)
     except Shipment.DoesNotExist:
-        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "Shipment not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-    # Update shipment
-    data = {
-        "send_to_clearing_agent": True,
-        "send_date": timezone.now()
-    }
-    form = BankControllerForm(data, instance=shipment)
-    if form.is_valid():
-        form.save()
+    # Prevent double handover
+    if shipment.send_to_clearing_agent:
+        return Response(
+            {"error": "Shipment already handed over"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        # ✅ Add a ShipmentPhase for Handover / Arrival Notice
-        try:
-            phase_master = ShipmentPhaseMaster.objects.get(id=3)  # Adjust ID to your handover phase
-            ShipmentPhase.objects.create(
-                shipment=shipment,
-                phase_code=phase_master.phase_code,
-                phase_name=phase_master.phase_name,
-                completed=True,
-                completed_at=timezone.now(),
-                updated_by=request.user,
-                order=phase_master.order
-            )
-        except ShipmentPhaseMaster.DoesNotExist:
-            return Response({"error": "Phase master not found"}, status=status.HTTP_400_BAD_REQUEST)
+    # ✅ READ DATA SENT FROM MOBILE APP
+    clearing_agent_id = request.data.get("clearing_agent_id")
+    if not clearing_agent_id:
+        return Response(
+            {"error": "clearing_agent_id is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-        return Response({"success": "Handover confirmed and phase recorded"})
-    else:
-        return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        clearing_agent = ClearingAgent.objects.get(id=clearing_agent_id)
+    except ClearingAgent.DoesNotExist:
+        return Response(
+            {"error": "Invalid clearing agent"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # ✅ UPDATE SHIPMENT
+    shipment.clearing_agent = clearing_agent
+    shipment.send_to_clearing_agent = True
+    shipment.send_date = timezone.now()
+    shipment.save()
+
+    # ✅ CREATE SHIPMENT PHASE
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(phase_code="HANDOVER")
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        return Response(
+            {"error": "Phase master not configured"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    return Response({
+        "success": "Handover confirmed",
+        "clearing_agent": clearing_agent.agent_name
+    })
+
 
 
 
