@@ -1313,6 +1313,7 @@ from django.db.models import Q
 @permission_classes([IsAuthenticated])
 def clearing_agent_shipments(request):
     shipments = Shipment.objects.filter(
+         clearing_agent=request.user,
         send_to_clearing_agent=True
     ).filter(
         Q(assessment_document__isnull=True) | Q(assessment_document='')
@@ -2224,7 +2225,8 @@ def confirm_handover(request, shipment_id):
     data = {
         "send_to_clearing_agent": True,
         "send_date": timezone.now(),
-        "clearing_agent": clearing_agent.id  # FK expects ID
+        "clearing_agent":  User.objects.get(id=clearing_agent_id),
+       ### "clearing_agent": clearing_agent.id  # FK expects ID
     }
 
     form = BankControllerForm(data, instance=shipment)
@@ -2935,3 +2937,28 @@ def bank_documents_summary(request):
         result.append(bank_data)
 
     return Response(result)
+
+
+################### Cleqaring Agents
+
+from django.contrib.auth.models import User, Group
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .serializers import ClearingAgentUserSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def clearing_agent_users(request):
+    try:
+        clearing_group = Group.objects.get(id=4)  # Clearing Agent group
+    except Group.DoesNotExist:
+        return Response({"error": "Clearing Agent group not found"}, status=404)
+
+    users = User.objects.filter(
+        groups=clearing_group,
+        is_active=True
+    ).order_by('first_name', 'username')
+
+    serializer = ClearingAgentUserSerializer(users, many=True)
+    return Response(serializer.data)

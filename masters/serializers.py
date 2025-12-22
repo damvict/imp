@@ -286,3 +286,21 @@ class SettlementSerializer(serializers.ModelSerializer):
 
 
 
+
+
+
+###################### Clearing Agents ##################
+
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+class ClearingAgentUserSerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'display_name']
+
+    def get_display_name(self, obj):
+        name = f"{obj.first_name} {obj.last_name}".strip()
+        return name if name else obj.username
