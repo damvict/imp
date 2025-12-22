@@ -1327,9 +1327,8 @@ def clearing_agent_shipments_pay_uploaded(request):
     # Filter shipments: payment sent to clearing agent, clearing not initiated
     shipments = Shipment.objects.filter(
         send_to_clearing_agent_payment=True,
-         clearing_agent=request.user,
-    ).filter(
-        ~Q(C_Process_Initiated=True)  # C_Process_Initiated != True
+        clearing_agent=request.user,
+        C_Process_Initiated=0   
     )
 
     serializer = ClearingAgentShipmentSerializer(shipments, many=True)
