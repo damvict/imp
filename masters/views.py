@@ -2947,18 +2947,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import ClearingAgentUserSerializer
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def clearing_agent_users(request):
-    try:
-        clearing_group = Group.objects.get(id=4)  # Clearing Agent group
-    except Group.DoesNotExist:
-        return Response({"error": "Clearing Agent group not found"}, status=404)
-
     users = User.objects.filter(
-        groups=clearing_group,
+        groups__id=4,   # ✅ DIRECT & SAFE
         is_active=True
-    ).order_by('first_name', 'username')
+    ).order_by("first_name", "username")
 
     serializer = ClearingAgentUserSerializer(users, many=True)
     return Response(serializer.data)
+

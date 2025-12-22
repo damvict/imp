@@ -57,6 +57,7 @@ from .views import shipment_detail_api
 from .views import record_grn_upload
 from .views import get_next_shipment_code
 from .views import bank_documents_summary
+from .views import clearing_agent_users
 
 urlpatterns = [
     # Item Category URLs
@@ -227,6 +228,7 @@ urlpatterns = [
     path('api/clearingagents/', views.clearing_agents_list, name='clearing_agents_list'),
     path('api/arrival_notice/', views.arrival_notice_list, name='arrival_notice_list'),
     path('api/ca_pay_uploaded/', views.clearing_agent_shipments_pay_uploaded, name='clearing_agent_shipments_pay_uploaded'),
+    path("clearing-agent-users/", clearing_agent_users),
 
     path('api/bank-manager/', views.bank_manager_shipments_initiate, name='bank_manager_shipments_initiate'),
     path('api/bank-manager/update/<int:shipment_id>/', views.bank_manager_update, name='bank_manager_update'),

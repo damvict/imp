@@ -299,8 +299,8 @@ class ClearingAgentUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'display_name']
+        fields = ["id", "username", "first_name", "last_name", "display_name"]
 
     def get_display_name(self, obj):
-        name = f"{obj.first_name} {obj.last_name}".strip()
-        return name if name else obj.username
+        return f"{obj.first_name} {obj.last_name}".strip() or obj.username
+
