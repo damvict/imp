@@ -2224,18 +2224,23 @@ def confirm_handover(request, shipment_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    shipment.clearing_agent = clearing_agent   # ✅ auth_user
-    shipment.send_to_clearing_agent = True
-    shipment.send_date = timezone.now()
-    shipment.save()
+    try:
+        shipment.clearing_agent = clearing_agent   # ✅ auth_user
+        shipment.send_to_clearing_agent = True
+        shipment.send_date = timezone.now()
+        shipment.save()
 
-    return Response(
-        {"success": "Handover confirmed and phase recorded"},
-        status=status.HTTP_200_OK
+        return Response(
+            {"success": "Handover confirmed and phase recorded"},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        print("SAVE ERROR:", str(e))
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+
     )
-
-
-
 
 
 
