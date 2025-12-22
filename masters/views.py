@@ -1326,7 +1326,8 @@ def clearing_agent_shipments(request):
 def clearing_agent_shipments_pay_uploaded(request):
     # Filter shipments: payment sent to clearing agent, clearing not initiated
     shipments = Shipment.objects.filter(
-        send_to_clearing_agent_payment=True
+        send_to_clearing_agent_payment=True,
+         clearing_agent=request.user,
     ).filter(
         ~Q(C_Process_Initiated=True)  # C_Process_Initiated != True
     )
@@ -2315,7 +2316,8 @@ def shipment_list(request):
 def clearing_agent_dispatch(request):
     shipments = Shipment.objects.filter(
         C_Process_Initiated=True,
-        C_Process_completed=False
+        C_Process_completed=False,
+        clearing_agent=request.user
     )
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
