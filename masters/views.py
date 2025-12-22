@@ -2181,29 +2181,17 @@ def bank_controller_update_shipment(request, shipment_id):
 
 
 ##############_-----------
+from django.contrib.auth.models import User
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from django.utils import timezone
-from .models import Shipment
-from .forms import BankControllerForm
 
-@api_view(['POST'])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def confirm_handover(request, shipment_id):
-    """
-    Confirm shipment handover: sets send_to_clearing_agent=True,
-    send_date=now, saves clearing agent,
-    and creates a ShipmentPhase record.
-    """
 
-    try:
-        shipment = Shipment.objects.get(id=shipment_id)
-    except Shipment.DoesNotExist:
-        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    # 1️⃣ Get clearing_agent_id from request
     clearing_agent_id = request.data.get("clearing_agent_id")
 
     if not clearing_agent_id:
@@ -2212,51 +2200,40 @@ def confirm_handover(request, shipment_id):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # 2️⃣ Fetch clearing agent
     try:
-        clearing_agent = ClearingAgent.objects.get(id=clearing_agent_id)
-    except ClearingAgent.DoesNotExist:
+        # ✅ USE auth_user, NOT ClearingAgent
+        clearing_agent = User.objects.get(id=clearing_agent_id)
+    except User.DoesNotExist:
         return Response(
-            {"error": "Clearing agent not found"},
+            {"error": "Invalid clearing agent"},
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # 3️⃣ Update shipment fields
-    data = {
-        "send_to_clearing_agent": True,
-        "send_date": timezone.now(),
-        "clearing_agent":  User.objects.get(id=clearing_agent_id),
-       ### "clearing_agent": clearing_agent.id  # FK expects ID
-    }
+    # ✅ Safety check (recommended)
+    if not clearing_agent.groups.filter(id=4).exists():
+        return Response(
+            {"error": "Selected user is not a clearing agent"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    form = BankControllerForm(data, instance=shipment)
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return Response(
+            {"error": "Shipment not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
-    if form.is_valid():
-        shipment = form.save(commit=False)
-        shipment.clearing_agent = clearing_agent  # 🔥 safest way
-        shipment.save()
+    shipment.clearing_agent = clearing_agent_id   # ✅ auth_user
+    shipment.send_to_clearing_agent = True
+    shipment.send_date = timezone.now()
+    shipment.save()
 
-        # 4️⃣ Add ShipmentPhase
-        try:
-            phase_master = ShipmentPhaseMaster.objects.get(id=3)
-            ShipmentPhase.objects.create(
-                shipment=shipment,
-                phase_code=phase_master.phase_code,
-                phase_name=phase_master.phase_name,
-                completed=True,
-                completed_at=timezone.now(),
-                updated_by=request.user,
-                order=phase_master.order
-            )
-        except ShipmentPhaseMaster.DoesNotExist:
-            return Response(
-                {"error": "Phase master not found"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    return Response(
+        {"success": "Handover confirmed and phase recorded"},
+        status=status.HTTP_200_OK
+    )
 
-        return Response({"success": "Handover confirmed and phase recorded"})
-
-    return Response({"error": form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
