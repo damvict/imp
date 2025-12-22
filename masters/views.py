@@ -2224,7 +2224,7 @@ def confirm_handover(request, shipment_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    shipment.clearing_agent = clearing_agent_id   # ✅ auth_user
+    shipment.clearing_agent = clearing_agent   # ✅ auth_user
     shipment.send_to_clearing_agent = True
     shipment.send_date = timezone.now()
     shipment.save()
