@@ -2981,23 +2981,37 @@ def outstanding_report(request):
 ############# OS - Excel
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def outstanding_export_excel(request):
+    date_str = request.GET.get("date")
+    company_id = request.GET.get("company_id")
+    doc_type = request.GET.get("doc_type", "ALL")
+
+    if not date_str:
+        return Response(
+            {"error": "date parameter is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    as_at_date = parse_date(date_str)
+
+    data = get_outstanding_data(company_id, doc_type, as_at_date)
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Outstanding Report"
 
     ws.append([
-        "Company", "Doc Type", "Reference",
-        "Issue Date", "Amount", "Outstanding"
+        "Company",
+        "Doc Type",
+        "Reference",
+        "Issue Date",
+        "Amount",
+        "Outstanding"
     ])
 
-    # reuse your outstanding logic here
-    documents = outstanding_report(request).data
-
-    for d in documents:
+    for d in data:
         ws.append([
             d["company"],
             d["doc_type"],
@@ -3010,10 +3024,12 @@ def outstanding_export_excel(request):
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = "attachment; filename=outstanding.xlsx"
+    response["Content-Disposition"] = (
+        f'attachment; filename="Outstanding_{as_at_date}.xlsx"'
+    )
+
     wb.save(response)
     return response
-
 
 
 
@@ -3194,6 +3210,7 @@ def generate_outstanding_pdf(qs, as_at_date):
 
 from django.core.mail import EmailMessage
 from django.conf import settings
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -3219,3 +3236,40 @@ def send_report_email(user, file_buffer, filename):
     except Exception as e:
         logger.error(f"❌ Email sending failed: {str(e)}")
         raise
+
+
+def get_outstanding_data(company_id=None, doc_type=None, as_at_date=None):
+    documents = BankDocument.objects.select_related(
+        "company", "bank"
+    ).prefetch_related("settlements")
+
+    if company_id:
+        documents = documents.filter(company_id=company_id)
+
+    if doc_type and doc_type != "ALL":
+        documents = documents.filter(doc_type=doc_type)
+
+    results = []
+
+    for doc in documents:
+        settled_amount = (
+            doc.settlements
+            .filter(settlement_date__lte=as_at_date)
+            .aggregate(total=Sum("amount"))["total"] or 0
+        )
+
+        balance = (doc.amount or 0) - settled_amount
+
+        if balance > 0:
+            results.append({
+                "company": doc.company.name if doc.company else "",
+                "doc_type": doc.doc_type,
+                "reference_number": doc.reference_number,
+                "issue_date": doc.issue_date,
+                "amount": float(doc.amount or 0),
+                "balance": float(balance),
+            })
+
+    return results
+
+
