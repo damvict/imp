@@ -35,6 +35,8 @@ from django.db.models import F, ExpressionWrapper, DurationField, Avg
 from datetime import timedelta
 from .models import Shipment, ShipmentDetail
 from django.core.mail import send_mail
+from openpyxl import Workbook
+from django.http import HttpResponse
 
 from .forms import (
     ShipmentForm,
@@ -2976,6 +2978,45 @@ def outstanding_report(request):
 
 
 
+############# OS - Excel
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def outstanding_export_excel(request):
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Outstanding Report"
+
+    ws.append([
+        "Company", "Doc Type", "Reference",
+        "Issue Date", "Amount", "Outstanding"
+    ])
+
+    # reuse your outstanding logic here
+    documents = outstanding_report(request).data
+
+    for d in documents:
+        ws.append([
+            d["company"],
+            d["doc_type"],
+            d["reference_number"],
+            d["issue_date"],
+            d["amount"],
+            d["balance"],
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = "attachment; filename=outstanding.xlsx"
+    wb.save(response)
+    return response
+
+
+
+
 ################### Cleqaring Agents
 
 from django.contrib.auth.models import User, Group
@@ -2995,3 +3036,55 @@ def clearing_agent_users(request):
     serializer = ClearingAgentUserSerializer(users, many=True)
     return Response(serializer.data)
 
+
+
+
+
+################## REPORTS EXPORT
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from datetime import datetime
+
+from outstanding_report import (
+    get_outstanding_queryset,
+    generate_outstanding_excel,
+    generate_outstanding_pdf,
+)
+from email_utils import send_report_email
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def outstanding_report_email(request):
+    user = request.user
+
+    company_id = request.data.get("company_id")
+    doc_type = request.data.get("doc_type", "ALL")
+    date_str = request.data.get("date")
+    format = request.data.get("format")
+
+    if not date_str or format not in ["excel", "pdf"]:
+        return Response(
+            {"error": "Invalid parameters"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    as_at_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+    qs = get_outstanding_queryset(company_id, doc_type, as_at_date)
+
+    if format == "excel":
+        buffer = generate_outstanding_excel(qs, as_at_date)
+        filename = "Outstanding_Report.xlsx"
+    else:
+        buffer = generate_outstanding_pdf(qs, as_at_date)
+        filename = "Outstanding_Report.pdf"
+
+    send_report_email(user, buffer, filename)
+
+    return Response(
+        {"success": f"{format.upper()} report emailed successfully"},
+        status=status.HTTP_200_OK
+    )

@@ -59,6 +59,8 @@ from .views import get_next_shipment_code
 from .views import bank_documents_summary
 from .views import clearing_agent_users
 from .views import outstanding_report
+from .views import outstanding_export_excel
+from .views import outstanding_report_email
 
 urlpatterns = [
     # Item Category URLs
@@ -249,11 +251,13 @@ urlpatterns = [
      # Bank Document & Settlement APIs
 path('api/bank-documents/', views.bank_documents_list, name='bank_documents_list'),
 path('api/bank-documents/<int:pk>/', views.bank_document_detail, name='bank_document_detail'),
- path('api/bank-summary/', bank_documents_summary, name='bank_documents_summary'),
+path('api/bank-summary/', bank_documents_summary, name='bank_documents_summary'),
 
 path('api/settlements/', views.settlements_list, name='settlements_list'),
 path('api/settlements/<int:pk>/', views.settlement_detail, name='settlement_detail'), 
 path("api/reports/outstanding/", outstanding_report, name="outstanding-report"),
+path("api/reports/outstanding/export/", outstanding_export_excel,name="outstanding_export_excel"),
+path("outstanding/email/", outstanding_report_email,name="outstanding_report_email"),
 
 
 ]       
