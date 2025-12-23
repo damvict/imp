@@ -256,8 +256,8 @@ path('api/bank-summary/', bank_documents_summary, name='bank_documents_summary')
 path('api/settlements/', views.settlements_list, name='settlements_list'),
 path('api/settlements/<int:pk>/', views.settlement_detail, name='settlement_detail'), 
 path("api/reports/outstanding/", outstanding_report, name="outstanding-report"),
-path("api/reports/outstanding/export/", outstanding_export_excel,name="outstanding_export_excel"),
-path("outstanding/email/", outstanding_report_email,name="outstanding_report_email"),
+path("api/outstanding/export/", outstanding_export_excel,name="outstanding_export_excel"),
+path("api/outstanding/email/", outstanding_report_email,name="outstanding_report_email"),
 
 
 ]       
