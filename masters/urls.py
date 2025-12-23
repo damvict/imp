@@ -58,6 +58,7 @@ from .views import record_grn_upload
 from .views import get_next_shipment_code
 from .views import bank_documents_summary
 from .views import clearing_agent_users
+from .views import outstanding_report
 
 urlpatterns = [
     # Item Category URLs
@@ -252,6 +253,8 @@ path('api/bank-documents/<int:pk>/', views.bank_document_detail, name='bank_docu
 
 path('api/settlements/', views.settlements_list, name='settlements_list'),
 path('api/settlements/<int:pk>/', views.settlement_detail, name='settlement_detail'), 
+path("api/reports/outstanding/", outstanding_report, name="outstanding-report"),
+
 
 ]       
 

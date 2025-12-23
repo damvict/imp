@@ -201,7 +201,8 @@ class Shipment(models.Model):
     BANK_DOC_TYPES = [
         ("DA", "DA"),
         ("DP", "DP"),
-        ("LC", "LC"),
+        ("SLC", "SLC"),
+        ("ULC", "ULC"),
         ("TT", "TT"),
     ]
 
@@ -424,7 +425,8 @@ class UserProfile(models.Model):
 
 class BankDocument(models.Model):
     DOC_TYPES = [
-        ("LC", "Letter of Credit"),
+        ("SLC", "Letter of Credit"),
+        ("ULC", "Letter of Credit"),
         ("DA", "Documents Against Acceptance"),
         ("DP", "Documents Against Payment"),
         ("TT", "Telegraphic Transfer"),

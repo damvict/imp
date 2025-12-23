@@ -2922,6 +2922,60 @@ def bank_documents_summary(request):
     return Response(result)
 
 
+
+############## OS Repprt ###############
+
+from django.db.models import Sum
+from django.utils.dateparse import parse_date
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def outstanding_report(request):
+
+    as_at = parse_date(request.GET.get("date"))
+    company_id = request.GET.get("company_id")
+    doc_type = request.GET.get("doc_type")
+
+    documents = BankDocument.objects.select_related(
+        "company", "bank"
+    ).prefetch_related("settlements")
+
+    if company_id:
+        documents = documents.filter(company_id=company_id)
+
+    if doc_type and doc_type != "ALL":
+        documents = documents.filter(doc_type=doc_type)
+
+    results = []
+
+    for doc in documents:
+        settled_amount = (
+            doc.settlements
+            .filter(settlement_date__lte=as_at)
+            .aggregate(total=Sum("amount"))["total"] or 0
+        )
+
+        balance = (doc.amount or 0) - settled_amount
+
+        if balance > 0:
+            results.append({
+                "id": doc.id,
+                "company": doc.company.name if doc.company else "",
+                "doc_type": doc.doc_type,
+                "reference_number": doc.reference_number,
+                "issue_date": doc.issue_date,
+                "due_date": doc.due_date,
+                "amount": float(doc.amount or 0),
+                "balance": float(balance),
+            })
+
+    return Response(results)
+
+
+
 ################### Cleqaring Agents
 
 from django.contrib.auth.models import User, Group
