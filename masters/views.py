@@ -3194,18 +3194,28 @@ def generate_outstanding_pdf(qs, as_at_date):
 
 from django.core.mail import EmailMessage
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
 def send_report_email(user, file_buffer, filename):
-    email = EmailMessage(
-        subject="Outstanding Report",
-        body="Please find attached the Outstanding Report.",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[user.email],
-    )
+    try:
+        email = EmailMessage(
+            subject="Outstanding Report",
+            body="Please find attached the Outstanding Report.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
 
-    email.attach(
-        filename,
-        file_buffer.read(),
-        "application/octet-stream"
-    )
+        email.attach(
+            filename,
+            file_buffer.read(),
+            "application/octet-stream"
+        )
 
-    email.send()
+        email.send(fail_silently=False)
+        logger.info(f"📧 Outstanding report email sent to {user.email}")
+
+    except Exception as e:
+        logger.error(f"❌ Email sending failed: {str(e)}")
+        raise
