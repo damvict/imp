@@ -2203,7 +2203,6 @@ def confirm_handover(request, shipment_id):
         )
 
     try:
-        # ✅ USE auth_user, NOT ClearingAgent
         clearing_agent = User.objects.get(id=clearing_agent_id)
     except User.DoesNotExist:
         return Response(
@@ -2211,8 +2210,8 @@ def confirm_handover(request, shipment_id):
             status=status.HTTP_404_NOT_FOUND
         )
 
-    # ✅ Safety check (recommended)
-    if not clearing_agent.groups.filter(id=4).exists():
+    # ✅ Role check (by name, not ID)
+    if not clearing_agent.groups.filter(name="ClearingAgent").exists():
         return Response(
             {"error": "Selected user is not a clearing agent"},
             status=status.HTTP_400_BAD_REQUEST
@@ -2227,23 +2226,44 @@ def confirm_handover(request, shipment_id):
         )
 
     try:
-        shipment.clearing_agent = clearing_agent   # ✅ auth_user
-        shipment.send_to_clearing_agent = True
-        shipment.send_date = timezone.now()
-        shipment.save()
+        with transaction.atomic():
+
+            shipment.clearing_agent = clearing_agent
+            shipment.send_to_clearing_agent = True
+            shipment.send_date = timezone.now()
+            shipment.save()
+
+            phase_master = ShipmentPhaseMaster.objects.get(id=3)
+
+            # ✅ Prevent duplicate phase entries
+            ShipmentPhase.objects.get_or_create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                defaults={
+                    "phase_name": phase_master.phase_name,
+                    "completed": True,
+                    "completed_at": timezone.now(),
+                    "updated_by": request.user,
+                    "order": phase_master.order,
+                }
+            )
 
         return Response(
             {"success": "Handover confirmed and phase recorded"},
             status=status.HTTP_200_OK
         )
+
+    except ShipmentPhaseMaster.DoesNotExist:
+        return Response(
+            {"error": "Phase master not found"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     except Exception as e:
-        print("SAVE ERROR:", str(e))
         return Response(
             {"error": str(e)},
             status=status.HTTP_400_BAD_REQUEST
-
-    )
-
+        )
 
 
 ##################### Bank Manager API
