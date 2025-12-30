@@ -1983,7 +1983,7 @@ def shipment_detail_api(request, shipment_id):
                 "phase_code": 2,
                 "title": "Document Handover",
                 "details": {
-                    "Clearing Agent": shipment.clearing_agent.user_name if shipment.clearing_agent else None,
+                    "Clearing Agent": shipment.clearing_agent.username if shipment.clearing_agent else None,
                     "Date & Time": format_datetime(shipment.C_Process_Initiated_date),
                 }
             },
@@ -1994,7 +1994,7 @@ def shipment_detail_api(request, shipment_id):
                     "Assessment Upload Date": format_datetime(shipment.assessment_uploaded_date),
                     "Total Duty LKR": shipment.total_duty_value,
                     "Assessment PDF": shipment.assessment_document.url if shipment.assessment_document else None,
-                    "Clearing Agent": shipment.clearing_agent.user_name if shipment.clearing_agent else None,
+                    "Clearing Agent": shipment.clearing_agent.username if shipment.clearing_agent else None,
                 }
             },
             {
