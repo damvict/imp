@@ -2635,7 +2635,7 @@ def dashboard_view(request):
     total_shipments_month = Shipment.objects.filter(current_month_filter).count()
     completed_shipments = Shipment.objects.filter(ship_status=13).count()
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
-
+    ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
     
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
@@ -2702,6 +2702,7 @@ def dashboard_view(request):
              "total_invoice_value": f"{total_invoice_value:,.2f}",
              "approved_duty_payments": approved_duty_payments,
              "pending_bank_docs" : Shipment.objects.filter(ship_status=1).count(),
+             "ship_tobe":ship_tobe_create
         }
 
     if user.groups.filter(name="Bank Manager").exists():
