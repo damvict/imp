@@ -33,7 +33,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.29", "0.0.0.0"]
 ALLOWED_HOSTS = ["62.210.123.134", "imp.agcresourceportal.lk", "localhost", "127.0.0.1","ims.agcresourceportal.lk"]
@@ -48,6 +49,7 @@ CORS_ALLOWED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,7 +60,7 @@ INSTALLED_APPS = [
     'accounts',
     'masters',
     'widget_tweaks',
-    'corsheaders'
+   
 ]
 
 MIDDLEWARE = [
