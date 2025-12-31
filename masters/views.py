@@ -2689,6 +2689,7 @@ def dashboard_view(request):
             "total_amount_pending": f"{total_amount_pending:,.2f}",
             "approved_duty_payments": approved_duty_payments,
             "pending_grn":pending_grn,
+            "ship_tobe":ship_tobe_create
         }
 
     if user.groups.filter(name="Imports Department").exists():
@@ -2702,7 +2703,7 @@ def dashboard_view(request):
              "total_invoice_value": f"{total_invoice_value:,.2f}",
              "approved_duty_payments": approved_duty_payments,
              "pending_bank_docs" : Shipment.objects.filter(ship_status=1).count(),
-             "ship_tobe":ship_tobe_create
+             
         }
 
     if user.groups.filter(name="Bank Manager").exists():
