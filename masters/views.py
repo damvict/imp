@@ -2718,6 +2718,7 @@ def dashboard_view(request):
         data["ca"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
+            "doc_tobe_handover":doc_tobe_handover,
         }
 
     if user.groups.filter(name="Managing Director").exists():
@@ -2726,8 +2727,8 @@ def dashboard_view(request):
             "approved_duty_payments": approved_duty_payments,
             "clearance_initiated": clearance_initiated,
             "clearance_completed": clearance_completed,
-             "pending_grn":pending_grn,
-             "total_grn_value_month":total_grn_value_month,
+            "pending_grn":pending_grn,
+            "total_grn_value_month":total_grn_value_month,
             
         }   
 
