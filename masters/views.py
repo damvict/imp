@@ -2230,6 +2230,7 @@ def confirm_handover(request, shipment_id):
         shipment.clearing_agent = clearing_agent   # ✅ auth_user
         shipment.send_to_clearing_agent = True
         shipment.send_date = timezone.now()
+        ship_status=3
         shipment.save()
         # ✅ Create ShipmentPhase record
         phase_master = ShipmentPhaseMaster.objects.get(id=3)
@@ -2636,6 +2637,7 @@ def dashboard_view(request):
     completed_shipments = Shipment.objects.filter(ship_status=13).count()
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
+    doc_tobe_handover=Shipment.objects.filter(ship_status=2).count()
     
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
@@ -2689,7 +2691,8 @@ def dashboard_view(request):
             "total_amount_pending": f"{total_amount_pending:,.2f}",
             "approved_duty_payments": approved_duty_payments,
             "pending_grn":pending_grn,
-            "ship_tobe":ship_tobe_create
+            "ship_tobe":ship_tobe_create,
+            "doc_tobe_handover":doc_tobe_handover,
         }
 
     if user.groups.filter(name="Imports Department").exists():
