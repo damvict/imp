@@ -26,7 +26,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import BankControllerForm
 from .forms import MarkPaymentForm
 
-from django.utils import timezone
+
 #from .forms import ShipmentArrivalForm
 from .models import ShipmentStatusHistory
 
@@ -51,7 +51,7 @@ from django.utils.dateparse import parse_date
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.utils import timezone
+
 from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, StatusColor
 from datetime import datetime
 
@@ -354,7 +354,7 @@ def shipment_delete(request, pk):
 ############################ shipments Pending vehicle update
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+
 from .models import ShipmentDetail, StatusColor, ShipmentStatusHistory
 
 @login_required
@@ -499,7 +499,7 @@ def bank_manager_update(request, shipment_id):
 ############################ Clearing Agent Update  ###################
 # views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+
 from .models import Shipment
 from .forms import AssessmentUploadForm  # We'll create this form
 
@@ -795,7 +795,7 @@ def average_unloading_time_report(request):
     return render(request, 'reports/average_unloading_time.html', context)
     
     ############### users
-from django.shortcuts import render, redirect
+
 from django.contrib.auth.models import User
 from .forms import UserCreateForm
 from django.contrib import messages
@@ -909,7 +909,7 @@ def change_user_password(request, user_id):
 # Pending shipment list (awaiting arrivals)
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+
 from .models import ShipmentDetail, StatusColor, ShipmentStatusHistory
 import logging
 logger = logging.getLogger(__name__)
@@ -935,7 +935,7 @@ def pending_arrival_list(request):
                   
                   
 ######################
-from django.utils import timezone
+
 from .forms import ArrivalUpdateForm
 
 @login_required
@@ -1005,8 +1005,8 @@ def arrival_update_detail(request, detail_id):
 #################### Dashboard - warehouse 
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.utils import timezone
+
+
 from masters.models import StatusColor, ShipmentDetail, UserProfile
 
 @login_required
@@ -1109,7 +1109,6 @@ def warehouse_dashboard(request):
     return render(request, 'dash/warehouse_dashboard.html', context)
 ######################## Admin Dashboard
 
-from django.shortcuts import render
 from .models import ShipmentDetail
 from django.db.models import OuterRef, Subquery
 from collections import defaultdict
@@ -1180,7 +1179,7 @@ def admin_dashboard(request):
 
 
 # masters/views.py
-from django.shortcuts import render
+
 
 def shipment_stage_times_report(request):
     shipments = Shipment.objects.all()  # Or your query
@@ -1405,7 +1404,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
-from django.utils import timezone
+
 from .models import Shipment
 
 @api_view(['POST'])
@@ -1552,7 +1551,7 @@ def mark_payment_done(request, shipment_id):
 import uuid
 import os
 import os
-from django.utils import timezone
+
 from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -1737,7 +1736,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 ###################################################################################3
 
-from django.utils import timezone
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -2184,7 +2183,7 @@ def bank_controller_update_shipment(request, shipment_id):
 
 ##############_-----------
 from django.contrib.auth.models import User
-from django.utils import timezone
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -2234,7 +2233,7 @@ def confirm_handover(request, shipment_id):
         shipment.save()
         # ✅ Create ShipmentPhase record
         phase_master = ShipmentPhaseMaster.objects.get(id=3)
-        ShipmentPhase.objects.get_or_create(
+        ShipmentPhase.objects.update_or_create(
                 shipment=shipment,
                 phase_code=phase_master.phase_code,
                 defaults={
@@ -2267,7 +2266,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+
 from .models import Shipment
 from .serializers import ShipmentSerializer
 
