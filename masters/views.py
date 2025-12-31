@@ -2632,7 +2632,7 @@ def dashboard_view(request):
     current_month_filter = Q(order_date__month=today.month, order_date__year=today.year)
 
     # Common shipment stats
-    total_shipments_month = Shipment.objects.filter(current_month_filter).count()
+    total_shipments_month = Shipment.objects.filter(current_month_filter,ship_status__gt=1).count()
     completed_shipments = Shipment.objects.filter(ship_status=13).count()
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
