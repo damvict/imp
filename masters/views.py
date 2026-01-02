@@ -1411,45 +1411,46 @@ from .models import Shipment
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
 def upload_assessment_document(request, shipment_id):
-    try:
-        shipment = Shipment.objects.get(id=shipment_id)
-    except Shipment.DoesNotExist:
-        return Response({"error": "Shipment not found"}, status=status.HTTP_404_NOT_FOUND)
-    
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
     total_duty = request.data.get("total_duty_value")
     file = request.FILES.get("assessment_document")
 
-    # ✅ Case 1: no file, only duty value update
-    if not file and total_duty:
-        shipment.total_duty_value = total_duty
-        shipment.assessment_uploaded_date =  timezone.now()
-        shipment.save()
-        return Response({"message": "Duty value updated successfully"}, status=status.HTTP_200_OK)
-    # ✅ Automatically create shipment phase record (handover phase)
+    # ❌ File is mandatory
+    if not file:
+        return Response(
+            {"error": "Assessment document is mandatory"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # ✅ Create phase (only when file is uploaded)
     try:
-        phase_master = ShipmentPhaseMaster.objects.get(id=4)  # adjust this ID to your actual handover phase
-        ShipmentPhase.objects.create(
+        phase_master = ShipmentPhaseMaster.objects.get(id=4)
+        ShipmentPhase.objects.get_or_create(
             shipment=shipment,
             phase_code=phase_master.phase_code,
-            phase_name=phase_master.phase_name,
-            completed=True,
-            completed_at=timezone.now(),
-            updated_by=request.user,
-            order=phase_master.order,
+            defaults={
+                "phase_name": phase_master.phase_name,
+                "completed": True,
+                "completed_at": timezone.now(),
+                "updated_by": request.user,
+                "order": phase_master.order,
+            }
         )
     except ShipmentPhaseMaster.DoesNotExist:
-        return Response({"error": "Phase master not found"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Phase master not found"}, status=400)
 
-    # ✅ Case 2: file uploaded + duty value
-    if file:
-        shipment.assessment_document = file
-        if total_duty:
-            shipment.total_duty_value = total_duty
-        shipment.assessment_uploaded_date = timezone.now().date()
-        shipment.save()
-        return Response({"message": "File uploaded successfully"}, status=status.HTTP_200_OK)
+    # ✅ Save assessment
+    shipment.assessment_document = file
+    shipment.total_duty_value = total_duty
+    shipment.assessment_uploaded_date = timezone.now()
+    shipment.save()
 
-    return Response({"error": "No data provided"}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {"message": "Assessment uploaded successfully"},
+        status=status.HTTP_200_OK
+    )
+
 
 
 
