@@ -2725,7 +2725,8 @@ def dashboard_view(request):
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
             "init_payment": init_payment,
-            "upload_payment": upload_payment,
+            
+: upload_payment,
         }
 
     if user.groups.filter(name="Clearing Agent").exists():
