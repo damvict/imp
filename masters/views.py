@@ -1415,7 +1415,7 @@ def upload_assessment_document(request, shipment_id):
 
     total_duty = request.data.get("total_duty_value")
     file = request.FILES.get("assessment_document")
-    C_ass_send = True
+    
 
     # ❌ File is mandatory
     if not file:
@@ -1445,6 +1445,7 @@ def upload_assessment_document(request, shipment_id):
     shipment.assessment_document = file
     shipment.total_duty_value = total_duty
     shipment.assessment_uploaded_date = timezone.now()
+    shipment.C_ass_send = True
     shipment.save()
 
     return Response(
