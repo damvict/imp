@@ -2646,7 +2646,7 @@ def dashboard_view(request):
     pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user).count()
     init_payment=Shipment.objects.filter( send_to_clearing_agent=True, payment_marked=False).count()
     upload_payment=Shipment.objects.filter( duty_paid=True, payment_marked=False).count()
-
+    payment_app=Shipment.objects.filter(  payment_marked=True,duty_paid=False).count()    
 
        
 
@@ -2743,6 +2743,7 @@ def dashboard_view(request):
             "clearance_completed": clearance_completed,
             "pending_grn":pending_grn,
             "total_grn_value_month":total_grn_value_month,
+            "payment_app": payment_app,
             
         }   
 
