@@ -1,3 +1,4 @@
+from time import timezone
 from rest_framework import serializers
 from .models import Shipment
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -215,6 +216,9 @@ class ShipmentDispatchSerializer_type2(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["created_by", "created_at", "updated_at"]
 
+    def get_created_at(self, obj):
+        return timezone.localtime(obj.created_at).strftime('%Y-%m-%d %H:%M')
+
 from .models import  ShipmentPhase
 
 class ShipmentSerializer(serializers.ModelSerializer):
@@ -244,7 +248,8 @@ class ShipmentDispatchSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["created_by", "created_at", "updated_at"]
 
-
+    def get_created_at(self, obj):
+        return timezone.localtime(obj.created_at).strftime('%Y-%m-%d %H:%M')
 
 #################### Bank settlement
 
@@ -275,7 +280,8 @@ class BankDocumentSerializer(serializers.ModelSerializer):
             
         ]
 
-
+    def get_created_at(self, obj):
+        return timezone.localtime(obj.created_at).strftime('%Y-%m-%d %H:%M')
 
 class SettlementSerializer(serializers.ModelSerializer):
     document_details = BankDocumentSerializer(source='document', read_only=True)

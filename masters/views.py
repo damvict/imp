@@ -2637,6 +2637,7 @@ def dashboard_view(request):
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
     doc_tobe_handover=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=0).count()
+    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1).count()
     
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
@@ -2718,7 +2719,7 @@ def dashboard_view(request):
         data["ca"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
-            "doc_tobe_handover":doc_tobe_handover,
+            "pen_ass":pen_ass,
         }
 
     if user.groups.filter(name="Managing Director").exists():
