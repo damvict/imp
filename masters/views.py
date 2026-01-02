@@ -2643,7 +2643,11 @@ def dashboard_view(request):
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
     doc_tobe_handover=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=0).count()
-    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user).count()
+    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user,  assessment_document__isnull=True,send_to_clearing_agent_payment=False).count()
+    init_clearing=Shipment.objects.filter(send_to_clearing_agent_payment=True,C_Process_Initiated=0,clearing_agent_id=request.user ).count() 
+    ca_dispatch=Shipment.objects.filter(C_Process_Initiated=True,C_Process_completed=False,clearing_agent_id=request.user ).count() 
+   
+
     init_payment=Shipment.objects.filter( send_to_clearing_agent=True, payment_marked=False).count()
     upload_payment=Shipment.objects.filter( duty_paid=True, send_to_clearing_agent_payment=False).count()
     payment_app=Shipment.objects.filter(  payment_marked=True,duty_paid=False).count()    
@@ -2732,7 +2736,9 @@ def dashboard_view(request):
         data["ca"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
-            "pen_ass":pen_ass,
+            "pen_ass":pen_ass,    
+            "init_clearing": init_clearing, 
+            "ca_dispatch": ca_dispatch
         }
 
     if user.groups.filter(name="Managing Director").exists():
