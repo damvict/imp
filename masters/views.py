@@ -2642,7 +2642,7 @@ def dashboard_view(request):
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
     doc_tobe_handover=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=0).count()
-    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1).count()
+    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user).count()
     
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
