@@ -2645,7 +2645,7 @@ def dashboard_view(request):
     doc_tobe_handover=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=0).count()
     pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user).count()
     init_payment=Shipment.objects.filter( send_to_clearing_agent=True, payment_marked=False).count()
-    upload_payment=Shipment.objects.filter( duty_paid=True, payment_marked=False).count()
+    upload_payment=Shipment.objects.filter( duty_paid=True, send_to_clearing_agent_payment=False).count()
     payment_app=Shipment.objects.filter(  payment_marked=True,duty_paid=False).count()    
 
        
