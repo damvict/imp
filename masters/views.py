@@ -2644,7 +2644,12 @@ def dashboard_view(request):
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
     doc_tobe_handover=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=0).count()
     pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user).count()
-    
+    init_payment=Shipment.objects.filter( send_to_clearing_agent=True, payment_marked=False).count()
+    upload_payment=Shipment.objects.filter( duty_paid=True, end_to_clearing_agent_payment=False).count()
+
+
+       
+
     overdue_shipments = Shipment.objects.filter(
         expected_arrival_date__lt=today,
     ).exclude(ship_status=13).count()
@@ -2719,6 +2724,8 @@ def dashboard_view(request):
         data["bm"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
+            "init_payment": init_payment,
+            "upload_payment": upload_payment,
         }
 
     if user.groups.filter(name="Clearing Agent").exists():
