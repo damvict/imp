@@ -1415,6 +1415,7 @@ def upload_assessment_document(request, shipment_id):
 
     total_duty = request.data.get("total_duty_value")
     file = request.FILES.get("assessment_document")
+    C_ass_send = True
 
     # ❌ File is mandatory
     if not file:

@@ -224,6 +224,7 @@ class Shipment(models.Model):
         blank=True,
         related_name="assigned_shipments"
     )
+    C_ass_send = models.BooleanField(default=False)
     C_Process_Initiated= models.BooleanField(default=False)
     C_Process_Initiated_date = models.DateTimeField(null=True, blank=True)   
     C_Process_completed= models.BooleanField(default=False)
