@@ -1917,7 +1917,12 @@ def shipment_detail_api(request, shipment_id):
     try:
         # Helper functions
         format_date = lambda d, fmt="%Y-%m-%d": d.strftime(fmt) if d else None
-        format_datetime = lambda d, fmt="%Y-%m-%d %H:%M": d.strftime(fmt) if d else None
+        #format_datetime = lambda d, fmt="%Y-%m-%d %H:%M": d.strftime(fmt) if d else None
+        def format_datetime(d, fmt="%Y-%m-%d %H:%M"):
+            if not d:
+                return None
+            return timezone.localtime(d).strftime(fmt)
+
 
         shipment = Shipment.objects.get(id=shipment_id)
 
