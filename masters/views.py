@@ -1445,7 +1445,7 @@ def upload_assessment_document(request, shipment_id):
     shipment.assessment_document = file
     shipment.total_duty_value = total_duty
     shipment.assessment_uploaded_date = timezone.now()
-    shipment.C_ass_send = True
+    shipment.c_ass_send = True
     shipment.save()
 
     return Response(
@@ -2289,7 +2289,9 @@ from .serializers import ShipmentSerializer
 def bank_manager_shipments_initiate(request):
     shipments = Shipment.objects.filter(
         send_to_clearing_agent=True,
-        payment_marked=False
+        payment_marked=False,
+        c_ass_send=True
+        
     )
     serializer = ShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
@@ -2650,12 +2652,12 @@ def dashboard_view(request):
     active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
     ship_tobe_create=Shipment.objects.filter(ship_status=1).count()
     doc_tobe_handover=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=0).count()
-    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user.id,  C_ass_send=0).count()
+    pen_ass=Shipment.objects.filter(ship_status=2,send_to_clearing_agent=1,clearing_agent_id=request.user.id,  c_ass_send=False).count()
     init_clearing=Shipment.objects.filter(send_to_clearing_agent_payment=True,C_Process_Initiated=0,clearing_agent_id=request.user ).count() 
     ca_dispatch=Shipment.objects.filter(C_Process_Initiated=True,C_Process_completed=False,clearing_agent_id=request.user ).count() 
    
 
-    init_payment=Shipment.objects.filter( send_to_clearing_agent=True, payment_marked=False).count()
+    init_payment=Shipment.objects.filter( send_to_clearing_agent=True, payment_marked=False,c_ass_send=True).count()
     upload_payment=Shipment.objects.filter( duty_paid=True, send_to_clearing_agent_payment=False).count()
     payment_app=Shipment.objects.filter(  payment_marked=True,duty_paid=False).count()    
 
