@@ -1861,7 +1861,9 @@ def shipment_create_api(request):
             shipment.packing_list_ref = data.get('packing_list_ref')
             shipment.supplier_invoice = data.get('supplier_invoice')
             shipment.gross_weight=data.get('gross_weight', '0')
-            shipment.net_weight =data.get('net_weight', '0')  
+            shipment.net_weight =data.get('net_weight', '0') 
+            shipment.cbm =data.get('cbm', '0') 
+
             shipment.save()
 
             # ===== SHIPMENT PHASE =====
