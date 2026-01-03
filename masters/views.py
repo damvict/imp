@@ -1812,7 +1812,8 @@ def shipment_create_api(request):
                 supplier_id=data.get('supplier'),
                 created_by=request.user,
                 ship_status=1,
-                container=data.get('container', ' ')              
+                container=data.get('container', ' ')  ,
+                      
 
             )
 
@@ -1859,6 +1860,8 @@ def shipment_create_api(request):
             shipment.ship_status = 2
             shipment.packing_list_ref = data.get('packing_list_ref')
             shipment.supplier_invoice = data.get('supplier_invoice')
+            shipment.gross_weight=data.get('gross_weight', '0')
+            shipmentnet_weight =data.get('net_weight', '0')  
             shipment.save()
 
             # ===== SHIPMENT PHASE =====

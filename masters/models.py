@@ -213,6 +213,9 @@ class Shipment(models.Model):
         blank=True
     )
     reference_number = models.CharField(max_length=100, null=True, blank=True)
+    gross_weight = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    net_weight = models.DecimalField(max_digits=15, decimal_places=2, null=True,blank=True)
+
 
    #################   clearing Agent
     send_to_clearing_agent = models.BooleanField(default=False)
