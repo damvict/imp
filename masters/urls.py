@@ -271,6 +271,11 @@ path("api/outstanding/email/", outstanding_report_email,name="outstanding_report
 ]       
 
 
+# ---------------- MEDIA FILES (CRITICAL FIX) ----------------
+urlpatterns += static(
+    settings.MEDIA_URL,
+    document_root=settings.MEDIA_ROOT
+)
 #if settings.DEBUG:
     ###urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
