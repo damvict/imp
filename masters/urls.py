@@ -65,10 +65,7 @@ from .views import outstanding_report
 from .views import outstanding_export_excel
 from .views import outstanding_report_email
 
-urlpatterns += static(
-    settings.MEDIA_URL,
-    document_root=settings.MEDIA_ROOT
-)
+
 
 urlpatterns = [
     # Item Category URLs
