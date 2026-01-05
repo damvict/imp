@@ -1371,7 +1371,8 @@ def C_Process_Initiated(request, shipment_id):
 
     serializer = ClearingAgentSerializer(shipment)
     return Response(
-        {"message": "Clearing Process Initiated successfully", "shipment": serializer.data},
+        {"success": True, 
+         "message": "Clearing Process Initiated successfully", "shipment": serializer.data},
         status=status.HTTP_200_OK
     )
 
