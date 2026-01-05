@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  .dashboard-container {
+    padding: 20px;
+  }
+
+  .dashboard-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+
+  .card-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  /* Status Colors */
+  .blue { border-left: 6px solid #2563eb; }
+  .orange { border-left: 6px solid #f97316; }
+  .yellow { border-left: 6px solid #eab308; }
+  .green { border-left: 6px solid #16a34a; }
+  .purple { border-left: 6px solid #7c3aed; }
+  .gray { border-left: 6px solid #6b7280; }
+
+</style>
+
+<div class="dashboard-container">
+
+  <div class="dashboard-title">
+    📊 Sales Dashboard
+  </div>
+
+  <div class="cards">
+
+    <!-- Total Active Shipments -->
+    <div class="card blue">
+      <div class="card-title">Total Active Shipments</div>
+      <div class="card-value">{{ total_active_shipments }}</div>
+    </div>
+
+    <!-- New Shipment -->
+    <div class="card gray">
+      <div class="card-title">New Shipment</div>
+      <div class="card-value">{{ new_shipment }}</div>
+    </div>
+
+    <!-- Goods At Port -->
+    <div class="card orange">
+      <div class="card-title">Goods at Port<br><small>(Clearance Initiated)</small></div>
+      <div class="card-value">{{ goods_at_port }}</div>
+    </div>
+
+    <!-- On the Way Shipment -->
+    <div class="card yellow">
+      <div class="card-title">On the Way Shipment<br><small>(Clearance Completed)</small></div>
+      <div class="card-value">{{ on_the_way_shipment }}</div>
+    </div>
+
+    <!-- GRN -->
+    <div class="card purple">
+      <div class="card-title">GRN</div>
+      <div class="card-value">{{ grn }}</div>
+    </div>
+
+    <!-- Completed Shipment -->
+    <div class="card green">
+      <div class="card-title">Completed Shipment</div>
+      <div class="card-value">{{ completed_shipment }}</div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1793,6 +1793,55 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 
+#####################
+@login_required
+def sales_dashboard(request):
+
+    context = {
+        # Active shipments (not fully completed / GRN not done)
+        "total_active_shipments": Shipment.objects.filter(
+            grn_complete_at_warehouse=False
+        ).count(),
+
+        # New shipment (arrival notice / shipment created)
+        "new_shipment": Shipment.objects.filter(
+            ship_status=1
+        ).count(),
+
+        # ✅ Goods at Port = clearance initiated but not completed
+        "goods_at_port": Shipment.objects.filter(
+            C_Process_Initiated=True,
+            C_Process_completed=False
+        ).count(),
+
+        # ✅ Clearance Initiated (same as goods at port, optional separate card)
+        "clearance_initiated": Shipment.objects.filter(
+            C_Process_Initiated=True
+        ).count(),
+
+        # ✅ On the Way Shipment = clearance completed, not yet arrived
+        "on_the_way_shipment": Shipment.objects.filter(
+            C_Process_completed=True,
+            arrival_at_warehouse=False
+        ).count(),
+
+        # Clearance fully completed
+        "clearance_completed": Shipment.objects.filter(
+            C_Process_completed=True
+        ).count(),
+
+        # GRN stage
+        "grn": Shipment.objects.filter(
+            grn_upload_at_warehouse=True
+        ).count(),
+
+        # Final completed shipment
+        "completed_shipment": Shipment.objects.filter(
+            grn_complete_at_warehouse=True
+        ).count(),
+    }
+
+    return render(request, "dash/sales_dashboard.html", context)
 
 
 

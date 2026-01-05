@@ -76,6 +76,9 @@
 
                       {% elif request.user.groups.all.0.name == 'Bank Manager' %}
                     <li><a href="{% url 'bank_manager_view' %}"> Dashboard</a></li>
+
+                    <li></li><a href="{% url 'sales_dashboard' %}">Sales Dashboard</a></li>
+
                    
 
                   {% endif %}
