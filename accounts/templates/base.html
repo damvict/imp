@@ -59,6 +59,7 @@
                 <ul class="nav child_menu">
                   {% if request.user.groups.all.0.name == 'Admin' %}
                     <li><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+                     <li><a href="{% url 'sales_dashboard' %}">Sales Dashboard</a></li>
                   {% elif request.user.groups.all.0.name == 'Warehouse Staff' %}
                     <li><a href="{% url 'warehouse_dashboard' %}">Warehouse Dashboard</a></li>
                   {% elif request.user.groups.all.0.name == 'Security Guard' %}
@@ -77,8 +78,8 @@
                       {% elif request.user.groups.all.0.name == 'Bank Manager' %}
                     <li><a href="{% url 'bank_manager_view' %}"> Dashboard</a></li>
 
-                    <li></li><a href="{% url 'sales_dashboard' %}">Sales Dashboard</a></li>
-
+                   
+                    
                    
 
                   {% endif %}
