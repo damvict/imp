@@ -2690,6 +2690,11 @@ def dashboard_view(request):
 
   
     pending_grn = Shipment.objects.filter(arrival_at_warehouse=True, grn_complete_at_warehouse=False).count()
+    record_grn = Shipment.objects.filter(arrival_at_warehouse=True, grn_complete_at_warehouse=False,grn_upload_at_warehouse=False).count()
+    confirm_grn = Shipment.objects.filter(grn_complete_at_warehouse=False,grn_upload_at_warehouse=True).count()
+
+    
+    
     total_grn_value_month = (
         Shipment.objects.filter(grn_complete_at_warehouse_date__month=today.month)
         .aggregate(total=Sum('amount'))['total'] or 0
@@ -2732,6 +2737,7 @@ def dashboard_view(request):
              "total_invoice_value": f"{total_invoice_value:,.2f}",
              "approved_duty_payments": approved_duty_payments,
              "pending_bank_docs" : Shipment.objects.filter(ship_status=1).count(),
+             "confirm_grn":confirm_grn,
              
         }
 
@@ -2776,7 +2782,7 @@ def dashboard_view(request):
         data["ws"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
-            "pending_grn":pending_grn,
+            "record_grn":record_grn,
         }
 
 
