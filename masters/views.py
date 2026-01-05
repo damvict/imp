@@ -1658,7 +1658,7 @@ def approve_duty_paid(request, shipment_id):
 
         # ShipmentPhase creation
         phase_master = ShipmentPhaseMaster.objects.get(id=6)
-        ShipmentPhase.objects.create(
+        ShipmentPhase.objects.update_or_create(
             shipment=shipment,
             phase_code=phase_master.phase_code,
             phase_name=phase_master.phase_name,
