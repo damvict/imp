@@ -2687,6 +2687,8 @@ def dashboard_view(request):
     approved_duty_payments = Shipment.objects.filter(duty_paid=True).count()
 
     # GRN data
+
+  
     pending_grn = Shipment.objects.filter(arrival_at_warehouse=True, grn_complete_at_warehouse=False).count()
     total_grn_value_month = (
         Shipment.objects.filter(grn_complete_at_warehouse_date__month=today.month)
@@ -2774,6 +2776,7 @@ def dashboard_view(request):
         data["ws"] = {
             "total_invoice_value": f"{total_invoice_value:,.2f}",
             "approved_duty_payments": approved_duty_payments,
+            "pending_grn":pending_grn,
         }
 
 
