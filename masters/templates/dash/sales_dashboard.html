@@ -100,5 +100,39 @@
 
   </div>
 
+
+  <h3>Active Shipments</h3>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Shipment</th>
+      <th>Expected Arrival</th>
+      <th>Current Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in active_shipments %}
+      <tr>
+        <td>{{ s.shipment_code }}</td>
+
+        <td class="{% if s.expected_arrival_date < today %}text-danger{% endif %}">
+          {{ s.expected_arrival_date|date:"d M Y" }}
+        </td>
+
+        <td>
+          <span class="badge bg-info">
+            {{ s.current_phase|default:"Not Started" }}
+          </span>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="3" class="text-center">No active shipments</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
 </div>
 {% endblock %}
