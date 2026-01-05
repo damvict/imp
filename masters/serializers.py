@@ -17,15 +17,14 @@ class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
             "bl",
             "send_date",
             "amount",
-            "packing_list_ref",
-            "send_date",
+            "packing_list_ref",           
             "send_to_clearing_agent_payment",
             "payref_document",
-            "total_duty_value",
-            "amount",
+            "total_duty_value",           
             "send_to_clearing_agent_payment_date",
-            
-
+            "duty_paid_reject",
+            "md_reject_reason",
+            "md_rejected_at"
         ]
 
 
