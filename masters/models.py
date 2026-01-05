@@ -283,6 +283,10 @@ class Shipment(models.Model):
     # MD final approval
     duty_paid = models.BooleanField(default=False)
     duty_paid_date = models.DateTimeField(null=True, blank=True)
+    # MD final rejection
+    duty_paid_reject = models.BooleanField(default=False)
+    md_reject_reason = models.TextField(null=True, blank=True)
+    md_rejected_at = models.DateTimeField(null=True, blank=True)
 
     # --- (NEW) ---
     SHIPMENT_TYPES = [

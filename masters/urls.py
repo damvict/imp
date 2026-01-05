@@ -201,7 +201,8 @@ urlpatterns = [
 
     path('api/md/shipments/', views.md_shipments, name='md_shipments'),
     path('api/md/approve_duty/<int:shipment_id>/', views.approve_duty_paid, name='approve_duty_paid'),
-
+    path('api/md/reject_duty/<int:shipment_id>/', views.reject_duty_paid, name='reject_duty_paid'),
+    
 
     path('md/banks/', views.md_bank_dashboard, name='md_bank_dashboard'),
 

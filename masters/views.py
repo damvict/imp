@@ -1650,6 +1650,10 @@ def approve_duty_paid(request, shipment_id):
 
         shipment.duty_paid = True
         shipment.duty_paid_date = timezone.now() 
+
+        shipment.duty_paid_reject = False
+        shipment.md_reject_reason = None
+        shipment.md_rejected_at = None
         shipment.save()
 
         # ShipmentPhase creation
@@ -1674,6 +1678,62 @@ def approve_duty_paid(request, shipment_id):
         # Print the actual error
         print("ERROR IN APPROVE DUTY:", e)
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+
+
+#################### Duty paid rejection
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reject_duty_paid(request, shipment_id):
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+
+        if not shipment.payment_marked:
+            return Response(
+                {"error": "Payment not marked yet"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        reason = request.data.get("reason", "").strip()
+        if not reason:
+            return Response(
+                {"error": "Rejection reason is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # --- Reject logic ---
+        shipment.duty_paid = False
+        shipment.duty_paid_reject = True
+        shipment.md_reject_reason = reason
+        shipment.md_rejected_at = timezone.now()
+
+        # Rollback payment step (send back to Bank Manager)
+        shipment.payment_marked = False
+        shipment.payment_marked_date = None
+
+        shipment.save()
+
+        serializer = MDShipmentSerializer(shipment)
+        return Response(
+            {
+                "message": "Duty rejected successfully",
+                "shipment": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    except Shipment.DoesNotExist:
+        return Response(
+            {"error": "Shipment not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    except Exception as e:
+        print("ERROR IN REJECT DUTY:", e)
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 
