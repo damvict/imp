@@ -497,11 +497,7 @@ class NewShipmentForm(forms.Form):
     )
 
     bank_doc_type = forms.ChoiceField(
-        choices=[
-            ("LC", "Letter of Credit"),
-            ("DA", "Documents Against Acceptance"),
-            ("DP", "Documents Against Payment"),
-        ],
+        choices=Shipment.BANK_DOC_TYPES,
         widget=forms.Select(attrs={'class': 'form-select select2'})
     )
 
