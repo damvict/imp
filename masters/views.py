@@ -1930,126 +1930,66 @@ def parse_date(date_str):
         return None
     
 
-
+from .services import create_arrival_notice, update_shipment_stage
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def shipment_create_api(request):
     data = request.data
+
     try:
-        stage = data.get('stage', 'arrival')  # 'arrival' or 'shipment'
-        shipment_code = data.get('shipment_code') or None
-        # === STEP 1: CREATE NEW ARRIVAL NOTICE ===
+        stage = data.get('stage', 'arrival')
+
+        # ===============================
+        # STAGE 1: ARRIVAL NOTICE
+        # ===============================
         if stage == 'arrival':
-            shipment = Shipment.objects.create(
-                bl=data.get('bl', '0'),
-                vessel=data.get('vessel', ' '),
-                order_date=parse_date(data.get('order_date')),
-                expected_arrival_date=parse_date(data.get('expected_arrival_date')),
-                cbm=data.get('cbm'),
-                remark=data.get('remark', ''),
-                company_id=data.get('company'),
-                supplier_id=data.get('supplier'),
-                created_by=request.user,
-                ship_status=1,
-                container=data.get('container', ' ')  ,
-                      
 
-            )
-
-            # Create ShipmentPhase for Arrival Notice
-            phase_master = ShipmentPhaseMaster.objects.get(id=1)  # Phase 1
-            ShipmentPhase.objects.create(
-                shipment=shipment,
-                phase_code=phase_master.phase_code,
-                phase_name=phase_master.phase_name,
-                completed=True,
-                completed_at=timezone.now(),
-                updated_by=request.user,
-                order=phase_master.order
-            )
+            shipment = create_arrival_notice(data, request.user)
 
             return Response({
                 'success': True,
                 'message': 'Arrival Notice created successfully',
                 'shipment_id': shipment.id,
-                'shipment_code': shipment.shipment_code, 
-                'phase': phase_master.phase_name
-            }, status=201)
+                'shipment_code': shipment.shipment_code,
+            }, status=status.HTTP_201_CREATED)
 
-        # === STEP 2: UPDATE SHIPMENT DETAILS (Doc Collected & Shipments Created) ===
+        # ===============================
+        # STAGE 2: SHIPMENT / BANK DOCS
+        # ===============================
         elif stage == 'shipment':
-            shipment_id = data.get('shipment_id')
-            if not shipment_id:
-                return Response({'error': 'shipment_id is required for shipment stage'}, status=400)
 
-            shipment = Shipment.objects.get(id=shipment_id)
+            if not data.get('shipment_id'):
+                return Response(
+                    {'error': 'shipment_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-            # Update shipment fields
-            shipment.bank_doc_type = data.get('bank_doc_type')
-            shipment.reference_number = data.get('reference_number')
-            shipment.bank_id = data.get('bank')
-            shipment.amount = data.get('amount')
-            shipment.c_date = parse_date(data.get('c_date')) if data.get('c_date') else None
-            shipment.shipment_type = data.get('shipment_type')
-            shipment.incoterm = data.get('incoterm')
-            shipment.transport_mode = data.get('transport_mode')
-            shipment.origin_country = data.get('origin_country')
-            shipment.destination_port = data.get('destination_port')
-            shipment.clearing_agent_id = data.get('clearing_agent') or None
-            shipment.ship_status = 2
-            shipment.packing_list_ref = data.get('packing_list_ref')
-            shipment.supplier_invoice = data.get('supplier_invoice')
-            shipment.gross_weight=data.get('gross_weight', '0')
-            shipment.net_weight =data.get('net_weight', '0') 
-            shipment.cbm =data.get('cbm', '0') 
-
-            shipment.save()
-
-            # ===== SHIPMENT PHASE =====
-            phase_master = ShipmentPhaseMaster.objects.get(id=2)  # Phase 2
-            shipment_phase, created = ShipmentPhase.objects.update_or_create(
-                shipment=shipment,
-                phase_code=phase_master.phase_code,
-                defaults={
-                    'phase_name': phase_master.phase_name,
-                    'completed': True,
-                    'completed_at': timezone.now(),
-                    'updated_by': request.user,
-                    'order': phase_master.order,
-                }
-            )
-
-            # ===== BANK DOCUMENT =====
-            bank_doc, created = BankDocument.objects.update_or_create(
-                shipment=shipment,
-                doc_type=data.get('bank_doc_type'),
-                defaults={
-                    'bank_id': data.get('bank'),
-                    'reference_number': data.get('reference_number'),
-                    'amount': data.get('amount'),
-                    'issue_date': parse_date(data.get('c_date')) if data.get('c_date') else timezone.now().date(),
-                    'created_by': request.user,
-                    'due_date': parse_date(data.get('due_date')) if data.get('due_date') else timezone.now().date(),
-                    'company_id': data.get('company') or shipment.company_id, 
-                }
-            )
+            shipment = update_shipment_stage(data, request.user)
 
             return Response({
                 'success': True,
                 'message': 'Shipment stage updated successfully',
                 'shipment_id': shipment.id,
-                'phase': phase_master.phase_name
-            }, status=201)
+                'shipment_code': shipment.shipment_code,
+            }, status=status.HTTP_200_OK)
 
         else:
-            return Response({'error': 'Invalid stage value'}, status=400)
+            return Response(
+                {'error': 'Invalid stage value'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     except Shipment.DoesNotExist:
-        return Response({'error': 'Shipment not found'}, status=404)
-    except ShipmentPhaseMaster.DoesNotExist:
-        return Response({'error': 'Shipment phase master not found'}, status=404)
+        return Response(
+            {'error': 'Shipment not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
     except Exception as e:
-        return Response({'error': str(e)}, status=400)
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
 ###############################    PHASE DISPLAY   ################################
 
