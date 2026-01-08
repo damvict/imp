@@ -19,6 +19,8 @@ def _to_date(value):
 
 
 def create_arrival_notice(data, user):
+    company =data.get('company'),
+    supplier = data.get('supplier')
     shipment = Shipment.objects.create(
         bl=data.get('bl', '0'),
         vessel=data.get('vessel', ''),
@@ -26,8 +28,8 @@ def create_arrival_notice(data, user):
         expected_arrival_date=_to_date(data.get('expected_arrival_date')),
         cbm=data.get('cbm'),
         remark=data.get('remark', ''),
-        company =data.get('company'),
-        supplier=data.get('supplier'),
+        company_id=company.id if hasattr(company, 'id') else company,
+        supplier_id=supplier.id if hasattr(supplier, 'id') else supplier,
         container=data.get('container', ''),
         ship_status=1,
         created_by=user,
