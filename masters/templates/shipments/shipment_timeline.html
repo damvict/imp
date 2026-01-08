@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+/* -------- Layout -------- */
+.timeline-page {
+  background: #F9FAFB;
+  padding: 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E3A8A;
+  margin-bottom: 16px;
+}
+
+/* -------- Details Card -------- */
+.details-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.detail-text {
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.label {
+  font-weight: 700;
+  color: #1E3A8A;
+}
+
+/* -------- Timeline -------- */
+.timeline {
+  margin-top: 10px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.timeline-left {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 14px;
+}
+
+.circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #D1D5DB;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.circle.active {
+  border-color: #16A34A;
+  color: #16A34A;
+}
+
+.vertical-line {
+  width: 3px;
+  flex-grow: 1;
+  background: #D1D5DB;
+  margin-top: 4px;
+}
+
+.vertical-line.active {
+  background: #16A34A;
+}
+
+.timeline-content {
+  padding-top: 2px;
+}
+
+.step-title {
+  font-size: 14px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.step-date {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 2px;
+}
+
+/* -------- Summary Cards -------- */
+.summary-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-left: 4px solid #1E3A8A;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.summary-badge {
+  background: #1E3A8A;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+/* -------- Footer Buttons -------- */
+.footer-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+</style>
+
+<div class="timeline-page">
+
+  <!-- Header -->
+  <h2>{{ shipment.shipment_code }}</h2>
+
+  <!-- Shipment Details -->
+  <div class="details-card">
+    <div class="detail-text">
+      <span class="label">BL:</span> {{ shipment.bl }}
+    </div>
+    <div class="detail-text">
+      <span class="label">Vessel:</span> {{ shipment.vessel }}
+    </div>
+    <div class="detail-text">
+      <span class="label">Expected Arrival:</span>
+      {{ shipment.expected_arrival_date|date:"d M Y" }}
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="section-title">Shipment Progress</div>
+
+  <div class="timeline">
+    {% for p in phases %}
+      <div class="step">
+
+        <div class="timeline-left">
+          <div class="circle {% if p.completed %}active{% endif %}">
+            {% if p.completed %}✔{% endif %}
+          </div>
+
+          {% if not forloop.last %}
+            <div class="vertical-line {% if p.completed %}active{% endif %}"></div>
+          {% endif %}
+        </div>
+
+        <div class="timeline-content">
+          <div class="step-title">{{ p.phase_name }}</div>
+          {% if p.completed_at %}
+            <div class="step-date">
+              {{ p.completed_at|date:"d M Y, H:i" }}
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Journey Summary -->
+  <div class="section-title" style="margin-top:20px;">Journey Summary</div>
+
+  <div class="summary-card">
+    <div class="summary-header">
+      <div class="summary-badge">AN</div>
+      <strong>Arrival Notice</strong>
+    </div>
+
+    <div class="summary-row">
+      <span>Company</span>
+      <span>{{ shipment.company }}</span>
+    </div>
+
+    <div class="summary-row">
+      <span>Supplier</span>
+      <span>{{ shipment.supplier }}</span>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-actions">
+    <a href="{% url 'sales_dashboard' %}" class="btn btn-secondary">
+      ← Back
+    </a>
+
+    <a href="{% url 'arrival-notice-create' %}" class="btn btn-primary">
+      + Create New
+    </a>
+  </div>
+
+</div>
+{% endblock %}

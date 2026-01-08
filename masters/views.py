@@ -59,7 +59,8 @@ from rest_framework import status
 from .models import BankDocument, Settlement
 from django.db import models
 
-
+from .models import Currency
+from .serializers import CurrencySerializer
 
 def itemcategory_list(request):
     categories = ItemCategory.objects.all()
@@ -1335,6 +1336,15 @@ def clearing_agent_shipments_pay_uploaded(request):
     serializer = ClearingAgentShipmentSerializer(shipments, many=True)
     return Response(serializer.data)
 
+############## Currency
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def currencies_list(request):
+    currencies = Currency.objects.filter(is_active=True).order_by("code")
+    serializer = CurrencySerializer(currencies, many=True)
+    return Response(serializer.data)
+
+##~~~~~~~~~~~
 
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Clearing Agent Inttiate Clearence ~~~~~~~~~~~~~~~~~~~~~~

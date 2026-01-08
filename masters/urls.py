@@ -64,7 +64,7 @@ from .views import clearing_agent_users
 from .views import outstanding_report
 from .views import outstanding_export_excel
 from .views import outstanding_report_email
-
+from . import web_views
 
 
 urlpatterns = [
@@ -225,6 +225,7 @@ urlpatterns = [
     path('api/shipment-create/', views.shipment_create_api, name='shipment-create-api'), 
 
     path('api/banks/', views.banks_list, name='banks-list'),
+    path('api/currencies/', views.currencies_list, name='currencies-list'),
     path('api/companies/', views.companies_list, name='companies-list'),
     path('api/items/', views.items_list, name='items_list'),
     path('api/warehouses/', views.warehouses_list, name='warehouses-list'),
@@ -266,6 +267,26 @@ path('api/settlements/<int:pk>/', views.settlement_detail, name='settlement_deta
 path("api/reports/outstanding/", outstanding_report, name="outstanding-report"),
 path("api/outstanding/export/", outstanding_export_excel,name="outstanding_export_excel"),
 path("api/outstanding/email/", outstanding_report_email,name="outstanding_report_email"),
+
+
+
+######################### WEB URLS
+
+ path(
+        "arrival-notice/create/",
+        web_views.create_arrival_notice_view,
+        name="arrival-notice-create",
+    ),
+
+    path("shipment/new/", web_views.new_shipment_view, name="new-shipment"),
+
+path(
+    "shipments/timeline/<str:shipment_code>/",
+    web_views.shipment_timeline,
+    name="shipment-timeline",
+)
+
+### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF WEB URLS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 ]       

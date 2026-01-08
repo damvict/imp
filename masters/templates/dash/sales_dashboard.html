@@ -114,7 +114,13 @@
   <tbody>
     {% for s in active_shipments %}
       <tr>
-        <td>{{ s.shipment_code }}</td>
+       <td>
+  <a href="{% url 'shipment-timeline' s.shipment_code %}"
+     class="fw-bold text-primary text-decoration-none">
+    {{ s.shipment_code }}
+  </a>
+</td>
+
 
         <td class="{% if s.expected_arrival_date < today %}text-danger{% endif %}">
           {{ s.expected_arrival_date|date:"d M Y" }}

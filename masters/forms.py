@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     ItemCategory, VehicleType, StatusColor, SalesDivision,
-    Shipment, ShipmentDetail, Warehouse, Supplier, ClearingAgent, User
+    Shipment, ShipmentDetail, Warehouse, Supplier, ClearingAgent, User,Currency
 )
 
 # Ã°Å¸â€œÂ¦ Item Category Form
@@ -435,3 +435,131 @@ class BankForm(forms.ModelForm):
 
 
 ############ End of Bank #############
+
+
+# ----------------   WEB  Arrival Notice Form ----------------
+
+from django.utils import timezone
+from datetime import timedelta
+
+class ArrivalNoticeForm(forms.ModelForm):
+
+    class Meta:
+        model = Shipment
+        fields = [
+            'bl',
+            'vessel',
+            'container',
+            'expected_arrival_date',
+            'cbm',
+            'company',
+            'supplier',
+            'remark',
+        ]
+        widgets = {
+            'bl': forms.TextInput(attrs={'class': 'form-control'}),
+            'vessel': forms.TextInput(attrs={'class': 'form-control'}),
+            'container': forms.TextInput(attrs={'class': 'form-control'}),
+            'expected_arrival_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'cbm': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'remark': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # ✅ SET ORDER DATE AS TODAY (same as mobile)
+        cleaned_data["order_date"] = timezone.now().date()
+
+        # Optional auto ETA logic (if you want)
+        eta = cleaned_data.get("expected_arrival_date")
+        if not eta:
+            cleaned_data["expected_arrival_date"] = timezone.now().date() + timedelta(days=4)
+
+        return cleaned_data
+
+
+
+############------------------
+class NewShipmentForm(forms.Form):
+
+    shipment = forms.ModelChoiceField(
+        queryset=Shipment.objects.filter(ship_status=1),
+        empty_label="-- Select BL / AWB --",
+        widget=forms.Select(attrs={
+            "class": "form-select select2"
+        })
+    )
+
+    bank = forms.ModelChoiceField(
+        queryset=Bank.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select select2'})
+    )
+
+    bank_doc_type = forms.ChoiceField(
+        choices=[
+            ("LC", "Letter of Credit"),
+            ("DA", "Documents Against Acceptance"),
+            ("DP", "Documents Against Payment"),
+        ],
+        widget=forms.Select(attrs={'class': 'form-select select2'})
+    )
+
+    reference_number = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    supplier_invoice = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    amount = forms.DecimalField(
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+     # ✅ NEW: Currency
+    currency = forms.ModelChoiceField(
+        queryset=Currency.objects.filter(is_active=True),
+        widget=forms.Select(attrs={'class': 'form-select select2'})
+    )
+     # ✅ Foreign currency amount
+    amount = forms.DecimalField(
+        label="Amount (Foreign Currency)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01'
+        })
+    )
+
+    # ✅ LKR amount (manual entry)
+    amount_lkr = forms.DecimalField(
+        label="Amount (LKR)",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01'
+        })
+    )
+
+    packing_list_ref = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    gross_weight = forms.DecimalField(required=False)
+    net_weight = forms.DecimalField(required=False)
+    cbm = forms.DecimalField(required=False)
+    origin_country = forms.CharField(required=False)
+    due_date = forms.DateField(required=False)
+    expected_arrival_date = forms.DateField(required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        currency = cleaned_data.get("currency")
+        amount_lkr = cleaned_data.get("amount_lkr")
+
+        if currency and currency.code != "LKR" and not amount_lkr:
+            self.add_error(
+                "amount_lkr",
+                "LKR amount is required when currency is not LKR"
+            )
+
+        return cleaned_data

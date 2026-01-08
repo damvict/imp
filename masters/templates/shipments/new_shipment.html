@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<style>
+/* ================= Step Progress Indicator ================= */
+
+.step-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0 30px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: -50%;
+  width: 100%;
+  height: 2px;
+  background-color: #dee2e6;
+  z-index: 0;
+}
+
+.step .circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  margin: 0 auto 6px;
+  background-color: #dee2e6;
+  color: #fff;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Completed */
+.step.completed .circle {
+  background-color: #198754;
+}
+.step.completed {
+  color: #198754;
+}
+
+/* Active */
+.step.active .circle {
+  background-color: #0d6efd;
+}
+.step.active {
+  color: #0d6efd;
+}
+
+/* ================= Section Styling ================= */
+
+.section-card {
+  border-radius: 6px;
+}
+
+.section-header {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Shipment */
+.shipment-section {
+  border-left: 4px solid #0d6efd;
+}
+.shipment-section .card-header {
+  background-color: #f0f6ff;
+  color: #0d3c7b;
+}
+
+/* Bank */
+.bank-section {
+  border-left: 4px solid #0d6efd;
+}
+.bank-section .card-header {
+  background-color: #eef4ff;
+  color: #0b3a75;
+}
+
+/* Finance */
+.finance-section {
+  border-left: 4px solid #198754;
+}
+.finance-section .card-header {
+  background-color: #eef8f1;
+  color: #14532d;
+}
+
+/* Packing */
+.packing-section {
+  border-left: 4px solid #6c757d;
+}
+.packing-section .card-header {
+  background-color: #f8f9fa;
+  color: #343a40;
+}
+</style>
+
+<div class="arrival-bg">
+  <div class="row justify-content-center">
+    <div class="col-xl-10 col-lg-11 col-md-12">
+
+      <div class="x_panel shadow-sm">
+
+        <!-- ================= Header ================= -->
+        <div class="x_title">
+          <div class="d-flex flex-column">
+            <h2 class="mb-1">New Shipment</h2>
+           
+          </div>
+        </div>
+
+        <!-- ================= Step Indicator ================= -->
+        <div class="step-indicator">
+
+          <div class="step completed">
+            <div class="circle">✔</div>
+            Arrival Notice
+          </div>
+
+          <div class="step active">
+            <div class="circle">2</div>
+            Bank & Documents
+          </div>
+
+          <div class="step">
+            <div class="circle">3</div>
+            Clearing
+          </div>
+           <div class="step">
+            <div class="circle">4</div>
+            Payment
+          </div>
+
+          <div class="step">
+            <div class="circle">5</div>
+            Warehouse
+          </div>
+
+          <div class="step">
+            <div class="circle">6</div>
+            Completed
+          </div>
+
+        </div>
+
+        <!-- ================= Content ================= -->
+        <div class="x_content">
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- ================= Errors ================= -->
+            {% if form.errors %}
+              <div class="alert alert-danger">
+                <strong>Please correct the errors below:</strong>
+                <ul class="mb-0 mt-2">
+                  {% for field in form %}
+                    {% for error in field.errors %}
+                      <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+
+            <!-- ================= Shipment ================= -->
+            <div class="card section-card shipment-section mb-4">
+              <div class="card-header section-header">
+                Shipment Information
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">BL / AWB *</label>
+                    {{ form.shipment|add_class:"form-select select2" }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ================= Bank ================= -->
+            <div class="card section-card bank-section mb-4">
+              <div class="card-header section-header">
+                Bank & Document Details
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Bank *</label>
+                    {{ form.bank|add_class:"form-select select2" }}
+                  </div>
+
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Bank Document Type *</label>
+                    {{ form.bank_doc_type|add_class:"form-select select2" }}
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Bank Document Reference *</label>
+                    {{ form.reference_number|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Invoice Number</label>
+                    {{ form.supplier_invoice|add_class:"form-control" }}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ================= Finance ================= -->
+            <div class="card section-card finance-section mb-4">
+              <div class="card-header section-header">
+                Financial Details
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">Currency *</label>
+                    {{ form.currency|add_class:"form-select select2" }}
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">Invoice Amount (Foreign) *</label>
+                    {{ form.amount|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">Invoice Amount (LKR) *</label>
+                    {{ form.amount_lkr|add_class:"form-control" }}
+                  </div>
+                </div>
+
+                <small class="text-muted">
+                  Enter the actual LKR value as per bank document.
+                </small>
+
+              </div>
+            </div>
+
+            <!-- ================= Packing ================= -->
+            <div class="card section-card packing-section mb-4">
+              <div class="card-header section-header">
+                Packing & Weight Details
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Packing List Reference</label>
+                    {{ form.packing_list_ref|add_class:"form-control" }}
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">Gross Weight</label>
+                    {{ form.gross_weight|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">Net Weight</label>
+                    {{ form.net_weight|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-4 mb-3">
+                    <label class="form-label">CBM</label>
+                    {{ form.cbm|add_class:"form-control" }}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ================= Actions ================= -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button type="submit" class="btn btn-success px-4">
+                ✅ Save Shipment
+              </button>
+
+              <a href="{% url 'sales_dashboard' %}" class="btn btn-outline-secondary px-4">
+                ❌ Cancel
+              </a>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

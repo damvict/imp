@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import Shipment
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.db.models import Sum  # <-- import Sum
-
+from .models import Currency
 
 class ClearingAgentShipmentSerializer(serializers.ModelSerializer):
     supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
@@ -174,6 +174,12 @@ class ClearingAgentSerializer(serializers.ModelSerializer):
         fields = '__all__'  # include all ClearingAgent fields
 
 
+
+
+class CurrencySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Currency
+        fields = ["id", "code", "name", "symbol"]
 
 
 class arrival_notice_listSerializer(serializers.ModelSerializer):

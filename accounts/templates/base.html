@@ -23,7 +23,99 @@
   <!-- Select2 -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+<style>
+ .site_logo {
+  height:80px;
+  filter: brightness(0) invert(1);
+}
+/* Top logo section background */
+.left_col .nav_title {
+   background: #04284D;   /* dark blue */
+}
 
+/* Optional: remove border line */
+.left_col .nav_title {
+  border-bottom: none;
+}
+.left_col {
+  background: #04284D;
+}
+/* Keep logo slightly left even when sidebar toggles */
+.site_title {
+  padding-left: 1px !important;
+  text-align: left !important;
+}
+
+/* Ensure logo + text stay left aligned */
+.site_title img,
+.site_title span {
+  margin-left: 0;
+}
+/* Top header background (burger + profile) */
+.top_nav .nav_menu {
+  background: #04284D;   /* your navy blue */
+  border-bottom: none;
+}
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+}
+
+.menu-text {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Optional: hide text on small screens */
+@media (max-width: 768px) {
+  .menu-text {
+    display: none;
+  }
+}
+/* Fix burger + text alignment */
+.nav.toggle a {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  line-height: normal !important;
+  white-space: nowrap;
+}
+
+/* Make sure icon doesn't behave like block */
+.nav.toggle a i {
+  display: inline-block;
+}
+.menu-text {
+  color:  #22c55e;   /* white */
+}
+
+/* Right-side username color */
+.top_nav .navbar-right .user-profile {
+  color: #ffffff !important;   /* white */
+}
+
+
+
+  /* Main content area background (normal area) */
+/* Background of normal content area (behind cards) */
+/* Force background for main content area */
+.right_col {
+  background-color: #EAF2F8 !important;
+  min-height: 100vh;
+}
+
+
+/* Arrival Notice – label styles */
+.arrival-bg label {
+    color: #1F2937;          /* Dark gray (professional) */
+    font-weight: 600;
+}
+
+
+</style>
 </head>
 
 <body class="nav-md">
@@ -34,20 +126,25 @@
     <div class="col-md-3 left_col">
       <div class="left_col scroll-view">
         <div class="navbar nav_title">
-          <a class="site_title" href="{% url 'home' %}"><i class="fa fa-paw"></i> <span>IMPORTS</span></a>
+        <a class="site_title" href="{% url 'home' %}">
+  <img src="{% static 'assets/images/logo.png' %}"
+       alt="ISWM"
+       class="site_logo">
+  <span>ISWM</span>
+</a>
+
+
         </div>
         <div class="clearfix"></div>
 
         <!-- Profile -->
-        <div class="profile clearfix">
-          <div class="profile_pic">
-            <img src="{% static 'assets/images/p.png' %}" alt="..." class="img-circle profile_img">
-          </div>
-          <div class="profile_info">
-            <span>Welcome,</span>
-            <h2>{{ user.username }}</h2>
-          </div>
-        </div>
+       <div class="profile clearfix">
+  <div class="profile_info single-line">
+    <span>Welcome,</span>
+    <strong>{{ user.username }}</strong>
+  </div>
+</div>
+
         <br />
 
         <!-- Sidebar Menu -->
@@ -87,21 +184,18 @@
                 </ul>
               </li>
 
+
               <li><a><i class="fa fa-truck"></i> Shipment Management <span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
                   {% if perms.masters.can_create_shipment %}
-                    <li><a href="{% url 'shipment_create' %}">Create New Shipment</a></li>
-                    <li><a href="{% url 'shipment_list' %}">View Shipment</a></li>
+                  
+                     <li><a href="{% url 'arrival-notice-create' %}"> New Shipment Arrival Notice </a></li>
+                    <li><a href="{% url 'new-shipment' %}">Create New Shipment </a></li>
+
+
+                   
                   {% endif %}
-                  <li><a>View All Shipments <span class="fa fa-chevron-down"></span></a>
-                    <ul class="nav child_menu">
-                      <li><a href="{% url 'pending_arrival_list' %}">Pending Arrivals</a></li>
-                      {% if request.user.groups.all.0.name == 'Warehouse Staff' %}
-                        <li><a href="{% url 'pending_unloading_list' %}">Pending Unloading</a></li>
-                        <li><a href="{% url 'unloading_in_progress_list' %}">Complete Unloading</a></li>
-                      {% endif %}
-                    </ul>
-                  </li>
+                  
                 </ul>
               </li>
 
@@ -193,7 +287,10 @@
     <div class="top_nav">
       <div class="nav_menu">
         <div class="nav toggle">
-          <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+          <a id="menu_toggle"><i class="fa fa-bars"></i>
+          <span class="menu-text">Import Shipment Workflow Management
+</span>
+          </a>
         </div>
         <nav class="nav navbar-nav">
           <ul class="navbar-right">

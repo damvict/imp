@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="arrival-bg">
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="x_panel">
+
+      <div class="x_title">
+        <h2>New Arrival Notice</h2>
+        <div class="clearfix"></div>
+      </div>
+
+      <div class="x_content">
+        <form method="post">
+          {% csrf_token %}
+
+          {% if form.errors %}
+          <div class="alert alert-danger">
+            <ul>
+              {% for field in form %}
+                {% for error in field.errors %}
+                  <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+
+
+
+          <div class="container-fluid">
+
+            <!-- Company (Mobile Picker equivalent) -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Select Company *</label>
+                {{ form.company|add_class:"form-select select2" }}
+              </div>
+            </div>
+
+            <!-- Vessel -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Vessel Name *</label>
+                {{ form.vessel|add_class:"form-control" }}
+              </div>
+            </div>
+
+            <!-- ETA -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label>Expected Arrival (ETA) *</label>
+                {{ form.expected_arrival_date|add_class:"form-control" }}
+              </div>
+            </div>
+
+            <!-- Supplier (Mobile Picker equivalent) -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Select Supplier *</label>
+                {{ form.supplier|add_class:"form-select select2" }}
+              </div>
+            </div>
+
+            <!-- BL -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label>BL / AWB *</label>
+                {{ form.bl|add_class:"form-control" }}
+              </div>
+            </div>
+
+            <!-- Container -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label>Container *</label>
+                {{ form.container|add_class:"form-control" }}
+              </div>
+            </div>
+
+            <!-- Optional Notice PDF -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label>Notice PDF (Optional)</label>
+                {{ form.remark|add_class:"form-control" }}
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="mt-3">
+              <button type="submit" class="btn btn-success">
+                Create Arrival Notice
+              </button>
+              <a href="{% url 'shipment_list' %}" class="btn btn-secondary">
+                Cancel
+              </a>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+{% if success %}
+<style>
+  body {
+    overflow: hidden;
+  }
+</style>
+
+<!-- Success Modal -->
+<div class="modal fade show"
+     id="successModal"
+     tabindex="-1"
+     style="display:block; background:rgba(0,0,0,0.5);">
+
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Arrival Notice Created</h5>
+      </div>
+
+      <div class="modal-body text-center">
+        <p class="mb-2">Arrival Notice created successfully!</p>
+        <h4 class="text-primary">{{ shipment_code }}</h4>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <!-- Create New -->
+        <a href="{% url 'arrival-notice-create' %}"
+           class="btn btn-primary">
+          ➕ Create New Arrival Notice
+        </a>
+
+        <!-- Back -->
+        <a href="{% url 'shipment-timeline' shipment_code %}"
+           class="btn btn-secondary">
+          ⬅ Back
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -124,6 +124,14 @@ class ClearingAgent(models.Model):
     def __str__(self):
         return self.agent_name
 
+class Currency(models.Model):
+    code = models.CharField(max_length=3, unique=True)   # USD, EUR, LKR
+    name = models.CharField(max_length=50)               # US Dollar
+    symbol = models.CharField(max_length=5, blank=True)  # $, €, Rs
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
 
 
 
@@ -181,7 +189,8 @@ class Shipment(models.Model):
     bl = models.CharField(max_length=100,default=0)
     vessel = models.CharField(max_length=200,default=' ')
     supplier_invoice = models.CharField(max_length=100,null=True, blank=True)
-    order_date = models.DateField()  ########### Notice  arival date
+    #order_date = models.DateField()  ########### Notice  arival date
+    order_date = models.DateField(default=timezone.now)
     expected_arrival_date = models.DateField()  ############ ETA
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -197,7 +206,21 @@ class Shipment(models.Model):
     packing_list_ref = models.CharField(max_length=100)
     c_date = models.DateTimeField(null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT, null=True, blank=True)
-    amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
+    amount = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
+    amount_lkr = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        editable=False
+    )
+
     BANK_DOC_TYPES = [
         ("DA", "DA"),
         ("DP", "DP"),
@@ -334,7 +357,9 @@ class Shipment(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.shipment_code or 'Unassigned'}"
+        #return f"{self.shipment_code or 'Unassigned'}"
+         return f"{self.bl} ({self.shipment_code})"
+
     
 
     def get_status(self):
@@ -455,6 +480,22 @@ class BankDocument(models.Model):
     null=True,
     blank=True   # allows the form to accept empty values
 )
+        # ✅ Currency
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True
+    )
+
+    # ✅ Foreign currency amount
+    foreign_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Amount in foreign currency"
+    )
     issue_date = models.DateField()
     due_date = models.DateField(blank=True, null=True)
     settled = models.BooleanField(default=False)
