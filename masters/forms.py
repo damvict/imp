@@ -509,8 +509,13 @@ class NewShipmentForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     amount = forms.DecimalField(
-        widget=forms.NumberInput(attrs={'class': 'form-control'})
-    )
+    label="Amount (Foreign Currency)",
+    widget=forms.NumberInput(attrs={
+        'class': 'form-control',
+        'step': '0.01'
+    })
+)
+
 
      # ✅ NEW: Currency
     currency = forms.ModelChoiceField(
@@ -544,7 +549,7 @@ class NewShipmentForm(forms.Form):
     cbm = forms.DecimalField(required=False)
     origin_country = forms.CharField(required=False)
     due_date = forms.DateField(required=False)
-    expected_arrival_date = forms.DateField(required=False)
+    expected_arrival_date = forms.DateField(required=True)
 
     def clean(self):
         cleaned_data = super().clean()
