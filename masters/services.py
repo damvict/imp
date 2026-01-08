@@ -54,12 +54,15 @@ def create_arrival_notice(data, user):
 
 
 def update_shipment_stage(data, user):
+    currency = data.get('currency')
+
     with transaction.atomic():
         shipment = get_object_or_404(Shipment, id=data.get('shipment_id'))
         shipment.bank_doc_type = data.get('bank_doc_type')
         shipment.reference_number = data.get('reference_number')
         shipment.bank = data.get('bank')
-        shipment.currency = data.get('currency')
+        ##shipment.currency = data.get('currency')
+        shipment.currency_id = (currency.id if hasattr(currency, 'id') else currency)
         shipment.amount = data.get('amount')           # foreign amount
         shipment.amount_lkr = data.get('amount_lkr') 
         shipment.c_date = _to_date(data.get('due_date'))
