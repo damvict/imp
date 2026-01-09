@@ -66,8 +66,10 @@ def create_arrival_notice(data, user):
 
 
 def update_shipment_stage(data, user):
-    currency = data.get('currency')
-    bank = data.get('bank')
+    #currency = data.get('currency')
+    #bank = data.get('bank')
+    bank = normalize_fk(data.get('bank'), bank)
+    currency = normalize_fk(data.get('currency'), currency)
 
     with transaction.atomic():
         shipment = get_object_or_404(Shipment, id=data.get('shipment_id'))
