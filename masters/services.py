@@ -109,11 +109,12 @@ def update_shipment_stage(data, user):
                 shipment=shipment,
                 doc_type=doc_type,
                 defaults={
-                    #'bank': data.get('bank'),
-                    'bank_id': bank,                       # ✅ FIXED
+                   
+                    ####'bank_id': bank,                       # ✅ FIXED
+                    'bank_id'=bank.id if hasattr(bank, 'id') else bank,
                     'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
-                    #'currency': shipment.currency,
+                   
                     'foreign_amount': shipment.amount,     # foreign
                     'amount': shipment.amount_lkr, 
                     'issue_date': _to_date(data.get('c_date')) or timezone.now().date(),
