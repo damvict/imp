@@ -7,6 +7,18 @@ from django.db import transaction
 
 from datetime import date
 
+
+from django.core.exceptions import ObjectDoesNotExist
+
+def normalize_fk(value, model):
+    if value is None:
+        return None
+    if hasattr(value, 'id'):
+        return value
+    return model.objects.get(id=value)
+
+
+
 def _to_date(value):
     """
     Accepts str | date | None and returns date | None
