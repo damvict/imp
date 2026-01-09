@@ -110,7 +110,7 @@ def update_shipment_stage(data, user):
                 doc_type=doc_type,
                 defaults={
                     #'bank': data.get('bank'),
-                    'bank_id': shipment.bank_id,                      # ✅ FIXED
+                    'bank_id': bank if bank else None                 # ✅ FIXED
                     'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
                     #'currency': shipment.currency,
