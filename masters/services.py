@@ -109,11 +109,13 @@ def update_shipment_stage(data, user):
                 shipment=shipment,
                 doc_type=doc_type,
                 defaults={
-                    #'bank': data.get('bank'),
-                    'bank_id': bank if bank else None ,                # ✅ FIXED
-                    'currency_id': shipment.currency_id,
+                   
+                    #'bank_id': bank if bank else None ,                # ✅ FIXED
+                    'bank': shipment.bank,          # ✅ OBJECT
+                    'currency': shipment.currency,
+                    #'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
-                    #'currency': shipment.currency,
+                   
                     'foreign_amount': shipment.amount,     # foreign
                     'amount': shipment.amount_lkr, 
                     'issue_date': _to_date(data.get('c_date')) or timezone.now().date(),
