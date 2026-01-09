@@ -111,7 +111,8 @@ def update_shipment_stage(data, user):
                 defaults={
                    
                     ####'bank_id': bank,                       # ✅ FIXED
-                    'bank_id'=bank.id if hasattr(bank, 'id') else bank,
+                    'bank_id': bank.id if hasattr(bank, 'id') else bank,
+
                     'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
                    
