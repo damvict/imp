@@ -12,11 +12,15 @@ from datetime import date
 from django.core.exceptions import ObjectDoesNotExist
 
 def normalize_fk(value, model):
-    if value is None:
+    if value in (None, "", 0):
         return None
     if hasattr(value, 'id'):
         return value
-    return model.objects.get(id=value)
+    try:
+        return model.objects.get(pk=value)   # ✅ IMPORTANT FIX
+    except model.DoesNotExist:
+        raise ValueError(f"Invalid {model.__name__} id: {value}")
+
 
 
 
