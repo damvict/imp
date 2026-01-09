@@ -1,28 +1,11 @@
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, BankDocument,Currency
+from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, BankDocument
 from django.utils.dateparse import parse_date
 from django.db import transaction
-from .models import Bank, Currency
 
 
 from datetime import date
-
-
-from django.core.exceptions import ObjectDoesNotExist
-
-def normalize_fk(value, model):
-    if value in (None, "", 0):
-        return None
-    if hasattr(value, 'id'):
-        return value
-    try:
-        return model.objects.get(pk=value)   # ✅ IMPORTANT FIX
-    except model.DoesNotExist:
-        raise ValueError(f"Invalid {model.__name__} id: {value}")
-
-
-
 
 def _to_date(value):
     """
@@ -71,24 +54,17 @@ def create_arrival_notice(data, user):
 
 
 def update_shipment_stage(data, user):
-    #currency = data.get('currency')
-    #bank = data.get('bank')
-    bank = normalize_fk(data.get('bank'), Bank)
-    currency = normalize_fk(data.get('currency'), Currency)
+    currency = data.get('currency')
+    bank = data.get('bank')
 
     with transaction.atomic():
         shipment = get_object_or_404(Shipment, id=data.get('shipment_id'))
         shipment.bank_doc_type = data.get('bank_doc_type')
         shipment.reference_number = data.get('reference_number')
-      
-        ###shipment.bank_id = bank if bank else None
-        ###shipment.bank_id = bank.id if hasattr(bank, 'id') else bank
-        
-        ###shipment.currency_id = currency if currency else None
-        #shipment.bank = bank
-        shipment.b = bank 
-        shipment.currency = currency
-
+        #shipment.bank = data.get('bank')
+        shipment.bank_id = bank if bank else None
+        ##shipment.currency = data.get('currency')
+        shipment.currency_id = currency if currency else None
         shipment.amount = data.get('amount')           # foreign amount
         shipment.amount_lkr = data.get('amount_lkr') 
         shipment.c_date = _to_date(data.get('due_date'))
@@ -133,8 +109,9 @@ def update_shipment_stage(data, user):
                 shipment=shipment,
                 doc_type=doc_type,
                 defaults={
-                   'bank': bank,                 # ✅ OBJECT
-                    'currency': currency,   
+                    #'bank': data.get('bank'),
+                    'bank_id': shipment.bank_id,                      # ✅ FIXED
+                    'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
                     #'currency': shipment.currency,
                     'foreign_amount': shipment.amount,     # foreign
