@@ -111,7 +111,7 @@ def update_shipment_stage(data, user):
                 defaults={
                    
                     #'bank_id': bank if bank else None ,                # ✅ FIXED
-                    'bank': shipment.bank,          # ✅ OBJECT
+                    'bank': 2,          # ✅ OBJECT
                     'currency': shipment.currency,
                     #'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
