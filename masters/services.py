@@ -1,8 +1,9 @@
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, BankDocument
+from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, BankDocument,Currency
 from django.utils.dateparse import parse_date
 from django.db import transaction
+from .models import Bank, Currency
 
 
 from datetime import date
@@ -68,8 +69,8 @@ def create_arrival_notice(data, user):
 def update_shipment_stage(data, user):
     #currency = data.get('currency')
     #bank = data.get('bank')
-    bank = normalize_fk(data.get('bank'), bank)
-    currency = normalize_fk(data.get('currency'), currency)
+    bank = normalize_fk(data.get('bank'), Bank)
+    currency = normalize_fk(data.get('currency'), Currency)
 
     with transaction.atomic():
         shipment = get_object_or_404(Shipment, id=data.get('shipment_id'))
@@ -77,9 +78,12 @@ def update_shipment_stage(data, user):
         shipment.reference_number = data.get('reference_number')
       
         ###shipment.bank_id = bank if bank else None
-        shipment.bank_id = bank.id if hasattr(bank, 'id') else bank
+        ###shipment.bank_id = bank.id if hasattr(bank, 'id') else bank
         
-        shipment.currency_id = currency if currency else None
+        ###shipment.currency_id = currency if currency else None
+        shipment.bank = bank
+        shipment.currency = currency
+
         shipment.amount = data.get('amount')           # foreign amount
         shipment.amount_lkr = data.get('amount_lkr') 
         shipment.c_date = _to_date(data.get('due_date'))
@@ -124,11 +128,8 @@ def update_shipment_stage(data, user):
                 shipment=shipment,
                 doc_type=doc_type,
                 defaults={
-                    #'bank': data.get('bank'),
-                   #'bank_id': bank.id if hasattr(bank, 'id') else bank,
-                    'bank': bank,                        # ✅ FIXED
-                    ##'currency_id': shipment.currency_id,
-                    'currency': currency, 
+                   'bank': bank,                 # ✅ OBJECT
+                    'currency': currency,   
                     'reference_number': data.get('reference_number'),
                     #'currency': shipment.currency,
                     'foreign_amount': shipment.amount,     # foreign
