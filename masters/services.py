@@ -111,8 +111,10 @@ def update_shipment_stage(data, user):
                 doc_type=doc_type,
                 defaults={
                     #'bank': data.get('bank'),
-                    'bank_id': bank,                       # ✅ FIXED
-                    'currency_id': shipment.currency_id,
+                   #'bank_id': bank.id if hasattr(bank, 'id') else bank,
+                    'bank': bank,                        # ✅ FIXED
+                    ##'currency_id': shipment.currency_id,
+                    'currency': currency, 
                     'reference_number': data.get('reference_number'),
                     #'currency': shipment.currency,
                     'foreign_amount': shipment.amount,     # foreign
