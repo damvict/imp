@@ -61,7 +61,10 @@ def update_shipment_stage(data, user):
         shipment = get_object_or_404(Shipment, id=data.get('shipment_id'))
         shipment.bank_doc_type = data.get('bank_doc_type')
         shipment.reference_number = data.get('reference_number')
-        shipment.bank_id=bank.id if hasattr(bank, 'id') else bank,
+        shipment.bank_id=bank.id if hasattr(bank, 'id') else bank
+
+        
+        
         ####shipment.bank_id = bank if bank else None
    
         shipment.currency_id = currency if currency else None
