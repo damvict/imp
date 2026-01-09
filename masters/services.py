@@ -105,14 +105,16 @@ def update_shipment_stage(data, user):
         doc_type=data.get('bank_doc_type')
 
         if doc_type:
+            bank_id = bank.b_id if hasattr(bank, 'b_id') else bank
+            currency_id = currency.id if hasattr(currency, 'id') else currency
             BankDocument.objects.update_or_create(
                 shipment=shipment,
                 doc_type=doc_type,
                 defaults={
                    
                     #'bank_id': bank if bank else None ,                # ✅ FIXED
-                    'bank_id': 2,          # ✅ OBJECT
-                    'currency_id': 1,
+                    'bank_id': bank_id,          # ✅ OBJECT
+                    'currency_id': currency_id,
                     #'currency_id': shipment.currency_id,
                     'reference_number': data.get('reference_number'),
                    
