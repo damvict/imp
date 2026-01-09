@@ -85,7 +85,8 @@ def update_shipment_stage(data, user):
         ###shipment.bank_id = bank.id if hasattr(bank, 'id') else bank
         
         ###shipment.currency_id = currency if currency else None
-        shipment.bank = bank
+        #shipment.bank = bank
+        shipment.b = bank 
         shipment.currency = currency
 
         shipment.amount = data.get('amount')           # foreign amount
