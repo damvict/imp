@@ -62,6 +62,9 @@ from django.db import models
 from .models import Currency
 from .serializers import CurrencySerializer
 
+from django.http import JsonResponse
+import json
+
 def itemcategory_list(request):
     categories = ItemCategory.objects.all()
     return render(request, 'masters/itemcategory_list.html', {'categories': categories})
@@ -3411,3 +3414,165 @@ def get_outstanding_data(company_id=None, doc_type=None, as_at_date=None):
     return results
 
 
+
+
+########## ~~~~~~~~~~~~~~~~~~~~~~~~~ WEB FIXES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@login_required
+def clearing_agent_dashboard(request):
+        """
+        Web dashboard for Clearing Agent
+        Shows ONLY quick actions
+        """
+
+        # Safety check – only Clearing Agent allowed
+        if not request.user.groups.filter(name="Clearing Agent").exists():
+            return render(request, "dashboard/access_denied.html")
+
+        context = {
+            "user": request.user,
+        }
+
+        return render(request, "dash/clearing_agent_dashboard.html", context)
+
+@login_required
+def bank_controller_shipments_web(request):
+    # 🔐 Permission check
+    #if not request.user.groups.filter(name="Bank Controller").exists():
+        #return redirect("admin_dashboard")  # or return HttpResponseForbidden()
+
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=False,
+        ship_status=2
+    )
+
+    return render(
+        request,
+        "shipments/document_handover.html",
+        {"shipments": shipments}
+    )
+
+
+@login_required
+def clearing_agent_users_web(request):
+    users = User.objects.filter(
+        groups__id=4,        # Clearing Agent group
+        is_active=True
+    ).order_by("first_name", "username")
+
+    data = [
+        {
+            "id": u.id,
+            "username": u.username,
+            "display_name": f"{u.first_name} {u.last_name}".strip() or u.username
+        }
+        for u in users
+    ]
+
+    return JsonResponse(data, safe=False)
+
+
+
+
+
+@login_required
+def confirm_handover_web(request, shipment_id):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Invalid request method"},
+            status=405
+        )
+
+    try:
+        data = json.loads(request.body)
+        clearing_agent_id = data.get("clearing_agent_id")
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"error": "Invalid JSON"},
+            status=400
+        )
+
+    if not clearing_agent_id:
+        return JsonResponse(
+            {"error": "clearing_agent_id is required"},
+            status=400
+        )
+
+    # ✅ Get clearing agent (auth user)
+    try:
+        clearing_agent = User.objects.get(id=clearing_agent_id)
+    except User.DoesNotExist:
+        return JsonResponse(
+            {"error": "Invalid clearing agent"},
+            status=404
+        )
+
+    # ✅ Ensure user is a clearing agent
+    if not clearing_agent.groups.filter(id=4).exists():
+        return JsonResponse(
+            {"error": "Selected user is not a clearing agent"},
+            status=400
+        )
+
+    # ✅ Get shipment
+    try:
+        shipment = Shipment.objects.get(id=shipment_id)
+    except Shipment.DoesNotExist:
+        return JsonResponse(
+            {"error": "Shipment not found"},
+            status=404
+        )
+
+    try:
+        shipment.clearing_agent = clearing_agent
+        shipment.send_to_clearing_agent = True
+        shipment.send_date = timezone.now()
+        shipment.ship_status = 3   # ✅ FIXED
+        shipment.save()
+
+        # ✅ Record phase
+        phase_master = ShipmentPhaseMaster.objects.get(id=3)
+        ShipmentPhase.objects.update_or_create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            defaults={
+                "phase_name": phase_master.phase_name,
+                "completed": True,
+                "completed_at": timezone.now(),
+                "updated_by": request.user,
+                "order": phase_master.order,
+            }
+        )
+
+        return JsonResponse(
+            {"success": "Handover confirmed and phase recorded"},
+            status=200
+        )
+
+    except Exception as e:
+        return JsonResponse(
+            {"error": str(e)},
+            status=400
+        )
+    
+
+
+    ##############################################
+@login_required
+def clearing_agent_shipments_web(request):
+    # 🔐 Role safety (recommended)
+    if not request.user.groups.filter(name="Clearing Agent").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    shipments = Shipment.objects.filter(
+        clearing_agent=request.user,
+        send_to_clearing_agent=True
+    ).filter(
+        Q(assessment_document__isnull=True) | Q(assessment_document='')
+    )
+
+    return render(
+        request,
+        "masters/clearing_agent_shipments.html",
+        {"shipments": shipments}
+    )

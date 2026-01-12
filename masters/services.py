@@ -68,10 +68,10 @@ def update_shipment_stage(data, user):
         shipment.amount = data.get('amount')           # foreign amount
         shipment.amount_lkr = data.get('amount_lkr') 
         shipment.c_date = _to_date(data.get('due_date'))
-        shipment.expected_arrival_date = (
-        _to_date(data.get('expected_arrival_date'))
-        or shipment.expected_arrival_date
-    )
+        ##shipment.expected_arrival_date = (
+        ##_to_date(data.get('expected_arrival_date'))
+       ## or shipment.expected_arrival_date
+    ##)
         shipment.shipment_type = data.get('shipment_type')
         shipment.incoterm = data.get('incoterm')
         shipment.transport_mode = data.get('transport_mode')

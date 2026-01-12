@@ -284,7 +284,43 @@ path(
     "shipments/timeline/<str:shipment_code>/",
     web_views.shipment_timeline,
     name="shipment-timeline",
-)
+),
+
+
+
+path(
+    "bank-controller/document-handover/",
+    views.bank_controller_shipments_web,
+    name="document_handover_web"
+),
+
+path(
+    "web/clearing-agent-users/",
+    views.clearing_agent_users_web,
+    name="clearing_agent_users_web"
+),
+
+path(
+    "shipments/confirm-handover/<int:shipment_id>/",
+    views.confirm_handover_web,
+    name="confirm_handover_web"
+),
+
+
+
+##path("ca/pending-assessment/", views.ca_pending_assessment, name="ca-pending-assessment"),
+###path("ca/initiate-clearing/", views.ca_initiate_clearing, name="ca-initiate-clearing"),
+###path("ca/dispatch/", views.ca_dispatch, name="ca-dispatch"),
+###path("ca/documents/", views.ca_documents, name="ca-documents"),
+####path("ca/completed/", views.ca_completed_shipments, name="ca-completed-shipments"),
+
+path(
+    "dash/clearing-agent/",
+    views.clearing_agent_dashboard,
+    name="clearing_agent_dashboard"
+),
+
+
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF WEB URLS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

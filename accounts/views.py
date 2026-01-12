@@ -118,7 +118,7 @@ def home(request):
         #return redirect('shipment_list')  # URL name for your adm
         return redirect('bank_manager_view')
     elif user.groups.filter(name="Clearing Agent").exists():
-        return redirect('clearing_agent_shipments_view')
+         return redirect('clearing_agent_dashboard')
     else:
  
         # fallback - unauthorized or unknown role

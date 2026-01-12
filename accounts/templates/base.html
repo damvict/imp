@@ -189,11 +189,12 @@
                 <ul class="nav child_menu">
                   {% if perms.masters.can_create_shipment %}
                   
-                     <li><a href="{% url 'arrival-notice-create' %}"> New Shipment Arrival Notice </a></li>
+                    <li><a href="{% url 'arrival-notice-create' %}"> New Shipment Arrival Notice </a></li>
                     <li><a href="{% url 'new-shipment' %}">Create New Shipment </a></li>
+                    <li><a href="{% url 'document_handover_web' %}">  Document Handover</a>    </li>
 
 
-                   
+
                   {% endif %}
                   
                 </ul>
@@ -320,6 +321,7 @@
 <script src="{% static 'assets/vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
 <script src="{% static 'assets/build/js/custom.min.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 
 <script>
   $(document).ready(function() {
