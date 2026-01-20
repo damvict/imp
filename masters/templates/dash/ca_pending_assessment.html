@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.label {
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+  color: #1e40af;
+}
+
+input[type="text"], input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.btn {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+</style>
+
+<h3>📄 Pending Duty Assessments</h3>
+
+{% for shipment in shipments %}
+<div class="card">
+
+  <strong>Shipment:</strong> {{ shipment.shipment_code }}<br>
+  <strong>Supplier:</strong> {{ shipment.supplier.supplier_name|default:"-" }}<br>
+  <strong>USD:</strong> {{ shipment.amount|default:"-" }}<br>
+  <strong>BL:</strong> {{ shipment.bl }}<br>
+  <strong>Handed Over:</strong> {{ shipment.send_date|date:"d M Y H:i" }}
+
+  <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+    {% csrf_token %}
+    <input type="hidden" name="shipment_id" value="{{ shipment.id }}">
+
+    <label class="label">Duty Assessment Amount (LKR)</label>
+    <input type="text" name="total_duty_value" placeholder="Enter amount">
+
+    <label class="label">Assessment Document *</label>
+    <input type="file" name="assessment_document" required>
+
+    <button class="btn btn-primary" style="margin-top:12px;">
+      Save Assessment
+    </button>
+  </form>
+
+</div>
+{% empty %}
+<p>No pending assessments.</p>
+{% endfor %}
+
+{% endblock %}

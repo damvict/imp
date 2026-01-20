@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Initiate Clearing Process{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <h2>Initiate Clearing Process</h2>
+
+  {% if shipments %}
+    {% for s in shipments %}
+      <div class="shipment-card">
+
+        <!-- HEADER -->
+        <div class="card-header">
+          <div>
+            <div class="shipment-code">{{ s.shipment_code }}</div>
+            <div class="supplier">{{ s.supplier_name|default:"N/A" }}</div>
+          </div>
+
+          <span class="status-badge pending">PENDING</span>
+        </div>
+
+        <!-- DETAILS -->
+        <div class="card-details">
+          <div class="detail-row">
+            <span>Total Duty</span>
+            <strong>Rs {{ s.total_duty_value|default:"0"|floatformat:2 }}</strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Duty Paid Date</span>
+            <strong>{{ s.duty_paid_date|date:"Y-m-d" }}</strong>
+          </div>
+        </div>
+
+        <!-- ✅ TWO BUTTONS ONLY -->
+        <div class="card-actions">
+
+          <!-- 👁 VIEW PROOF -->
+          <a href="{{ s.payref_document }}"
+             target="_blank"
+             class="btn btn-outline-primary">
+            View Proof
+          </a>
+
+          <!-- ⬇ DOWNLOAD -->
+          <form method="POST"
+                action="{% url 'initiate-clearing-submit-web' s.id %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-outline-success">
+              Download
+            </button>
+          </form>
+
+        </div>
+
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No shipments found.</p>
+  {% endif %}
+</div>
+{% endblock %}

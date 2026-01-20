@@ -76,7 +76,8 @@
   <div class="cards">
 
     <!-- Pending Assessment -->
-    <a href="#" class="card red">
+   <a href="{% url 'ca_pending_assessment' %}" class="card red">
+
       <div class="card-icon">📄</div>
       <div class="card-title">Pending Assessment</div>
       <div class="card-desc">
@@ -85,22 +86,27 @@
     </a>
 
     <!-- Initiate Clearing -->
-    <a href="#" class="card orange">
-      <div class="card-icon">📦</div>
-      <div class="card-title">Initiate Clearing</div>
-      <div class="card-desc">
-        Start customs clearing for shipments
-      </div>
-    </a>
+<a href="{% url 'initiate-clearing-web' %}"
+   class="card orange"
+   style="text-decoration:none; color:inherit;">
+  <div class="card-icon">📦</div>
+  <div class="card-title">Initiate Clearing</div>
+  <div class="card-desc">
+    Start customs clearing for shipments
+  </div>
+</a>
+
 
     <!-- Dispatch Shipment -->
-    <a href="#" class="card blue">
-      <div class="card-icon">🚚</div>
-      <div class="card-title">Dispatch Shipment</div>
-      <div class="card-desc">
-        Manage cleared shipment dispatch
-      </div>
-    </a>
+<a href="{% url 'clearing-agent-dispatch-web' %}" class="card blue">
+  <div class="card-icon">🚚</div>
+  <div class="card-title">Dispatch Shipment</div>
+  <div class="card-desc">
+    Manage cleared shipment dispatch
+  </div>
+</a>
+
+
 
     <!-- Uploaded Documents -->
     <a href="#" class="card purple">

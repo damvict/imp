@@ -129,7 +129,7 @@ urlpatterns = [
 
 
     #bank MAmager
-     path('bank-manager/', views.bank_manager_view, name='bank_manager_view'),
+     path('dash/', views.bank_manager_view, name='bank_manager_view'),
      path("bank-manager/update/<int:shipment_id>/bank-update/", views.bank_manager_update, name="bank_manager_update"),
 
 
@@ -321,8 +321,175 @@ path(
 ),
 
 
+   
+
+path(
+    "dash/clearing-agent/pending-assessment/",
+    views.ca_pending_assessment_web,
+    name="ca_pending_assessment",
+),
+
 
 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF WEB URLS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+############ Bank Manager
+
+path(
+        "dash/bank-manager/",
+        views.bank_manager_dashboard,
+        name="bank_manager_dashboard"
+    ),
+
+    
+
+
+
+
+path(
+    'bank-manager/payment/<int:shipment_id>/',
+    views.bank_manager_payment_details,
+    name='bank_manager_payment_details'
+),
+
+path(
+    'bank-manager/payment/<int:shipment_id>/submit/',
+    views.bank_manager_submit_payment,
+    name='bank_manager_submit_payment'
+),
+
+
+
+path(
+    "bank-manager/payment/<int:shipment_id>/send-md/",
+    views.bank_manager_send_md_approval,
+    name="bank_manager_send_md_approval",
+),
+
+# urls.py (web urls)
+#path("md/payment-approvals/", views.md_payment_approvals, name="md-payment-approvals"),
+
+
+# urls.py
+path("md/payment-approvals/", views.md_payment_approvals, name="md-payment-approvals"),
+path("md/payment-approvals/approve/<int:shipment_id>/", views.md_approve_web, name="md-approve-web"),
+path("md/payment-approvals/reject/<int:shipment_id>/", views.md_reject_web, name="md-reject-web"),
+
+
+# masters/urls.py
+path(
+    "bank-manager/payment-references/",
+    views.bank_manager_payment_references_web,
+    name="bank-manager-payment-references"
+),
+
+path(
+    "bank-manager/payment-references/<int:shipment_id>/",
+    views.bank_manager_payment_reference_detail_web,
+    name="bank-manager-payment-reference-detail"
+),
+
+# masters/urls.py
+path(
+    "clearing-agent/initiate-clearing/",
+    views.initiate_clearing_web,
+    name="initiate-clearing-web"
+),
+
+path(
+    "clearing-agent/initiate-clearing/<int:shipment_id>/",
+    views.initiate_clearing_submit_web,
+    name="initiate-clearing-submit-web"
+),
+
+
+path(
+    "clearing-agent/dispatch/",
+    views.clearing_agent_dispatch_web,
+    name="clearing-agent-dispatch-web"
+),
+
+path(
+    "clearing-agent/dispatch/<int:shipment_id>/",
+    views.clearing_agent_dispatch_detail_web,
+    name="clearing-agent-dispatch-detail-web"
+),
+
+
+path(
+    "security-guard/dashboard/",
+    views.sg_dashboard_web,
+    name="sg-dashboard-web"
+),
+
+# web urls
+path(
+    "security-guard/truck-arrivals/",
+    views.truck_arrivals_web,
+    name="truck-arrival-web"
+),
+
+path(
+    "security-guard/record-arrival/<int:dispatch_id>/",
+    views.record_arrival_web,
+    name="record-arrival-web"
+),
+
+path(
+    "security-guard/record-departure/<int:dispatch_id>/",
+    views.record_departure_web,
+    name="record-departure-web"
+),
+
+
+path(
+        "ws/dashboard/",
+        views.ws_dashboard,
+        name="ws_dashboard"
+    ),
+
+
+path("ws/grn/", views.grn_record_web, name="grn-record-web"),
+path(
+    "ws/grn/record/<int:shipment_id>/",
+    views.record_grn_upload_web,
+    name="record-grn-upload-web"
+),
+
+
+
+path(
+        "imp/dashboard/",
+        views.imports_dashboard,
+        name="imports_dashboard"
+    ),
+
+
+path(
+    "imp/grn/confirm/",
+    views.grn_confirm_web,
+    name="grn_confirm_list"
+),
+
+path(
+    "imp/grn/confirm/<int:shipment_id>/",
+    views.record_grn_confirm_web,
+    name="record_grn_confirm_web"
+),
+
+
+path(
+    "imp/dashboard/kpi/",
+    views.dashboard_kpi_web,
+    name="dashboard_kpi_web"
+),
+path(
+    "imp/dashboard/bank-controller/",
+    views.bank_controller_dashboard_web,
+    name="bank_controller_dashboard_web"
+),
 
 
 ]       

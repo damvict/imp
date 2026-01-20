@@ -1,173 +1,194 @@
 {% extends "base.html" %}
+{% load static %}
+{% block title %}MD Dashboard{% endblock %}
 
 {% block content %}
 <style>
-  /* Container */
-  .md-dashboard-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 10px 20px;
-    font-family: Arial, sans-serif;
-  }
+/* -------- Page -------- */
+.page-wrapper {
+  background-color: #F9FAFB;
+  min-height: 100vh;
+}
 
-  h2 {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    color: #1f2937; /* dark gray */
-  }
+/* -------- Header -------- */
+.header {
+  background-color: #1E3A8A;
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  /* Table Styles */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  }
+.app-title {
+  font-size: 18px;
+  font-weight: bold;
+}
 
-  thead {
-    background-color: #2563eb; /* blue */
-    color: white;
-  }
+.header-icons {
+  display: flex;
+  gap: 12px;
+}
 
-  th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border: 1px solid #ddd;
-  }
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
-  tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
+/* -------- Welcome -------- */
+.welcome-box {
+  background-color: #E0F2FE;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+}
 
-  tbody tr:hover {
-    background-color: #e0f2fe; /* light blue hover */
-  }
+.welcome-text {
+  font-size: 16px;
+  color: #1E3A8A;
+}
 
-  /* Button Styles */
-  .approve-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background-color: #10b981; /* green */
-    color: white;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 0.9rem;
-  }
+.user-role {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E40AF;
+  margin-top: 2px;
+}
 
-  .approve-btn:hover {
-    background-color: #059669; /* darker green */
-  }
+/* -------- Section -------- */
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 20px 16px 12px;
+}
 
-  .approve-btn svg {
-    width: 16px;
-    height: 16px;
-    fill: white;
-  }
+/* -------- Quick Actions -------- */
+.actions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0 16px;
+}
 
-  /* Document Link */
-  .doc-link {
-    color: #2563eb; /* blue */
-    text-decoration: none;
-    font-weight: bold;
-  }
+.action-card {
+  width: 47%;
+  margin-bottom: 16px;
+  text-decoration: none;
+}
 
-  .doc-link:hover {
-    text-decoration: underline;
-  }
+.action-inner {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  position: relative;
+}
 
-  /* Responsive */
-  @media (max-width: 768px) {
-    table, thead, tbody, th, td, tr {
-      display: block;
-    }
+/* Icon */
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: #DBEAFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-size: 26px;
+  color: #3B82F6;
+}
 
-    tr {
-      margin-bottom: 15px;
-    }
+/* Title */
+.action-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
 
-    th {
-      display: none;
-    }
+/* Alert */
+.alert .action-inner {
+  border: 1px solid #FCA5A5;
+  background-color: #FEF2F2;
+}
 
-    td {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
+.alert .action-icon {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
 
-    td:before {
-      content: attr(data-label);
-      font-weight: bold;
-      width: 45%;
-      flex-shrink: 0;
-    }
+.alert .action-title {
+  color: #DC2626;
+  font-weight: 700;
+}
 
-    .approve-btn {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+.sub-alert {
+  font-size: 11px;
+  color: #B91C1C;
+  margin-top: 4px;
+}
 
+/* Badge */
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background-color: #DC2626;
+  color: white;
+  border-radius: 12px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
 </style>
 
-<div class="md-dashboard-container">
-  <h2>Pending Duty Approvals</h2>
+<div class="page-wrapper">
 
-  {% if shipments %}
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Document Type</th>
-        <th>Doc. Number</th>
-        <th>Payment Marked</th>
-        <th>Action</th>
-        <th>Document</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for shipment in shipments %}
-      <tr>
-        <td data-label="ID">{{ shipment.id }}</td>
-        <td data-label="Document Type">{{ shipment.bank_doc_type }}</td>
-        <td data-label="Doc. Number">{{ shipment.reference_number }}</td>
-        <td data-label="Payment Marked">
-          {% if shipment.payment_marked %}
-            <span style="color: green; font-weight: bold;">Yes</span>
-          {% else %}
-            <span style="color: red; font-weight: bold;">No</span>
-          {% endif %}
-        </td>
-        <td data-label="Action">
-          <form method="post" action="{% url 'approve_duty_paid_md' shipment.id %}">
-            {% csrf_token %}
-            <button type="submit" class="approve-btn">
-              <!-- Check icon SVG -->
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M16.707 5.293a1 1 0 010 1.414l-7.071 7.071a1 1 0 01-1.414 0L3.293 9.293a1 1 0 011.414-1.414L8 11.172l6.293-6.293a1 1 0 011.414 0z"/>
-              </svg>
-              Approve Duty
-            </button>
-          </form>
-        </td>
-        <td data-label="Document">
-          {% if shipment.assessment_document %}
-            <a href="{{ shipment.assessment_document.url }}" target="_blank" class="doc-link">View Document</a>
-          {% else %}
-            <span style="color: gray;">No document</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-    <p style="color: gray; margin-top: 20px;">No shipments pending duty approval.</p>
-  {% endif %}
+  <!-- HEADER -->
+
+
+  <!-- WELCOME -->
+  <div class="welcome-box">
+    <div class="welcome-text">Welcome Back,</div>
+    <div class="user-role">Managing Director</div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="section-title">Quick Actions</div>
+
+  <div class="actions-grid">
+
+    <!-- Payment Approvals (ALERT) -->
+   <a href="{% url 'md-payment-approvals' %}" class="action-card alert">
+
+      <div class="action-inner">
+        <div class="badge">{{ md.payment_app }}</div>        
+        <div class="action-icon">✔️</div>
+        <div class="action-title">Payment Approvals</div>
+        <div class="sub-alert">Approval(s) pending</div>
+      </div>
+    </a>
+
+    <!-- Bank Balance -->
+    <a href="#" class="action-card">
+      <div class="action-inner">
+        <div class="action-icon">💰</div>
+        <div class="action-title">Bank Balance</div>
+      </div>
+    </a>
+
+  </div>
+
 </div>
 {% endblock %}

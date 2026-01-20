@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}GRN Confirmation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <div class="page-title">
+    <div class="title_left">
+      <h3>GRN Confirmation</h3>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if shipments %}
+    <div class="row">
+
+      {% for s in shipments %}
+      <div class="col-md-4 col-sm-6">
+        <div class="x_panel">
+          <div class="x_content">
+
+            <h4 class="text-primary">
+              <i class="fa fa-clipboard"></i>
+              {{ s.shipment_code }}
+            </h4>
+
+            <p class="text-muted">
+              {{ s.supplier.name|default:"-" }}
+            </p>
+
+            <p>
+              <strong>GRN No:</strong>
+              {{ s.grn_number|default:"-" }}
+            </p>
+
+            <p>
+              <i class="fa fa-user"></i>
+              {{ s.dispatch.driver_name|default:"-" }}
+            </p>
+
+            <p>
+              <i class="fa fa-phone"></i>
+              {{ s.dispatch.driver_phone|default:"-" }}
+            </p>
+
+            <p>
+              <i class="fa fa-truck"></i>
+              {{ s.grn_complete_at_warehouse_date|date:"Y-m-d"|default:"-" }}
+            </p>
+
+            <p>
+              <strong>Amount:</strong>
+              Rs. {{ s.amount|default:"-" }}
+            </p>
+
+            <p>
+              <i class="fa fa-ship"></i>
+              {{ s.vessel|default:"-" }}
+            </p>
+
+            <span class="label label-info">
+              Ready for GRN Upload
+            </span>
+
+            <hr>
+
+            <form
+              method="post"
+              action="{% url 'record_grn_confirm_web' s.id %}"
+            >
+              {% csrf_token %}
+              <button
+                type="submit"
+                class="btn btn-success btn-block"
+                onclick="return confirm('Confirm GRN upload for this shipment?')"
+              >
+                Confirm GRN Upload
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+
+  {% else %}
+    <div class="text-center text-muted" style="margin-top:60px;">
+      <i class="fa fa-truck fa-3x"></i>
+      <p>No shipments available for GRN confirmation.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

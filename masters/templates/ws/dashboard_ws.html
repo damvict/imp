@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Security Guard Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- ================= QUICK ACTIONS ================= -->
+  <h4 class="fw-bold mb-3">Quick Actions</h4>
+
+  <div class="row justify-content-start">
+
+    <!-- Record Arrival / Departure -->
+    <div class="col-md-3 col-sm-6 mb-4">
+      <a href="#" class="text-decoration-none">
+
+        <div class="card shadow-sm text-center position-relative h-100">
+          <div class="card-body">
+
+            <!-- ICON -->
+            <div class="mb-2">
+              <i class="bi bi-check-circle text-primary fs-2"></i>
+            </div>
+
+           <a href="{% url 'grn-record-web' %}">
+  <h6 class="fw-semibold mt-2">
+    Record GRN
+  </h6>
+</a>
+
+          </div>
+        </div>
+
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

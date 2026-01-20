@@ -28,28 +28,20 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-cgaxsi4u^0j3w^(q3nlhe8sodr3oythj!oz8^8*1juv&e_m1!0'
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = 'django-insecure-cgaxsi4u^0j3w^(q3nlhe8sodr3oythj!oz8^8*1juv&e_m1!0'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-#ALLOWED_HOSTS = []
-#ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.29", "0.0.0.0"]
-ALLOWED_HOSTS = ["62.210.123.134", "imp.agcresourceportal.lk", "localhost", "127.0.0.1","ims.agcresourceportal.lk"]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:19006",  # Expo web
-    "http://127.0.0.1:19006",
-    "http://192.168.1.10:19006",
-]
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.29", "0.0.0.0"]
+
+
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,11 +52,10 @@ INSTALLED_APPS = [
     'accounts',
     'masters',
     'widget_tweaks',
-   
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -72,12 +63,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'import_system.urls'
 
-#CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 TEMPLATES = [
     {
@@ -119,20 +110,12 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
-from datetime import timedelta
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': True,
-
-    'AUTH_HEADER_TYPES': ('Bearer',),
-}
 
 
 # Password validation
@@ -159,13 +142,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Colombo'
-USE_TZ = True
-
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Upload Payment Reference{% endblock %}
+
+{% block content %}
+<style>
+.page-wrapper {
+  background-color: #F9FAFB;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+/* Grid */
+.shipment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Card */
+.shipment-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shipment-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+/* Header */
+.card-header {
+  background-color: #5BB2EC;
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin: -16px -16px 12px -16px;
+}
+
+.shipment-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* Info rows */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.info-row span:first-child {
+  color: #6B7280;
+}
+
+.info-row span:last-child {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Footer */
+.card-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Green upload button */
+.upload-btn {
+  background-color: #16A34A; /* green */
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+/* Hover */
+.shipment-card:hover .upload-btn {
+  background-color: #15803D;
+  transform: translateY(-1px);
+}
+
+/* Soft pulse to show action */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(22,163,74,0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
+  100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
+}
+
+.upload-btn.attention {
+  animation: pulse 2s infinite;
+}
+</style>
+
+<div class="page-wrapper">
+  <h2 style="margin-bottom:16px;">Upload Payment Reference</h2>
+
+  {% if shipments %}
+    <div class="shipment-grid">
+
+      {% for s in shipments %}
+        <a href="{% url 'bank-manager-payment-reference-detail' s.id %}"
+           class="shipment-card">
+
+          <!-- Header -->
+          <div class="card-header">
+            <div class="shipment-code">
+              {{ s.shipment_code }}
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="info-row">
+            <span>Vessel</span>
+            <span>{{ s.vessel|default:"N/A" }}</span>
+          </div>
+
+          <div class="info-row">
+            <span>Duty Amount</span>
+            <span>Rs {{ s.total_duty_value|default:"0"|floatformat:2 }}</span>
+          </div>
+
+          <div class="info-row">
+            <span>Approval Date</span>
+            <span>{{ s.duty_paid_date|date:"d M Y H:i" }}</span>
+          </div>
+
+          <!-- CTA -->
+          <div class="card-footer">
+            <span class="upload-btn attention">
+              Upload Reference
+            </span>
+          </div>
+
+        </a>
+      {% endfor %}
+
+    </div>
+  {% else %}
+    <p>No payment references found.</p>
+  {% endif %}
+</div>
+{% endblock %}

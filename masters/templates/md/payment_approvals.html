@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Payment Approvals{% endblock %}
+
+{% block content %}
+<style>
+.page-wrapper {
+  background-color: #F9FAFB;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+/* Grid */
+.approval-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* Card */
+.approval-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.card-header {
+  background-color: #E0F2FE;      /* light blue like mobile */
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin: -16px -16px 12px -16px; /* stretch header edge-to-edge */
+}
+
+/* Optional: stronger title contrast */
+.shipment-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+
+
+/* Info rows */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.info-row span:first-child {
+  color: #6B7280;
+}
+
+.info-row span:last-child {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Actions */
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.btn-approve {
+  background-color: #16A34A;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.btn-reject {
+  background-color: #DC2626;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Reject textarea */
+.reject-box {
+  margin-top: 10px;
+}
+
+.reject-box textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #D1D5DB;
+  padding: 6px;
+  font-size: 13px;
+}
+</style>
+
+<div class="page-wrapper">
+  <h2 style="margin-bottom:16px;">Payment Approvals</h2>
+
+  {% if shipments %}
+    <div class="approval-grid">
+
+      {% for s in shipments %}
+      <div class="approval-card">
+
+        <!-- Header -->
+        <div class="card-header">
+          <div class="shipment-code">
+            {{ s.shipment_code }}
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="info-row">
+          <span>Duty Amount</span>
+          <span>Rs {{ s.total_duty_value|floatformat:2 }}</span>
+        </div>
+
+        <div class="info-row">
+          <span>Supplier</span>
+          <span>{{ s.supplier_name|default:"-" }}</span>
+        </div>
+
+        <div class="info-row">
+          <span>Bank</span>
+          <span>{{ s.duty_paid_bank|default:"-" }}</span>
+        </div>
+
+        <div class="info-row">
+          <span>Invoice</span>
+          <span>{{ s.supplier_invoice }}</span>
+        </div>
+
+        <div class="info-row">
+          <span>Requested</span>
+          <span>{{ s.payment_marked_date|date:"Y-m-d" }}</span>
+        </div>
+
+        {% if s.assessment_document %}
+          <a href="{{ s.assessment_document }}" target="_blank"
+             style="margin-top:6px;font-size:13px;">
+            📄 View Assessment Document
+          </a>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="card-actions">
+          <form method="POST"
+                action="{% url 'md-approve-web' s.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-approve">
+              Approve
+            </button>
+          </form>
+
+          <form method="POST"
+                action="{% url 'md-reject-web' s.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-reject">
+              Reject
+            </button>
+
+            <div class="reject-box">
+              <textarea name="reason" rows="2"
+                placeholder="Rejection reason" required></textarea>
+            </div>
+          </form>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+  {% else %}
+    <p>No pending approvals.</p>
+  {% endif %}
+</div>
+{% endblock %}

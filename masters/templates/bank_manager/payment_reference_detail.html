@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Upload Payment Reference{% endblock %}
+
+{% block content %}
+<style>
+.page-wrapper {
+  max-width: 820px;
+  margin: 24px auto;
+  background-color: #F9FAFB;
+}
+
+/* Page title */
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1F2937;
+}
+
+/* Alerts */
+.alert {
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* Shipment summary card */
+.shipment-card {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+}
+
+.card-header {
+  background-color: #E0F2FE;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin: -16px -16px 14px -16px;
+}
+
+.shipment-code {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+
+/* Info rows */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.info-row .label {
+  color: #6B7280;
+}
+
+.info-row .value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Form */
+form {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.text-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #D1D5DB;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #1E3A8A;
+}
+
+/* Upload box */
+.upload-box {
+  border: 2px dashed #CBD5E1;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 20px;
+  background-color: #F8FAFC;
+}
+
+.upload-box input {
+  margin-bottom: 6px;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* Buttons */
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-success {
+  background-color: #16A34A;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-success:hover {
+  background-color: #15803D;
+}
+
+.btn-secondary {
+  background-color: #E5E7EB;
+  color: #111827;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background-color: #D1D5DB;
+}
+</style>
+
+<div class="page-wrapper">
+
+  <div class="page-title">Upload Payment Reference</div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Shipment summary -->
+  <div class="shipment-card">
+    <div class="card-header">
+      <div class="shipment-code">
+        {{ shipment.shipment_code }}
+      </div>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Vessel</span>
+      <span class="value">{{ shipment.vessel|default:"N/A" }}</span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Supplier</span>
+      <span class="value">{{ shipment.supplier_name|default:"N/A" }}</span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Total Duty</span>
+      <span class="value">
+        Rs {{ shipment.total_duty_value|default:"0"|floatformat:2 }}
+      </span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Approval Date</span>
+      <span class="value">
+        {{ shipment.duty_paid_date|date:"d M Y H:i"|default:"N/A" }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Upload form -->
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label class="input-label">Payment Reference Number *</label>
+    <input type="text"
+           name="payref_document_ref"
+           class="text-input"
+           placeholder="Enter payment reference number"
+           required>
+
+    <label class="input-label">Upload Payment Proof *</label>
+    <div class="upload-box">
+      <input type="file"
+             name="payref_document"
+             accept="application/pdf,image/*"
+             required>
+      <div class="upload-hint">
+        PDF or Image • Maximum 10MB
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button type="submit" class="btn btn-success">
+        Upload Payment Reference
+      </button>
+
+      <a href="{% url 'bank-manager-payment-references' %}"
+         class="btn btn-secondary">
+        Cancel
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

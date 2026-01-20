@@ -471,7 +471,7 @@ def bank_manager_view(request):
         payment_marked=False
     )
 
-    return render(request, 'masters/bm_shipments.html', {'shipments': shipments})
+    return render(request, 'dash/bank_manager_view.html', {'shipments': shipments})
 
 def bank_manager_update(request, shipment_id):
     shipment = get_object_or_404(Shipment, id=shipment_id)
@@ -1212,13 +1212,22 @@ def is_md(user):
 @login_required
 @user_passes_test(is_md)
 def md_dashboard(request):   
-    # Filter shipments where payment is marked but duty not approved yet
-    shipments = Shipment.objects.filter(payment_marked=True, duty_paid=False)
+    payment_app = Shipment.objects.filter(
+        payment_marked=True,
+        duty_paid=False
+    ).count()
 
     context = {
-        "shipments": shipments
+        "md": {
+            "payment_app": payment_app
+        }
     }
-    return render(request, "dash/md_dashboard.html", context)
+
+    return render(
+        request,
+        "dash/md_dashboard.html",
+        context
+    )
 
 ############################################
 
@@ -3417,6 +3426,61 @@ def get_outstanding_data(company_id=None, doc_type=None, as_at_date=None):
 
 
 ########## ~~~~~~~~~~~~~~~~~~~~~~~~~ WEB FIXES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+################# BC ############
+
+@login_required
+def bank_controller_dashboard_web(request):
+    user = request.user
+    today = timezone.now().date()
+
+    # ---------------- KPIs ----------------
+    current_month_filter = Q(
+        order_date__month=today.month,
+        order_date__year=today.year
+    )
+
+    total_shipments_month = Shipment.objects.filter(
+        current_month_filter, ship_status__gt=1
+    ).count()
+
+    active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
+    completed_shipments = Shipment.objects.filter(ship_status=13).count()
+
+    pending_bank_docs = Shipment.objects.filter(ship_status=1).count()
+
+    total_amount_pending = (
+        BankDocument.objects.filter(settled=False)
+        .aggregate(total=Sum("amount"))["total"] or 0
+    )
+
+    ship_tobe = Shipment.objects.filter(ship_status=1).count()
+    doc_tobe_handover = Shipment.objects.filter(
+        ship_status=2, send_to_clearing_agent=False
+    ).count()
+
+    context = {
+        "stats": {
+            "total_shipments_month": total_shipments_month,
+            "active_shipments": active_shipments,
+            "completed_shipments": completed_shipments,
+            "pending_bank_docs": pending_bank_docs,
+            "total_amount_pending": f"{total_amount_pending:,.2f}",
+            "ship_tobe": ship_tobe,
+            "doc_tobe_handover": doc_tobe_handover,
+        }
+    }
+
+    return render(
+        request,
+        "bc/bank_controller_dashboard_web.html",
+        context
+    )
+
+
+
+################# CL 
+
 @login_required
 def clearing_agent_dashboard(request):
         """
@@ -3557,7 +3621,7 @@ def confirm_handover_web(request, shipment_id):
     
 
 
-    ##############################################
+    ############################################## CL ~~~~~~~~~~~~~~~
 @login_required
 def clearing_agent_shipments_web(request):
     # 🔐 Role safety (recommended)
@@ -3576,3 +3640,884 @@ def clearing_agent_shipments_web(request):
         "masters/clearing_agent_shipments.html",
         {"shipments": shipments}
     )
+
+
+#~~~~~~~~~~~~~~~
+
+
+
+from .models import Shipment
+
+
+@login_required
+def ca_pending_assessment_web(request):
+    # 🔐 Only Clearing Agent
+    if not request.user.groups.filter(name="Clearing Agent").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    # GET → show list
+    if request.method == "GET":
+        shipments = Shipment.objects.filter(
+            send_to_clearing_agent=True,
+            c_ass_send=0,
+            clearing_agent=request.user,
+           
+        ).select_related("supplier")
+
+        return render(
+            request,
+            "dash/ca_pending_assessment.html",
+            {"shipments": shipments},
+        )
+
+    # POST → upload assessment
+    shipment_id = request.POST.get("shipment_id")
+    total_duty = request.POST.get("total_duty_value")
+    file = request.FILES.get("assessment_document")
+
+    shipment = get_object_or_404(
+        Shipment,
+        id=shipment_id,
+        clearing_agent=request.user,   # 🔐 security
+    )
+
+    # ❌ File is mandatory (same as API)
+    if not file:
+        messages.error(request, "Assessment document is mandatory.")
+        return redirect("ca_pending_assessment")
+
+    # ✅ Create phase (same logic as API)
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=4)
+        ShipmentPhase.objects.get_or_create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            defaults={
+                "phase_name": phase_master.phase_name,
+                "completed": True,
+                "completed_at": timezone.now(),
+                "updated_by": request.user,
+                "order": phase_master.order,
+            },
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        messages.error(request, "Phase master not found.")
+        return redirect("ca_pending_assessment")
+
+    # ✅ Save assessment (same as API)
+    shipment.assessment_document = file
+    shipment.total_duty_value = total_duty
+    shipment.assessment_uploaded_date = timezone.now()
+    shipment.c_ass_send = True
+    shipment.save()
+
+    messages.success(request, "Assessment uploaded successfully.")
+    return redirect("ca_pending_assessment")
+
+
+
+
+################# Bank Manager
+
+def is_bank_manager(user):
+    return user.groups.filter(name="Bank Manager").exists()
+
+@login_required
+@user_passes_test(is_bank_manager)
+def bank_manager_dashboard(request):
+    init_payment = Shipment.objects.filter(
+        send_to_clearing_agent=True,
+        payment_marked=False,
+        c_ass_send=True
+    ).count()
+
+    upload_payment = Shipment.objects.filter(
+        duty_paid=True,
+        send_to_clearing_agent_payment=False
+    ).count()
+
+    context = {
+        "bm": {
+            "init_payment": init_payment,
+            "upload_payment": upload_payment,
+        }
+    }
+
+    return render(
+        request,
+        "dash/bank_manager_dashboard.html",
+        context
+    )
+
+
+
+
+
+
+@login_required
+@user_passes_test(is_bank_manager)
+def bank_manager_initiate_payment(request):
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent=True,
+        payment_marked=False,
+        c_ass_send=True
+    ).order_by("-id")
+
+    return render(
+        request,
+        "dash/bank_manager_initiate_payment.html",
+        {"shipments": shipments}
+    )
+
+
+@login_required
+@user_passes_test(is_bank_manager)
+def bank_manager_mark_payment(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    shipment.payment_marked = True
+    shipment.payment_marked_date = timezone.now().date()
+    shipment.save()
+
+    return redirect("bank_manager_initiate_payment")
+
+
+
+def is_bank_manager(user):
+    return user.groups.filter(name="Bank Manager").exists()
+
+
+@login_required
+@user_passes_test(is_bank_manager)
+def bank_manager_payment_details(request, shipment_id):
+    print("BANK MANAGER PAYMENT DETAILS VIEW HIT:", shipment_id)
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    return render(
+        request,
+        "dash/bank_manager_payment_details.html",
+        {"shipment": shipment}
+    )
+
+
+
+
+
+@login_required
+@user_passes_test(is_bank_manager)
+def bank_manager_submit_payment(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == "POST":
+        payment_type = request.POST.get("payment_type")
+        duty_paid_bank = request.POST.get("bank_name")
+        pay_note = request.POST.get("notes")
+
+        # Map payment type (same logic as mobile)
+        shipment.payment_type = payment_type
+        shipment.duty_paid_bank = duty_paid_bank
+        shipment.pay_note = pay_note
+
+        shipment.payment_marked = True
+        shipment.payment_marked_date = timezone.now().date()
+        shipment.save()
+
+        return redirect("bank_manager_initiate_payment")
+
+    return redirect("bank_manager_payment_details", shipment_id=shipment.id)
+
+
+
+@login_required
+@user_passes_test(is_bank_manager)
+def bank_manager_send_md_approval(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == "POST":
+        duty_paid_bank = request.POST.get("duty_paid_bank")
+        payment_type = request.POST.get("payment_type")
+        pay_note = request.POST.get("pay_note")
+
+        # Update payment info
+        if duty_paid_bank:
+            shipment.duty_paid_bank = duty_paid_bank
+
+        if payment_type in dict(Shipment.PAYMENT_TYPES):
+            shipment.payment_type = payment_type
+
+        if pay_note:
+            shipment.pay_note = pay_note
+
+        # Mark payment done
+        shipment.payment_marked = True
+        shipment.payment_marked_date = timezone.now()
+        shipment.save()
+
+        # ---- Create ShipmentPhase record ----
+        try:
+            phase_master = ShipmentPhaseMaster.objects.get(id=5)  # MD Approval phase
+            ShipmentPhase.objects.create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=request.user,
+                order=phase_master.order,
+            )
+        except ShipmentPhaseMaster.DoesNotExist:
+            pass
+
+        # Redirect after success
+        return redirect("bank_manager_view")
+
+    # Safety fallback
+    return redirect("bank_manager_payment_details", shipment_id=shipment.id)
+
+
+
+####################### MD Web    ######################################
+
+
+
+
+@login_required
+def md_payment_approvals(request):
+    shipments = Shipment.objects.filter(
+        payment_marked=True,
+        duty_paid=False
+    ).order_by("-payment_marked_date")
+
+    return render(request, "md/payment_approvals.html", {
+        "shipments": shipments
+    })
+
+@login_required
+def md_reject_web(request, shipment_id):
+    if request.method == "POST":
+        reason = request.POST.get("reason")
+
+        shipment = get_object_or_404(Shipment, id=shipment_id)
+        shipment.duty_paid_reject = True
+        shipment.md_reject_reason = reason
+        shipment.md_rejected_at = timezone.now()
+        shipment.save()
+
+    return redirect("md-payment-approvals")
+
+@login_required
+def md_approve_web(request, shipment_id):
+    if request.method == "POST":
+        shipment = get_object_or_404(Shipment, id=shipment_id)
+
+        shipment.duty_paid = True
+        shipment.duty_paid_date = timezone.now()
+        shipment.duty_paid_reject = False
+        shipment.md_reject_reason = None
+        shipment.md_rejected_at = None
+        shipment.save()
+
+        phase_master = ShipmentPhaseMaster.objects.get(id=6)
+        ShipmentPhase.objects.update_or_create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+
+    return redirect("md-payment-approvals")
+
+
+# masters/views.py
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Shipment
+
+@login_required
+def bank_manager_payment_references_web(request):
+    shipments = Shipment.objects.filter(
+        duty_paid=True,
+        send_to_clearing_agent_payment=False
+    ).order_by("-duty_paid_date")
+
+    return render(
+        request,
+        "bank_manager/payment_reference_list.html",
+        {"shipments": shipments}
+    )
+
+
+@login_required
+def bank_manager_payment_reference_detail_web(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == "POST":
+        payref_document_ref = request.POST.get("payref_document_ref")
+        file = request.FILES.get("payref_document")
+
+        # 🔴 Validation (same as API)
+        if not payref_document_ref:
+            messages.error(request, "Payment reference is required.")
+            return redirect(request.path)
+
+        # 🔴 File size validation (10MB)
+        if file and file.size > 10 * 1024 * 1024:
+            messages.error(request, "File too large (max 10MB).")
+            return redirect(request.path)
+
+        # 🔴 Delete old file if exists
+        if (
+            file and shipment.payref_document
+            and hasattr(shipment.payref_document, "path")
+            and os.path.isfile(shipment.payref_document.path)
+        ):
+            os.remove(shipment.payref_document.path)
+
+        # 🔴 Assign values (same fields as API)
+        if file:
+            shipment.payref_document = file
+
+        shipment.payref_document_ref = payref_document_ref
+        shipment.send_to_clearing_agent_payment = True
+        shipment.send_to_clearing_agent_payment_date = timezone.now()
+
+        # 🔴 Atomic save + phase creation
+        try:
+            with transaction.atomic():
+                shipment.save()
+
+                try:
+                    phase_master = ShipmentPhaseMaster.objects.get(id=7)
+                    ShipmentPhase.objects.create(
+                        shipment=shipment,
+                        phase_code=phase_master.phase_code,
+                        phase_name=phase_master.phase_name,
+                        completed=True,
+                        completed_at=timezone.now(),
+                        updated_by=request.user,
+                        order=phase_master.order,
+                    )
+                except ShipmentPhaseMaster.DoesNotExist:
+                    pass
+
+            messages.success(request, "✅ Payment marked successfully.")
+            return redirect("bank-manager-payment-references")
+
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+            return redirect(request.path)
+
+    return render(
+        request,
+        "bank_manager/payment_reference_detail.html",
+        {"shipment": shipment}
+    )
+
+
+@login_required
+def initiate_clearing_web(request):
+    shipments = Shipment.objects.filter(
+        send_to_clearing_agent_payment=True,
+        clearing_agent=request.user,
+        C_Process_Initiated=False
+    ).order_by("-duty_paid_date")
+
+    return render(
+        request,
+        "clearing_agent/initiate_clearing_list.html",
+        {"shipments": shipments}
+    )
+
+
+
+
+@login_required
+def initiate_clearing_submit_web(request, shipment_id):
+    if request.method == "POST":
+        shipment = get_object_or_404(
+            Shipment,
+            id=shipment_id,
+            clearing_agent=request.user
+        )
+
+        shipment.C_Process_Initiated = True
+        shipment.C_Process_Initiated_date = timezone.now()
+        shipment.save()
+
+        try:
+            phase_master = ShipmentPhaseMaster.objects.get(id=8)
+            ShipmentPhase.objects.create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=request.user,
+                order=phase_master.order,
+            )
+        except ShipmentPhaseMaster.DoesNotExist:
+            pass
+
+    return redirect("initiate-clearing-web")
+
+
+@login_required
+def clearing_agent_dispatch_web(request):
+    # 🔐 Role safety
+    if not request.user.groups.filter(name="Clearing Agent").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    shipments = Shipment.objects.filter(
+        C_Process_Initiated=True,
+        C_Process_completed=False,
+        clearing_agent=request.user
+    ).order_by("-C_Process_Initiated_date")
+
+    return render(
+        request,
+        "clearing_agent/dispatch_list.html",
+        {"shipments": shipments}
+    )
+
+
+@login_required
+def clearing_agent_dispatch_detail_web(request, shipment_id):
+    # 🔐 Role safety
+    if not request.user.groups.filter(name="Clearing Agent").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    shipment = get_object_or_404(
+        Shipment,
+        id=shipment_id,
+        clearing_agent=request.user,
+        C_Process_Initiated=True,
+        C_Process_completed=False
+    )
+
+    # ---------------- POST (Save Dispatch) ----------------
+    if request.method == "POST":
+
+        dispatch = ShipmentDispatch.objects.create(
+            shipment=shipment,
+            truck_no=request.POST.get("truck_no"),
+            driver_name=request.POST.get("driver_name"),
+            driver_license=request.POST.get("driver_license"),
+            driver_phone=request.POST.get("driver_phone"),
+            transport_company=request.POST.get("transport_company"),
+            estimated_delivery=request.POST.get("estimated_delivery"),
+            delivery_address=request.POST.get("delivery_address"),
+            special_instructions=request.POST.get("special_instructions"),
+            created_by=request.user,
+        )
+
+        # Create shipment phase (same as API)
+        try:
+            phase_master = ShipmentPhaseMaster.objects.get(id=9)
+            ShipmentPhase.objects.create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=request.user,
+                order=phase_master.order,
+            )
+        except ShipmentPhaseMaster.DoesNotExist:
+            pass
+
+        messages.success(request, "Shipment dispatched successfully.")
+        return redirect("clearing-agent-dispatch-web")
+
+    # ---------------- GET (Show Form) ----------------
+    return render(
+        request,
+        "clearing_agent/dispatch_detail.html",
+        {"shipment": shipment}
+    )
+
+
+
+###################### Security Guard Wev Views ########################
+
+@login_required
+def sg_dashboard_web(request):
+    # Security Guard role check
+    if not request.user.groups.filter(name="Security Guard").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    # Example logic (same idea as mobile API)
+    on_the_way_shipment = Shipment.objects.filter(
+        status="ON_THE_WAY"
+    ).count()
+
+    context = {
+        "on_the_way_shipment": on_the_way_shipment,
+    }
+
+    return render(request, "security_guard/dashboard.htmlsecurity_guard/dashboard.html", context)
+
+
+
+@login_required
+def truck_arrivals_web(request):
+    shipments = ShipmentDispatch.objects.filter(
+        truck_depature=False
+    ).select_related("shipment")
+
+    return render(
+        request,
+        "security_guard/truck_arrivals.html",
+        {"shipments": shipments}
+    )
+
+@login_required
+def record_arrival_web(request, dispatch_id):
+    dispatch = get_object_or_404(ShipmentDispatch, id=dispatch_id)
+
+    dispatch.truck_arrived = True
+    dispatch.truck_arrived_date = timezone.now()
+    dispatch.save()
+
+    shipment = dispatch.shipment
+    shipment.arrival_at_warehouse = True
+    shipment.arrival_at_warehouse_date = timezone.now()
+    shipment.save(update_fields=[
+        "arrival_at_warehouse",
+        "arrival_at_warehouse_date"
+    ])
+
+    phase_master = ShipmentPhaseMaster.objects.get(id=10)
+    ShipmentPhase.objects.create(
+        shipment=shipment,
+        phase_code=phase_master.phase_code,
+        phase_name=phase_master.phase_name,
+        completed=True,
+        completed_at=timezone.now(),
+        updated_by=request.user,
+        order=phase_master.order,
+    )
+
+    messages.success(request, "Arrival recorded successfully.")
+    return redirect("truck-arrival-web")
+
+@login_required
+def record_departure_web(request, dispatch_id):
+    dispatch = get_object_or_404(ShipmentDispatch, id=dispatch_id)
+
+    dispatch.truck_depature = True
+    dispatch.truck_depature_date = timezone.now()
+    dispatch.save()
+
+    shipment = dispatch.shipment
+    shipment.departure_at_warehouse = True
+    shipment.departure_at_warehouse_date = timezone.now()
+    shipment.save(update_fields=[
+        "departure_at_warehouse",
+        "departure_at_warehouse_date"
+    ])
+
+    phase_master = ShipmentPhaseMaster.objects.get(id=11)
+    ShipmentPhase.objects.create(
+        shipment=shipment,
+        phase_code=phase_master.phase_code,
+        phase_name=phase_master.phase_name,
+        completed=True,
+        completed_at=timezone.now(),
+        updated_by=request.user,
+        order=phase_master.order,
+    )
+
+    messages.success(request, "Departure recorded successfully.")
+    return redirect("truck-arrival-web")
+
+
+
+####################  WS 
+@login_required
+def ws_dashboard(request):
+     
+       
+        # Safety check – only Clearing Agent allowed
+        if not request.user.groups.filter(name="Warehouse Staff").exists():
+            return render(request, "dashboard/access_denied.html")
+
+        context = {
+            "user": request.user,
+        }
+
+        return render(request, "ws/dashboard_ws.html", context)
+
+
+@login_required
+def grn_record_web(request):
+    # Only Warehouse Staff
+    if not request.user.groups.filter(name="Warehouse Staff").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    return render(request, "ws/grn_record.html")
+
+
+
+
+@login_required
+def grn_record_web(request):
+    # Only Warehouse Staff
+    if not request.user.groups.filter(name="Warehouse Staff").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    shipments = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_upload_at_warehouse=False
+    ).select_related("dispatch")
+
+    context = {
+        "shipments": shipments
+    }
+    return render(request, "ws/grn_record.html", context)   
+
+
+@login_required
+def record_grn_upload_web(request, shipment_id):
+    if not request.user.groups.filter(name="Warehouse Staff").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == "POST":
+        grn_number = request.POST.get("grn_number", "").strip()
+        receiving_notes = request.POST.get("receiving_notes", "")
+        physical_stock_verified = request.POST.get("physical_stock_verified") == "on"
+        grn_uploaded = request.POST.get("grn_uploaded") == "on"
+
+        if not grn_number:
+            messages.error(request, "GRN Number is required.")
+            return redirect("grn-record-web")
+
+        shipment.grn_number = grn_number
+        shipment.receiving_notes = receiving_notes
+        shipment.physical_stock_verified = physical_stock_verified
+        shipment.grn_uploaded = grn_uploaded
+
+        if physical_stock_verified and grn_uploaded:
+            shipment.grn_upload_at_warehouse = True
+            shipment.grn_upload_at_warehouse_date = timezone.now()
+
+        shipment.save()
+
+        # Phase logging
+        try:
+            phase_master = ShipmentPhaseMaster.objects.get(id=12)
+            ShipmentPhase.objects.create(
+                shipment=shipment,
+                phase_code=phase_master.phase_code,
+                phase_name=phase_master.phase_name,
+                completed=True,
+                completed_at=timezone.now(),
+                updated_by=request.user,
+                order=phase_master.order,
+            )
+        except ShipmentPhaseMaster.DoesNotExist:
+            pass
+
+        messages.success(
+            request,
+            f"GRN recorded successfully for {shipment.shipment_code}"
+        )
+
+    return redirect("grn-record-web")
+
+
+
+
+    #########################   Import Department
+@login_required
+def imports_dashboard(request):
+    pending_grn_count = Shipment.objects.filter(
+        grn_complete_at_warehouse=False,
+        grn_upload_at_warehouse=True
+    ).count()
+
+    return render(request, "dash/imp_dashboard.html", {
+        "pending_grn_count": pending_grn_count
+    })
+
+
+@login_required
+def grn_confirm_web(request):
+    shipments = Shipment.objects.filter(
+        grn_complete_at_warehouse=False,
+        grn_upload_at_warehouse=True
+    ).select_related("dispatch", "supplier")
+
+    return render(request, "imp/grn_confirm_web.html", {
+        "shipments": shipments
+    })
+
+
+@login_required
+def record_grn_confirm_web(request, shipment_id):
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    shipment.grn_complete_at_warehouse = True
+    shipment.grn_complete_at_warehouse_date = timezone.now()
+    shipment.ship_status = 13
+    shipment.save()
+
+    # Phase history
+    try:
+        phase_master = ShipmentPhaseMaster.objects.get(id=13)
+        ShipmentPhase.objects.create(
+            shipment=shipment,
+            phase_code=phase_master.phase_code,
+            phase_name=phase_master.phase_name,
+            completed=True,
+            completed_at=timezone.now(),
+            updated_by=request.user,
+            order=phase_master.order,
+        )
+    except ShipmentPhaseMaster.DoesNotExist:
+        pass
+
+    messages.success(
+        request,
+        f"GRN confirmed successfully for shipment {shipment.shipment_code}"
+    )
+
+    return redirect("grn_confirm_list")
+
+
+
+
+################### Dashboard KPI 
+
+@login_required
+def dashboard_kpi_web(request):
+    user = request.user
+    today = timezone.now().date()
+
+    current_month_filter = Q(
+        order_date__month=today.month,
+        order_date__year=today.year
+    )
+
+    # ================= COMMON STATS =================
+    total_shipments_month = Shipment.objects.filter(
+        current_month_filter, ship_status__gt=1
+    ).count()
+
+    completed_shipments = Shipment.objects.filter(ship_status=13).count()
+    active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
+
+    overdue_shipments = Shipment.objects.filter(
+        expected_arrival_date__lt=today
+    ).exclude(ship_status=13).count()
+
+    on_the_way_shipment = Shipment.objects.filter(
+        C_Process_completed=True,
+        arrival_at_warehouse=False
+    ).count()
+
+    # ================= CLEARANCE =================
+    clearance_initiated = Shipment.objects.filter(
+        C_Process_Initiated=True,
+        C_Process_completed=False
+    ).count()
+
+    clearance_completed = Shipment.objects.filter(
+        C_Process_completed=True
+    ).count()
+
+    goods_at_port = Shipment.objects.filter(
+        C_Process_Initiated=False
+    ).count()
+
+    # ================= BANK =================
+    total_invoice_value = (
+        Shipment.objects.aggregate(total=Sum("amount"))["total"] or 0
+    )
+
+    approved_duty_payments = Shipment.objects.filter(
+        duty_paid=True
+    ).count()
+
+    pending_bank_docs = Shipment.objects.filter(ship_status=1).count()
+
+    total_amount_pending = (
+        BankDocument.objects.filter(settled=False)
+        .aggregate(total=Sum("amount"))["total"] or 0
+    )
+
+    # ================= GRN =================
+    pending_grn = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_complete_at_warehouse=False
+    ).count()
+
+    record_grn = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_complete_at_warehouse=False,
+        grn_upload_at_warehouse=False
+    ).count()
+
+    confirm_grn = Shipment.objects.filter(
+        grn_complete_at_warehouse=False,
+        grn_upload_at_warehouse=True
+    ).count()
+
+    total_grn_value_month = (
+        Shipment.objects.filter(
+            grn_complete_at_warehouse_date__month=today.month
+        ).aggregate(total=Sum("amount"))["total"] or 0
+    )
+
+    # ================= ROLE-BASED DATA =================
+    context = {
+        "common": {
+            "total_shipments_month": total_shipments_month,
+            "completed_shipments": completed_shipments,
+            "active_shipments": active_shipments,
+            "overdue_shipments": overdue_shipments,
+            "on_the_way_shipment": on_the_way_shipment,
+        }
+    }
+
+    if user.groups.filter(name="Imports Department").exists():
+        context["import"] = {
+            "goods_at_port": goods_at_port,
+            "clearance_initiated": clearance_initiated,
+            "clearance_completed": clearance_completed,
+            "pending_grn": pending_grn,
+            "confirm_grn": confirm_grn,
+            "total_grn_value_month": total_grn_value_month,
+            "total_invoice_value": total_invoice_value,
+            "approved_duty_payments": approved_duty_payments,
+            "pending_bank_docs": pending_bank_docs,
+        }
+
+    if user.groups.filter(name="Warehouse Staff").exists():
+        context["ws"] = {
+            "record_grn": record_grn,
+        }
+
+    if user.groups.filter(name="Bank Controller").exists():
+        context["bank"] = {
+            "pending_bank_docs": pending_bank_docs,
+            "total_amount_pending": total_amount_pending,
+            "approved_duty_payments": approved_duty_payments,
+            "pending_grn": pending_grn,
+        }
+
+    if user.groups.filter(name="Managing Director").exists():
+        context["md"] = {
+            "total_invoice_value": total_invoice_value,
+            "approved_duty_payments": approved_duty_payments,
+            "clearance_initiated": clearance_initiated,
+            "clearance_completed": clearance_completed,
+            "pending_grn": pending_grn,
+            "total_grn_value_month": total_grn_value_month,
+        }
+
+    return render(request, "dashboard_kpi_web.html", context)

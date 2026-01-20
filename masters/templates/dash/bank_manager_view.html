@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Initiate Payment{% endblock %}
+{% block content %}
+
+<style>
+body { background:#F9FAFB; }
+
+.welcome-box{
+  background:#E0E7FF;
+  margin:15px;
+  border-radius:10px;
+  padding:16px;
+}
+
+.welcome-title{font-size:18px;font-weight:700;color:#1E3A8A;}
+.sub-text{color:#4B5563;margin-top:4px;font-size:13px;}
+
+.card-container{padding:0 15px;}
+
+.shipment-card{
+  background:#fff;
+  border-radius:12px;
+  margin:10px 0;
+  padding:15px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.card-header{
+  border-bottom:1px solid #E5E7EB;
+  margin-bottom:10px;
+  font-weight:600;
+  color:#1E3A8A;
+}
+
+.card-text{font-size:14px;color:#1F2937;margin-bottom:4px;}
+
+.btn{
+  display:block;
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  text-align:center;
+  font-weight:600;
+  text-decoration:none;
+  margin-top:8px;
+}
+
+.btn-primary{background:#2563EB;color:white;}
+.btn-danger{background:#DC2626;color:white;}
+
+.reject-box{
+  background:#FEE2E2;
+  border-radius:8px;
+  padding:10px;
+  margin-top:8px;
+  border:1px solid #FCA5A5;
+}
+
+.reject-title{font-weight:700;color:#991B1B;}
+.reject-reason{color:#7F1D1D;font-size:13px;}
+.reject-date{color:#9CA3AF;font-size:12px;}
+</style>
+
+<div class="welcome-box">
+  <div class="welcome-title">Pending Shipments</div>
+  <div class="sub-text">Review and approve shipments awaiting payment.</div>
+</div>
+
+<div class="card-container">
+
+{% if shipments %}
+  {% for item in shipments %}
+
+  <div class="shipment-card">
+
+    <div class="card-header">
+      Shipment : {{ item.shipment_code }}
+    </div>
+
+    <div class="card-text">Bank Doc Type: {{ item.bank_doc_type|default:"N/A" }}</div>
+    <div class="card-text">Reference Number: {{ item.reference_number|default:"N/A" }}</div>
+    <div class="card-text">Sent Date: {{ item.send_date|date:"d M Y h:i A"|default:"N/A" }}</div>
+    <div class="card-text">Assessment Date: {{ item.assessment_uploaded_date|date:"d M Y h:i A"|default:"N/A" }}</div>
+    <div class="card-text">Total Duty Value (LKR): {{ item.total_duty_value|default:"N/A" }}</div>
+
+    {% if item.duty_paid_reject %}
+    <div class="reject-box">
+      <div class="reject-title">❌ Payment Rejected by MD</div>
+      <div class="reject-reason">
+        Reason: {{ item.md_reject_reason|default:"No reason provided" }}
+      </div>
+      <div class="reject-date">
+        Rejected at: {{ item.md_rejected_at|date:"d M Y h:i A" }}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if item.assessment_document %}
+      <a class="btn btn-danger" target="_blank"
+         href="{% url 'bank_manager_payment_details' item.id %}">
+        📄 View Assessment Document
+      </a>
+    {% endif %}
+
+    {% if not item.duty_paid %}
+      <a class="btn btn-primary"
+         href="{% url 'bank_manager_payment_details' item.id %}">
+        Initiate Payment
+      </a>
+    {% endif %}
+
+  </div>
+
+  {% endfor %}
+{% else %}
+  <p style="text-align:center;color:#6B7280;">No shipments available</p>
+{% endif %}
+
+</div>
+
+{% endblock %}

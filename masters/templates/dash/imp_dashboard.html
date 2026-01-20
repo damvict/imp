@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Imports Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- HEADER BAR -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="x_panel">
+        <div class="x_title">
+          <h2>Imports Dashboard</h2>
+
+          <ul class="nav navbar-right panel_toolbox">
+            <!-- Refresh -->
+            <li>
+              <a href="{% url 'imports_dashboard' %}">
+                <i class="fa fa-refresh"></i>
+              </a>
+            </li>
+
+            <!-- Logout -->
+            <li>
+              <a href="{% url 'logout' %}">
+                <i class="fa fa-user"></i>
+              </a>
+            </li>
+          </ul>
+
+          <div class="clearfix"></div>
+        </div>
+
+        <!-- WELCOME -->
+        <div class="x_content">
+          <div class="alert alert-info">
+            <strong>Welcome Back,</strong>
+            {{ request.user.groups.all.0.name|upper|default:"USER" }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="x_panel">
+        <div class="x_title">
+          <h2>Quick Actions</h2>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+          <div class="row">
+
+            <!-- NEW ARRIVAL NOTICE -->
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'arrival-notice-create' %}" class="quick-action">
+                <i class="fa fa-truck"></i>
+                <span>New Arrival Notice</span>
+              </a>
+            </div>
+
+            <!-- CONFIRM GRN -->
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'grn_confirm_list' %}" class="quick-action">
+                <i class="fa fa-check-circle"></i>
+                <span>Confirm GRN</span>
+
+                {% if pending_grn_count and pending_grn_count > 0 %}
+                  <span class="badge badge-danger">{{ pending_grn_count }}</span>
+                {% endif %}
+              </a>
+            </div>
+
+            <!-- SHIPMENTS -->
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'shipment_list' %}" class="quick-action">
+                <i class="fa fa-cubes"></i>
+                <span>View Shipments</span>
+              </a>
+            </div>
+
+            <!-- DOCUMENT HANDOVER -->
+            <div class="col-md-3 col-sm-6">
+              <a href="{% url 'document_handover_web' %}" class="quick-action">
+                <i class="fa fa-file-text"></i>
+                <span>Document Handover</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.quick-action {
+  display: block;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  position: relative;
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-action:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.quick-action i {
+  font-size: 30px;
+  color: #1E3A8A;
+}
+
+.quick-action span {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.quick-action .badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+}
+</style>
+
+{% endblock %}

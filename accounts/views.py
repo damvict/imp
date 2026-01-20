@@ -60,7 +60,8 @@ def home(request):
     user = request.user
 
     # Superusers and staff get the admin dashboard
-    if user.is_staff or user.groups.filter(name="Imports Department").exists():
+    ####if user.is_staff or user.groups.filter(name="Imports Department").exists():
+    if user.is_staff:
         return redirect('admin_dashboard')  # URL name for your admin dashboard
 
     # Get user's group
@@ -102,24 +103,29 @@ def home(request):
         'show_common_masters_menu': user.groups.filter(name='Admin').exists()  # <-- add this
     }
 
-    # Redirect to appropriate dashboards based on group
+    # Redirect to appropriate dashboards based on group  
     if user.groups.filter(name="Warehouse Staff").exists():
-       return redirect('warehouse_dashboard')
+       #return redirect('warehouse_dashboard')
+       return redirect('ws_dashboard')
     elif user.groups.filter(name="Security Guard").exists():
-        return render(request, 'dashboard/user_dashboard.html', context)
+        return render(request, 'security_guard/dashboard.html', context)       
+        ####return render(request, 'dashboard/user_dashboard.html', context)
     elif user.groups.filter(name="Admin").exists():
         return redirect('admin_dashboard')  # URL name for your admin dashboard
     elif user.groups.filter(name="Managing Director").exists():
         return redirect('md_dashboard')  # URL name for your admin dashboard
     elif user.groups.filter(name="Bank Controller").exists():
         #return redirect('shipment_list')  # URL name for your adm
-        return redirect('bank_controller_view')  # URL name for your adm    
-    elif user.groups.filter(name="Bank Manager").exists():
-        #return redirect('shipment_list')  # URL name for your adm
-        return redirect('bank_manager_view')
+        return redirect('bank_controller_dashboard_web')  # URL name for your adm    
+    elif user.groups.filter(name="Bank Manager").exists():       
+         return redirect('bank_manager_dashboard')
     elif user.groups.filter(name="Clearing Agent").exists():
          return redirect('clearing_agent_dashboard')
+    elif user.groups.filter(name="Imports Department").exists():
+         return redirect('imports_dashboard')    
+
+    
     else:
  
         # fallback - unauthorized or unknown role
-        return render(request, 'dashboard/access_denied.html', context)
+        return render(request, 'dash/access_denied.html', context)

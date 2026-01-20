@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Record GRN{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <h4 class="fw-bold mb-4">Record GRN</h4>
+
+  {% if shipments %}
+    <div class="row">
+
+      {% for s in shipments %}
+      <div class="col-md-4 col-sm-6 col-xs-12 mb-4">
+        <div class="panel panel-default">
+          <div class="panel-body">
+
+            <h5 class="text-primary"><strong>{{ s.shipment_code }}</strong></h5>
+            <p class="text-muted">{{ s.supplier_name|default:"-" }}</p>
+
+            <p>
+              <strong>Phone:</strong>
+              {{ s.dispatch.driver_phone|default:"-" }}
+            </p>
+
+            <p>
+              <strong>Departure Date:</strong>
+              {{ s.dispatch.truck_depature_date|date:"Y-m-d"|default:"-" }}
+            </p>
+
+            <p>
+              <strong>Vessel:</strong>
+              {{ s.vessel|default:"-" }}
+            </p>
+
+            <span class="label label-info">Ready for GRN</span>
+
+            <hr>
+
+            <!-- BUTTON (BOOTSTRAP 3 FIXED) -->
+            <button
+              type="button"
+              class="btn btn-success btn-block"
+              data-toggle="modal"
+              data-target="#grnModal{{ s.id }}"
+            >
+              Record GRN
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= MODAL ================= -->
+      <div class="modal fade" id="grnModal{{ s.id }}" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <form
+            method="post"
+            action="{% url 'record-grn-upload-web' s.id %}"
+            class="modal-content"
+          >
+            {% csrf_token %}
+
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">
+                <span>&times;</span>
+              </button>
+              <h4 class="modal-title">Record GRN</h4>
+            </div>
+
+            <div class="modal-body">
+
+              <div class="form-group">
+                <label>GRN Number</label>
+                <input
+                  type="text"
+                  name="grn_number"
+                  class="form-control"
+                  required
+                >
+              </div>
+
+              <div class="form-group">
+                <label>Receiving Notes</label>
+                <textarea
+                  name="receiving_notes"
+                  class="form-control"
+                  rows="3"
+                ></textarea>
+              </div>
+
+              <div class="checkbox">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="physical_stock_verified"
+                  >
+                  Physical stock verified
+                </label>
+              </div>
+
+              <div class="checkbox">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="grn_uploaded"
+                  >
+                  GRN uploaded into system
+                </label>
+              </div>
+
+            </div>
+
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-success">Save</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">
+                Cancel
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+      <!-- =============== END MODAL =============== -->
+
+      {% endfor %}
+
+    </div>
+
+  {% else %}
+    <div class="text-center text-muted" style="margin-top:60px;">
+      <i class="fa fa-warehouse fa-3x"></i>
+      <p>No shipments ready for GRN recording.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

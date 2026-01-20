@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Dispatch Shipments{% endblock %}
+
+{% block content %}
+<style>
+    .shipment-card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.shipment-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.shipment-subtitle {
+  font-size: 13px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.value {
+  color: #111827;
+  font-weight: 600;
+}
+
+.status-band {
+  background-color: #E0F2FE;
+  color: #0369A1;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 6px;
+}
+
+</style>
+<div class="page-wrapper">
+  <h2>Dispatch Shipments</h2>
+
+  {% if shipments %}
+    {% for s in shipments %}
+      <a href="{% url 'clearing-agent-dispatch-detail-web' s.id %}"
+         style="text-decoration:none;color:inherit;">
+
+        <div class="shipment-card">
+
+          <div class="shipment-title">
+            {{ s.shipment_code }}
+          </div>
+
+          <div class="shipment-subtitle">
+            Supplier: {{ s.supplier_name|default:"-" }}
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Amount:</span>
+            <span class="value">{{ s.amount|default:"-" }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Total Duty Value:</span>
+            <span class="value">{{ s.total_duty_value|default:"-" }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Duty Paid Date:</span>
+            <span class="value">
+              {{ s.duty_paid_date|date:"Y-m-d"|default:"-" }}
+            </span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Vessel:</span>
+            <span class="value">{{ s.vessel|default:"-" }}</span>
+          </div>
+
+          <!-- STATUS BAND -->
+          <div class="status-band">
+            Ready for Dispatch
+          </div>
+
+        </div>
+      </a>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p>No shipments ready for dispatch.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
