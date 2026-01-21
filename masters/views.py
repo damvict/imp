@@ -3480,23 +3480,48 @@ def bank_controller_dashboard_web(request):
 
 
 ################# CL 
-
+from django.views.decorators.cache import never_cache
 @login_required
+@never_cache
 def clearing_agent_dashboard(request):
-        """
-        Web dashboard for Clearing Agent
-        Shows ONLY quick actions
-        """
+    if not request.user.groups.filter(name="Clearing Agent").exists():
+        return render(request, "dashboard/access_denied.html")
 
-        # Safety check – only Clearing Agent allowed
-        if not request.user.groups.filter(name="Clearing Agent").exists():
-            return render(request, "dashboard/access_denied.html")
+    ca = request.user
 
-        context = {
-            "user": request.user,
-        }
+    stats = {   # ✅ NO extra nesting
+        "pen_ass": Shipment.objects.filter(
+            clearing_agent=ca,
+            send_to_clearing_agent=True,
+            c_ass_send=False,
+            ship_status=3
+        ).count(),
 
-        return render(request, "dash/clearing_agent_dashboard.html", context)
+        "init_clearing": Shipment.objects.filter(
+            clearing_agent=ca,
+            send_to_clearing_agent_payment=True,
+            C_Process_Initiated=False
+        ).count(),
+
+        "ca_dispatch": Shipment.objects.filter(
+            clearing_agent=ca,
+            C_Process_Initiated=True,
+            C_Process_completed=False
+        ).count(),
+    }
+
+    return render(
+        request,
+        "dash/clearing_agent_dashboard.html",
+        {"stats": stats}
+    )
+
+
+
+
+
+
+
 
 @login_required
 def bank_controller_shipments_web(request):
@@ -3506,7 +3531,8 @@ def bank_controller_shipments_web(request):
 
     shipments = Shipment.objects.filter(
         send_to_clearing_agent=False,
-        ship_status=2
+        ship_status=2,
+        
     )
 
     return render(
@@ -3550,6 +3576,7 @@ def confirm_handover_web(request, shipment_id):
     try:
         data = json.loads(request.body)
         clearing_agent_id = data.get("clearing_agent_id")
+    
     except json.JSONDecodeError:
         return JsonResponse(
             {"error": "Invalid JSON"},
@@ -3592,6 +3619,7 @@ def confirm_handover_web(request, shipment_id):
         shipment.send_to_clearing_agent = True
         shipment.send_date = timezone.now()
         shipment.ship_status = 3   # ✅ FIXED
+        shipment.ship_arival_date=timezone.now() + timedelta(days=3)
         shipment.save()
 
         # ✅ Record phase
@@ -3712,8 +3740,8 @@ def ca_pending_assessment_web(request):
     shipment.save()
 
     messages.success(request, "Assessment uploaded successfully.")
-    return redirect("ca_pending_assessment")
-
+    ###return redirect("ca_pending_assessment")
+    return redirect("clearing_agent_dashboard")
 
 
 
@@ -4144,20 +4172,22 @@ def clearing_agent_dispatch_detail_web(request, shipment_id):
 
 @login_required
 def sg_dashboard_web(request):
-    # Security Guard role check
+
     if not request.user.groups.filter(name="Security Guard").exists():
         return render(request, "dashboard/access_denied.html")
 
-    # Example logic (same idea as mobile API)
     on_the_way_shipment = Shipment.objects.filter(
-        status="ON_THE_WAY"
+        C_Process_completed=True,
+        arrival_at_warehouse=False
     ).count()
 
-    context = {
-        "on_the_way_shipment": on_the_way_shipment,
-    }
+    print("SG DASHBOARD | on_the_way_shipment =", on_the_way_shipment)
 
-    return render(request, "security_guard/dashboard.htmlsecurity_guard/dashboard.html", context)
+    return render(
+        request,
+        "security_guard/dashboard.html",
+        {"on_the_way_shipment": on_the_way_shipment}
+    )
 
 
 
@@ -4238,17 +4268,26 @@ def record_departure_web(request, dispatch_id):
 ####################  WS 
 @login_required
 def ws_dashboard(request):
-     
-       
-        # Safety check – only Clearing Agent allowed
-        if not request.user.groups.filter(name="Warehouse Staff").exists():
-            return render(request, "dashboard/access_denied.html")
+    if not request.user.groups.filter(name="Warehouse Staff").exists():
+        return render(request, "dashboard/access_denied.html")
 
-        context = {
-            "user": request.user,
-        }
+    record_grn = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_complete_at_warehouse=False,
+        grn_upload_at_warehouse=False
+    ).count()
 
-        return render(request, "ws/dashboard_ws.html", context)
+    return render(
+        request,
+        "ws/dashboard_ws.html",
+        {"record_grn": record_grn}
+
+    )
+
+
+
+
+
 
 
 @login_required

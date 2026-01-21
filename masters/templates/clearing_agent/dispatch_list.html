@@ -3,12 +3,61 @@
 
 {% block content %}
 <style>
-    .shipment-card {
-  background: #fff;
-  padding: 16px;
+/* =========================
+   PAGE
+========================= */
+.page-wrapper {
+  background: #f9fafb;
+  min-height: calc(100vh - 60px);
+  padding: 24px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* =========================
+   TITLE
+========================= */
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 20px;
+}
+
+/* =========================
+   BACK BUTTON
+========================= */
+.btn-back {
+  display: inline-block;
+  background: #f39696;
+  color: #1f2937;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.btn-back:hover {
+  background: #d1d5db;
+}
+
+/* =========================
+   SHIPMENT CARD
+========================= */
+.shipment-card {
+  background: #ffffff;
+  padding: 16px 18px;
   border-radius: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  margin-bottom: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  border-left: 4px solid #2563eb;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .shipment-title {
@@ -19,7 +68,7 @@
 
 .shipment-subtitle {
   font-size: 13px;
-  color: #6B7280;
+  color: #6b7280;
   margin-bottom: 8px;
 }
 
@@ -40,20 +89,60 @@
   font-weight: 600;
 }
 
+/* =========================
+   STATUS BADGE
+========================= */
 .status-band {
-  background-color: #E0F2FE;
-  color: #0369A1;
+  background-color: #e0f2fe;
+  color: #0369a1;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   padding: 4px 10px;
   border-radius: 20px;
   display: inline-block;
-  margin-top: 6px;
+  margin-top: 8px;
+  border: 1px solid #bae6fd;
 }
 
+/* =========================
+   EMPTY STATE
+========================= */
+.empty-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.empty-state {
+  background: #ffffff;
+  padding: 40px 30px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(15,23,42,0.08);
+}
+
+.empty-state h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
 </style>
+
 <div class="page-wrapper">
-  <h2>Dispatch Shipments</h2>
+  <div class="page-title">Dispatch Shipments
+
+     <a href="{% url 'clearing_agent_dashboard' %}" class="btn-back">
+      ← Back to Dashboard
+    </a>
+  </div>
 
   {% if shipments %}
     {% for s in shipments %}
@@ -76,7 +165,7 @@
           </div>
 
           <div class="detail-row">
-            <span class="label">Total Duty Value:</span>
+            <span class="label">Total Duty:</span>
             <span class="value">{{ s.total_duty_value|default:"-" }}</span>
           </div>
 
@@ -92,7 +181,6 @@
             <span class="value">{{ s.vessel|default:"-" }}</span>
           </div>
 
-          <!-- STATUS BAND -->
           <div class="status-band">
             Ready for Dispatch
           </div>
@@ -101,8 +189,15 @@
       </a>
     {% endfor %}
   {% else %}
-    <div class="empty-state">
-      <p>No shipments ready for dispatch.</p>
+    <!-- EMPTY STATE -->
+    <div class="empty-wrapper">
+      <div class="empty-state">
+        <h4>No Shipments Found</h4>
+        <p>No shipments are ready for dispatch.</p>
+        <a href="{% url 'clearing_agent_dashboard' %}" class="btn-back">
+          ← Back to Dashboard
+        </a>
+      </div>
     </div>
   {% endif %}
 </div>

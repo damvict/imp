@@ -108,7 +108,7 @@ def home(request):
        #return redirect('warehouse_dashboard')
        return redirect('ws_dashboard')
     elif user.groups.filter(name="Security Guard").exists():
-        return render(request, 'security_guard/dashboard.html', context)       
+            return redirect("sg_dashboard_web")      
         ####return render(request, 'dashboard/user_dashboard.html', context)
     elif user.groups.filter(name="Admin").exists():
         return redirect('admin_dashboard')  # URL name for your admin dashboard
@@ -122,8 +122,7 @@ def home(request):
     elif user.groups.filter(name="Clearing Agent").exists():
          return redirect('clearing_agent_dashboard')
     elif user.groups.filter(name="Imports Department").exists():
-         return redirect('imports_dashboard')    
-
+         return redirect('imports_dashboard')   
     
     else:
  

@@ -2,31 +2,41 @@
 {% block title %}Security Guard Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid ca-dashboard">
 
-  <!-- ================= QUICK ACTIONS ================= -->
-  <h4 class="fw-bold mb-3">Quick Actions</h4>
+  <!-- HEADER -->
+  <div class="ca-header">
+    <h2>Security Guard Dashboard</h2>
+    <p>Monitor arrivals and departures at the warehouse</p>
+  </div>
 
-  <div class="row justify-content-start">
+  <!-- ACTION CARDS -->
+  <div class="row ca-actions">
 
     <!-- Record Arrival / Departure -->
-    <div class="col-md-3 col-sm-6 mb-4">
-      <a href="#" class="text-decoration-none">
+    <div class="col-xl-4 col-lg-6">
+      <a href="{% url 'truck-arrival-web' %}"
+         class="ca-card {% if on_the_way_shipment > 0 %}alert{% endif %}">
 
-        <div class="card shadow-sm text-center position-relative h-100">
-          <div class="card-body">
+        <!-- ICON -->
+        <div class="ca-icon primary">
+          <i class="fa fa-check-circle"></i>
+        </div>
 
-            <!-- ICON -->
-            <div class="mb-2">
-              <i class="bi bi-check-circle text-primary fs-2"></i>
-            </div>
+        <!-- CONTENT -->
+        <div class="ca-content">
+          <h4>Record Arrival / Departure</h4>
 
-            <a href="{% url 'truck-arrival-web' %}">
-            <h6 class="fw-semibold mt-2">
-              Record Arrival / Departure
-            </h6>
-            </a>
-          </div>
+          {% if on_the_way_shipment > 0 %}
+            <p>{{ on_the_way_shipment }} shipment(s) waiting for arrival</p>
+            <span class="badge">{{ on_the_way_shipment }}</span>
+            <script>
+            console.log("on_the_way_shipment =", {{ on_the_way_shipment }});
+          </script>
+
+          {% else %}
+            <p>No shipments waiting</p>
+          {% endif %}
         </div>
 
       </a>
@@ -35,4 +45,110 @@
   </div>
 
 </div>
+
+<style>
+/* ================= BASE ================= */
+.ca-dashboard {
+  padding: 26px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* ================= HEADER ================= */
+.ca-header h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.ca-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 26px;
+}
+
+/* ================= GRID ================= */
+.ca-actions {
+  row-gap: 22px;
+}
+
+/* ================= CARD ================= */
+.ca-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #ffffff;
+  padding: 22px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: all 0.2s ease;
+  position: relative;
+  height: 100%;
+}
+
+.ca-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* ================= ICON ================= */
+.ca-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.ca-icon.primary {
+  background: #2563eb;
+}
+
+/* ================= CONTENT ================= */
+.ca-content h4 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.ca-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 6px 0 0;
+  font-weight: 500;
+}
+
+/* ================= BADGE ================= */
+.ca-card .badge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.45);
+}
+
+/* ================= ALERT STATE ================= */
+.ca-card.alert {
+  background: #fff7f7;
+  border-left: 4px solid #dc2626;
+}
+</style>
+
 {% endblock %}

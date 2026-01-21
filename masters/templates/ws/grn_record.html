@@ -2,7 +2,71 @@
 {% block title %}Record GRN{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<style>
+/* ================= PAGE ================= */
+.grn-page {
+  background: #f5f7fa;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* ================= CARD ================= */
+.grn-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  height: 100%;
+}
+
+.grn-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: #337ab7;
+}
+
+.grn-supplier {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.grn-row {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.grn-status {
+  display: inline-block;
+  background: #d9edf7;
+  color: #31708f;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.grn-btn {
+  margin-top: 14px;
+  width: 100%;
+  font-weight: 700;
+}
+
+/* ================= MODAL CLOSE ================= */
+.grn-close {
+  font-size: 22px;
+  opacity: 0.6;
+  margin-top: -2px;
+}
+
+.grn-close:hover {
+  opacity: 1;
+  color: #d9534f;
+}
+</style>
+
+<div class="grn-page">
 
   <h4 class="fw-bold mb-4">Record GRN</h4>
 
@@ -11,48 +75,44 @@
 
       {% for s in shipments %}
       <div class="col-md-4 col-sm-6 col-xs-12 mb-4">
-        <div class="panel panel-default">
-          <div class="panel-body">
 
-            <h5 class="text-primary"><strong>{{ s.shipment_code }}</strong></h5>
-            <p class="text-muted">{{ s.supplier_name|default:"-" }}</p>
+        <div class="grn-card">
 
-            <p>
-              <strong>Phone:</strong>
-              {{ s.dispatch.driver_phone|default:"-" }}
-            </p>
+          <div class="grn-code">{{ s.shipment_code }}</div>
+          <div class="grn-supplier">{{ s.supplier_name|default:"-" }}</div>
 
-            <p>
-              <strong>Departure Date:</strong>
-              {{ s.dispatch.truck_depature_date|date:"Y-m-d"|default:"-" }}
-            </p>
-
-            <p>
-              <strong>Vessel:</strong>
-              {{ s.vessel|default:"-" }}
-            </p>
-
-            <span class="label label-info">Ready for GRN</span>
-
-            <hr>
-
-            <!-- BUTTON (BOOTSTRAP 3 FIXED) -->
-            <button
-              type="button"
-              class="btn btn-success btn-block"
-              data-toggle="modal"
-              data-target="#grnModal{{ s.id }}"
-            >
-              Record GRN
-            </button>
-
+          <div class="grn-row">
+            <strong>Phone:</strong>
+            {{ s.dispatch.driver_phone|default:"-" }}
           </div>
+
+          <div class="grn-row">
+            <strong>Departure Date:</strong>
+            {{ s.dispatch.truck_depature_date|date:"Y-m-d"|default:"-" }}
+          </div>
+
+          <div class="grn-row">
+            <strong>Vessel:</strong>
+            {{ s.vessel|default:"-" }}
+          </div>
+
+          <span class="grn-status">Ready for GRN</span>
+
+          <!-- BOOTSTRAP 3 MODAL TRIGGER -->
+          <button
+            class="btn btn-success grn-btn"
+            data-toggle="modal"
+            data-target="#grnModal{{ s.id }}"
+          >
+            Record GRN
+          </button>
+
         </div>
       </div>
 
       <!-- ================= MODAL ================= -->
-      <div class="modal fade" id="grnModal{{ s.id }}" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+      <div class="modal fade" id="grnModal{{ s.id }}" tabindex="-1">
+        <div class="modal-dialog">
           <form
             method="post"
             action="{% url 'record-grn-upload-web' s.id %}"
@@ -61,8 +121,12 @@
             {% csrf_token %}
 
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal">
-                <span>&times;</span>
+              <button
+                type="button"
+                class="close grn-close"
+                data-dismiss="modal"
+              >
+                &times;
               </button>
               <h4 class="modal-title">Record GRN</h4>
             </div>
@@ -90,20 +154,14 @@
 
               <div class="checkbox">
                 <label>
-                  <input
-                    type="checkbox"
-                    name="physical_stock_verified"
-                  >
+                  <input type="checkbox" name="physical_stock_verified">
                   Physical stock verified
                 </label>
               </div>
 
               <div class="checkbox">
                 <label>
-                  <input
-                    type="checkbox"
-                    name="grn_uploaded"
-                  >
+                  <input type="checkbox" name="grn_uploaded">
                   GRN uploaded into system
                 </label>
               </div>
@@ -111,8 +169,14 @@
             </div>
 
             <div class="modal-footer">
-              <button type="submit" class="btn btn-success">Save</button>
-              <button type="button" class="btn btn-default" data-dismiss="modal">
+              <button type="submit" class="btn btn-success">
+                Save GRN
+              </button>
+              <button
+                type="button"
+                class="btn btn-default"
+                data-dismiss="modal"
+              >
                 Cancel
               </button>
             </div>
@@ -123,15 +187,23 @@
       <!-- =============== END MODAL =============== -->
 
       {% endfor %}
-
     </div>
 
-  {% else %}
-    <div class="text-center text-muted" style="margin-top:60px;">
-      <i class="fa fa-warehouse fa-3x"></i>
-      <p>No shipments ready for GRN recording.</p>
-    </div>
-  {% endif %}
+{% else %}
+  <div class="text-center text-muted" style="margin-top:80px;">
+
+    <i class="fa fa-warehouse fa-3x mb-3"></i>
+
+    <p class="mb-4">
+      No shipments ready for GRN recording.
+    </p>
+
+    <a href="{% url 'ws_dashboard' %}" class="btn btn-primary">
+      ← Back to Dashboard
+    </a>
+
+  </div>
+{% endif %}
 
 </div>
 {% endblock %}

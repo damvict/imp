@@ -1,132 +1,188 @@
 {% extends "base.html" %}
-{% load static %}
+{% block title %}Clearing Agent Dashboard{% endblock %}
 
 {% block content %}
-<style>
-  .dashboard-container {
-    padding: 20px;
-  }
+<div class="container-fluid ca-dashboard">
 
-  .dashboard-title {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .dashboard-subtitle {
-    color: #6b7280;
-    margin-bottom: 25px;
-  }
-
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-  }
-
-  .card {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 22px rgba(0,0,0,0.12);
-  }
-
-  .card-icon {
-    font-size: 28px;
-    margin-bottom: 12px;
-  }
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-
-  .card-desc {
-    font-size: 14px;
-    color: #6b7280;
-  }
-
-  /* Action Colors */
-  .blue   { border-left: 6px solid #2563eb; }
-  .orange { border-left: 6px solid #f97316; }
-  .red    { border-left: 6px solid #dc2626; }
-  .green  { border-left: 6px solid #16a34a; }
-  .purple { border-left: 6px solid #7c3aed; }
-</style>
-
-<div class="dashboard-container">
-
-  <div class="dashboard-title">
-    🚢 Clearing Agent Dashboard
-  </div>
-  <div class="dashboard-subtitle">
-    Select an action to continue your clearing operations
+  <!-- HEADER -->
+  <div class="ca-header">
+    <h2>Clearing Agent Dashboard</h2>
+    <p>Manage your assigned shipments and clearing tasks</p>
   </div>
 
-  <div class="cards">
+  <!-- ACTION CARDS -->
+  <div class="row ca-actions">
 
     <!-- Pending Assessment -->
-   <a href="{% url 'ca_pending_assessment' %}" class="card red">
+    <div class="col-xl-4 col-lg-6">
+      <a href="{% url 'ca_pending_assessment' %}"
+         class="ca-card {% if stats.pen_ass > 0 %}alert{% endif %}">
+        <div class="ca-icon danger">
+          <i class="fa fa-file-text-o"></i>
+        </div>
 
-      <div class="card-icon">📄</div>
-      <div class="card-title">Pending Assessment</div>
-      <div class="card-desc">
-        Review documents pending assessment
-      </div>
-    </a>
+        <div class="ca-content">
+          <h4>Pending Assessment</h4>
+
+          {% if stats.pen_ass > 0 %}
+            <p>{{ stats.pen_ass }} document(s) pending</p>
+            <span class="badge">{{ stats.pen_ass }}</span>
+          {% else %}
+            <p>No pending documents</p>
+          {% endif %}
+        </div>
+      </a>
+    </div>
 
     <!-- Initiate Clearing -->
-<a href="{% url 'initiate-clearing-web' %}"
-   class="card orange"
-   style="text-decoration:none; color:inherit;">
-  <div class="card-icon">📦</div>
-  <div class="card-title">Initiate Clearing</div>
-  <div class="card-desc">
-    Start customs clearing for shipments
-  </div>
-</a>
+    <div class="col-xl-4 col-lg-6">
+      <a href="{% url 'initiate-clearing-web' %}"
+         class="ca-card {% if stats.init_clearing > 0 %}alert{% endif %}">
+        <div class="ca-icon warning">
+          <i class="fa fa-dropbox"></i>
+        </div>
 
+        <div class="ca-content">
+          <h4>Initiate Clearing</h4>
+
+          {% if stats.init_clearing > 0 %}
+            <p>{{ stats.init_clearing }} shipment(s) pending</p>
+            <span class="badge">{{ stats.init_clearing }}</span>
+          {% else %}
+            <p>No shipments waiting</p>
+          {% endif %}
+        </div>
+      </a>
+    </div>
 
     <!-- Dispatch Shipment -->
-<a href="{% url 'clearing-agent-dispatch-web' %}" class="card blue">
-  <div class="card-icon">🚚</div>
-  <div class="card-title">Dispatch Shipment</div>
-  <div class="card-desc">
-    Manage cleared shipment dispatch
-  </div>
-</a>
+    <div class="col-xl-4 col-lg-6">
+      <a href="{% url 'clearing-agent-dispatch-web' %}"
+         class="ca-card {% if stats.ca_dispatch > 0 %}alert{% endif %}">
+        <div class="ca-icon primary">
+          <i class="fa fa-truck"></i>
+        </div>
 
+        <div class="ca-content">
+          <h4>Dispatch Shipment</h4>
 
-
-    <!-- Uploaded Documents -->
-    <a href="#" class="card purple">
-      <div class="card-icon">📂</div>
-      <div class="card-title">Shipment Documents</div>
-      <div class="card-desc">
-        View & manage uploaded documents
-      </div>
-    </a>
-
-    <!-- Completed Shipments -->
-    <a href="#" class="card green">
-      <div class="card-icon">✅</div>
-      <div class="card-title">Completed Shipments</div>
-      <div class="card-desc">
-        View completed clearing records
-      </div>
-    </a>
+          {% if stats.ca_dispatch > 0 %}
+            <p>{{ stats.ca_dispatch }} dispatch pending</p>
+            <span class="badge">{{ stats.ca_dispatch }}</span>
+          {% else %}
+            <p>No dispatch pending</p>
+          {% endif %}
+        </div>
+      </a>
+    </div>
 
   </div>
 
 </div>
+
+<style>
+/* ================= BASE ================= */
+.ca-dashboard {
+  padding: 26px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+/* ================= HEADER ================= */
+.ca-header h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.ca-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 26px;
+}
+
+/* ================= GRID ================= */
+.ca-actions {
+  row-gap: 22px;
+}
+
+/* ================= CARD ================= */
+.ca-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #ffffff;
+  padding: 22px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: all 0.2s ease;
+  position: relative;
+  height: 100%;
+}
+
+.ca-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* ================= ICON ================= */
+.ca-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.ca-icon.danger  { background: #dc2626; }
+.ca-icon.warning { background: #f97316; }
+.ca-icon.primary { background: #2563eb; }
+
+/* ================= CONTENT ================= */
+.ca-content h4 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.ca-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 6px 0 0;
+  font-weight: 500;
+}
+
+/* ================= BADGE ================= */
+.ca-card .badge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.45);
+}
+
+/* ================= ALERT STATE ================= */
+.ca-card.alert {
+  background: #fff7f7;
+  border-left: 4px solid #dc2626;
+}
+</style>
+
 {% endblock %}

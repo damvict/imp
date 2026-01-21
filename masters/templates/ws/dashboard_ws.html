@@ -1,35 +1,65 @@
 {% extends "base.html" %}
-{% block title %}Security Guard Dashboard{% endblock %}
+{% block title %}Warehouse Staff Dashboard{% endblock %}
 
 {% block content %}
+<style>
+/* ===== ICON + BADGE ===== */
+.icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-badge {
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  background-color: #dc2626;
+  color: #ffffff;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  z-index: 10;
+}
+</style>
+
 <div class="container-fluid py-4">
 
   <!-- ================= QUICK ACTIONS ================= -->
   <h4 class="fw-bold mb-3">Quick Actions</h4>
 
-  <div class="row justify-content-start">
+  <div class="row">
 
-    <!-- Record Arrival / Departure -->
+    <!-- Record GRN -->
     <div class="col-md-3 col-sm-6 mb-4">
-      <a href="#" class="text-decoration-none">
-
-        <div class="card shadow-sm text-center position-relative h-100">
+      <a href="{% url 'grn-record-web' %}" class="text-decoration-none">
+        <div class="card shadow-sm text-center h-100">
           <div class="card-body">
 
-            <!-- ICON -->
-            <div class="mb-2">
-              <i class="bi bi-check-circle text-primary fs-2"></i>
+            <!-- ICON + BADGE -->
+            <div class="icon-wrapper mb-2">
+              <i class="bi bi-clipboard-check text-primary fs-2"></i>
+
+              {% if record_grn > 0 %}
+                <span class="ws-badge">
+                  {{ record_grn }}
+                </span>
+              {% endif %}
             </div>
 
-           <a href="{% url 'grn-record-web' %}">
-  <h6 class="fw-semibold mt-2">
-    Record GRN
-  </h6>
-</a>
+            <h6 class="fw-semibold mt-2 text-dark">
+              Record GRN
+            </h6>
 
           </div>
         </div>
-
       </a>
     </div>
 

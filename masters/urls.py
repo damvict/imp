@@ -421,8 +421,10 @@ path(
 path(
     "security-guard/dashboard/",
     views.sg_dashboard_web,
-    name="sg-dashboard-web"
+    name="sg_dashboard_web"
 ),
+
+
 
 # web urls
 path(

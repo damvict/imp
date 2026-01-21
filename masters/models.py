@@ -192,6 +192,7 @@ class Shipment(models.Model):
     #order_date = models.DateField()  ########### Notice  arival date
     order_date = models.DateField(default=timezone.now)
     expected_arrival_date = models.DateField()  ############ ETA
+    ship_arival_date = models.DateField(null=True, blank=True)  ########### Actual Arrival date
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     remark = models.CharField(max_length=100,null=True, blank=True)
