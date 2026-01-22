@@ -497,6 +497,11 @@ path(
     views.bank_controller_dashboard_web,
     name="bank_controller_dashboard_web"
 ),
+path(
+    "shipmentslist/",
+    views.shipments_web,
+    name="shipments_web"
+),
 
 
 ]       

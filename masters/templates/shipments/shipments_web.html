@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Shipments{% endblock %}
+
+{% block content %}
+<style>
+.shipment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.shipment-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+.shipment-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+
+.status {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 6px 0;
+}
+
+.status.active { color: #2563EB; }
+.status.overdue { color: #EAB308; }
+.status.completed { color: #16A34A; }
+
+.meta {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #E0E7FF;
+  font-weight: 600;
+  color: #1E3A8A;
+}
+
+.filter-btn.active {
+  background: #1E3A8A;
+  color: #fff;
+}
+</style>
+
+<div class="page-wrapper">
+
+  <h2>Shipments</h2>
+
+  <!-- SEARCH -->
+  <form method="get" style="margin-bottom:12px;">
+    <input
+      type="text"
+      name="q"
+      value="{{ q }}"
+      placeholder="Search by BL or Supplier"
+      class="form-control"
+    />
+  </form>
+
+  <!-- FILTERS -->
+  <div class="filters">
+   {% for s in statuses %}
+  <a href="?status={{ s }}&q={{ q }}"
+     class="filter-btn {% if status == s %}active{% endif %}">
+    {{ s }}
+  </a>
+{% endfor %}
+
+  </div>
+
+  <!-- LIST -->
+  <div class="shipment-grid">
+
+    {% for s in shipments %}
+    <div class="shipment-card">
+
+      <div class="shipment-code">{{ s.shipment_code }}</div>
+      <div class="meta">{{ s.supplier.supplier_name }}</div>
+
+      {% if s.ship_status == 1 %}
+        <div class="status active">📦 Active Shipment</div>
+      {% elif s.ship_status == 2 %}
+        <div class="status overdue">⚠️ Overdue Shipment</div>
+      {% elif s.ship_status == 3 %}
+        <div class="status completed">✅ Completed</div>
+      {% endif %}
+
+      <div class="meta">BL: {{ s.bl }}</div>
+      <div class="meta">Amount: {{ s.amount }}</div>
+      <div class="meta">Order Date: {{ s.order_date }}</div>
+
+     <a href="{% url 'shipment-timeline' s.shipment_code %}"
+   class="btn btn-sm btn-primary">
+  View Details
+</a>
+
+
+    </div>
+    {% endfor %}
+
+  </div>
+
+  {% if shipments|length == 0 %}
+    <p style="margin-top:20px;">No shipments found.</p>
+  {% endif %}
+
+</div>
+{% endblock %}

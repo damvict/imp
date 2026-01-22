@@ -119,7 +119,63 @@
     font-weight: 600;
 }
 
+/* ---------------- FOOTER NAV ---------------- */
 
+.web-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+   left: 230px; 
+  background: #ffffff;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 -4px 8px rgba(0,0,0,0.05);
+}
+
+.footer-item {
+  text-decoration: none;
+  color: #6B7280;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.footer-item i {
+  font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.footer-item.active {
+  color: #1E3A8A;
+  font-weight: 700;
+}
+
+.footer-item.danger {
+  color: #DC2626;
+}
+
+/* Prevent overlap with content */
+.right_col {
+  padding-bottom: 80px !important;
+}
+
+/* Desktop refinement */
+@media (min-width: 992px) {
+  .web-footer {
+    height: 56px;
+  }
+}
+/* When sidebar is collapsed */
+.nav-sm .web-footer {
+  left: 70px;               /* collapsed sidebar width */
+}
 </style>
 </head>
 
@@ -323,6 +379,59 @@
   </div>
 </div>
 
+
+<!-- ROLE BASED FOOTER NAV -->
+<div class="web-footer">
+
+  {# ---------------- DASHBOARD ---------------- #}
+  {% if request.user.groups.all.0.name == "Managing Director" %}
+    <a href="{% url 'md_dashboard' %}"
+       class="footer-item {% if request.resolver_match.url_name == 'md_dashboard' %}active{% endif %}">
+      <i class="fas fa-home"></i>
+      <span>Dashboard</span>
+    </a>
+
+  {% elif request.user.groups.all.0.name == "Admin" %}
+    <a href="{% url 'admin_dashboard' %}"
+       class="footer-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+      <i class="fas fa-home"></i>
+      <span>Dashboard</span>
+    </a>
+
+  {% elif request.user.groups.all.0.name == "Warehouse Staff" %}
+    <a href="{% url 'warehouse_dashboard' %}"
+       class="footer-item {% if request.resolver_match.url_name == 'warehouse_dashboard' %}active{% endif %}">
+      <i class="fas fa-home"></i>
+      <span>Dashboard</span>
+    </a>
+
+  {% elif request.user.groups.all.0.name == "Clearing Agent" %}
+    <a href="{% url 'clearing_agent_dashboard' %}"
+       class="footer-item {% if request.resolver_match.url_name == 'clearing_agent_dashboard' %}active{% endif %}">
+      <i class="fas fa-home"></i>
+      <span>Dashboard</span>
+    </a>
+  {% endif %}
+
+  {# ---------------- SHIPMENTS ---------------- #}
+{# ---------------- SHIPMENTS ---------------- #}
+  {# SHIPMENTS (COMMON) #}
+  <a href="{% url 'shipments_web' %}"
+     class="footer-item {% if request.resolver_match.url_name == 'shipments_web' %}active{% endif %}">
+    <i class="fas fa-truck"></i>
+    <span>Shipments</span>
+  </a>
+
+
+  {# ---------------- LOGOUT ---------------- #}
+  <a href="{% url 'logout' %}" class="footer-item danger">
+    <i class="fas fa-sign-out-alt"></i>
+    <span>Logout</span>
+  </a>
+
+</div>
+
+
 <!-- JS Scripts -->
 <script src="{% static 'assets/vendors/jquery/dist/jquery.min.js' %}"></script>
 <script src="{% static 'assets/vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
@@ -342,6 +451,9 @@
 </script>
 
 {% block extra_js %}{% endblock %}
+
+
+
 
 </body>
 </html>

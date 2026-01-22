@@ -1209,15 +1209,64 @@ def shipment_stage_times_report_pdf(request):
 def is_md(user):
     return user.groups.filter(name="Managing Director").exists()
 
+
+from django.utils.timezone import now
+
 @login_required
 @user_passes_test(is_md)
 def md_dashboard(request):   
+    today = now()
+    payment_app = Shipment.objects.filter(
+        payment_marked=True,
+        duty_paid=False
+    ).count()
+    total_invoice_value = (
+        Shipment.objects.aggregate(total=Sum("amount"))["total"] or 0
+    )
+
+    clearance_initiated = Shipment.objects.filter(
+        C_Process_Initiated=True,
+        C_Process_completed=False
+    ).count()
+
+    clearance_completed = Shipment.objects.filter(
+        C_Process_completed=True
+    ).count()
+
+    approved_duty_payments = Shipment.objects.filter(
+        duty_paid=True
+    ).count()
+
+    pending_grn = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_complete_at_warehouse=False
+    ).count()
+
+    total_grn_value_month = (
+        Shipment.objects.filter(
+            grn_complete_at_warehouse_date__month=today.month,
+            grn_complete_at_warehouse_date__year=today.year
+        ).aggregate(total=Sum("amount"))["total"] or 0
+    )
+
     payment_app = Shipment.objects.filter(
         payment_marked=True,
         duty_paid=False
     ).count()
 
+    overview = {
+        "total_invoice_value": total_invoice_value,
+        "clearance_initiated": clearance_initiated,
+        "clearance_completed": clearance_completed,
+        "approved_duty_payments": approved_duty_payments,
+        "pending_grn": pending_grn,
+        "total_grn_value_month": total_grn_value_month,
+    }
+
+
+
     context = {
+        "overview": overview,
         "md": {
             "payment_app": payment_app
         }
@@ -4510,3 +4559,41 @@ def dashboard_kpi_web(request):
         }
 
     return render(request, "dashboard_kpi_web.html", context)
+
+
+
+    ############## shipments 
+@login_required
+def shipments_web(request):
+    status = request.GET.get("status", "All")
+    q = request.GET.get("q", "").strip()
+
+    statuses = ["All", "Active", "Overdue", "Completed"]
+
+    queryset = Shipment.objects.all().order_by("-id")
+
+    if status == "Active":
+        queryset = queryset.filter(ship_status=1)
+    elif status == "Overdue":
+        queryset = queryset.filter(ship_status=2)
+    elif status == "Completed":
+        queryset = queryset.filter(ship_status=3)
+
+    if q:
+        queryset = queryset.filter(
+            Q(bl__icontains=q) |
+            Q(supplier__supplier_name__icontains=q)
+        )
+
+    serializer = ShipmentSerializer(queryset, many=True)
+
+    return render(
+        request,
+        "shipments/shipments_web.html",
+        {
+            "shipments": serializer.data,
+            "status": status,
+            "statuses": statuses,   # ✅ pass list
+            "q": q,
+        }
+    )

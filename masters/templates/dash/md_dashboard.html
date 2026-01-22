@@ -71,16 +71,16 @@
 
 /* -------- Quick Actions -------- */
 .actions-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   padding: 0 16px;
 }
 
+
 .action-card {
-  width: 47%;
-  margin-bottom: 16px;
-  text-decoration: none;
+  width: 100%;
+  display: flex;
 }
 
 .action-inner {
@@ -90,6 +90,10 @@
   text-align: center;
   box-shadow: 0 4px 8px rgba(0,0,0,0.08);
   position: relative;
+   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Icon */
@@ -133,6 +137,7 @@
   font-size: 11px;
   color: #B91C1C;
   margin-top: 4px;
+  min-height: 14px;
 }
 
 /* Badge */
@@ -150,7 +155,72 @@
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
+  pointer-events: none;
 }
+
+/* -------- KPI / OVERVIEW -------- */
+.kpi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  width: 47%;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  border-left: 6px solid #3B82F6;
+}
+
+.kpi-title {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: rgba(59,130,246,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #3B82F6;
+}
+
+/* KPI color variants */
+.kpi-green { border-left-color: #10B981; }
+.kpi-green .kpi-icon { background-color: rgba(16,185,129,0.15); color:#10B981; }
+
+.kpi-yellow { border-left-color: #F59E0B; }
+.kpi-yellow .kpi-icon { background-color: rgba(245,158,11,0.15); color:#F59E0B; }
+
+.kpi-purple { border-left-color: #8B5CF6; }
+.kpi-purple .kpi-icon { background-color: rgba(139,92,246,0.15); color:#8B5CF6; }
+
+.kpi-red { border-left-color: #DC2626; }
+.kpi-red .kpi-icon { background-color: rgba(220,38,38,0.15); color:#DC2626; }
+
 </style>
 
 <div class="page-wrapper">
@@ -158,10 +228,76 @@
   <!-- HEADER -->
 
 
-  <!-- WELCOME -->
-  <div class="welcome-box">
-    <div class="welcome-text">Welcome Back,</div>
-    <div class="user-role">Managing Director</div>
+
+    <!-- OVERVIEW -->
+  <div class="section-title">Overview</div>
+
+  <div class="kpi-grid">
+
+    <div class="kpi-card">
+      <div class="kpi-title">Total Invoice Value</div>
+      <div class="kpi-row">
+        <div class="kpi-value">
+          {{ overview.total_invoice_value|floatformat:2 }}
+        </div>
+        <div class="kpi-icon">
+          <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-title">Clearance Initiated</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.clearance_initiated }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-green">
+      <div class="kpi-title">Clearance Completed</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.clearance_completed }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-title">Approved Duty Payments</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.approved_duty_payments }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-university"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-title">Pending GRN</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.pending_grn }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-box-open"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-red">
+      <div class="kpi-title">GRN Value (This Month)</div>
+      <div class="kpi-row">
+        <div class="kpi-value">
+          {{ overview.total_grn_value_month|floatformat:2 }}
+        </div>
+        <div class="kpi-icon">
+          <i class="fas fa-chart-bar"></i>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- QUICK ACTIONS -->
@@ -170,15 +306,32 @@
   <div class="actions-grid">
 
     <!-- Payment Approvals (ALERT) -->
-   <a href="{% url 'md-payment-approvals' %}" class="action-card alert">
+<a href="{% url 'md-payment-approvals' %}"
+   class="action-card {% if md.payment_app > 0 %}alert{% endif %}">
 
-      <div class="action-inner">
-        <div class="badge">{{ md.payment_app }}</div>        
-        <div class="action-icon">✔️</div>
-        <div class="action-title">Payment Approvals</div>
-        <div class="sub-alert">Approval(s) pending</div>
+  <div class="action-inner">
+
+    {% if md.payment_app > 0 %}
+      <div class="badge">{{ md.payment_app }}</div>
+    {% endif %}
+
+    <div class="action-icon">✔️</div>
+
+    <div class="action-title">
+      Payment Approvals
+    </div>
+
+    {% if md.payment_app > 0 %}
+      <div class="sub-alert">
+        Approval(s) pending
       </div>
-    </a>
+    {% else %}
+      <div class="sub-alert">&nbsp;</div>
+    {% endif %}
+
+  </div>
+</a>
+
 
     <!-- Bank Balance -->
     <a href="#" class="action-card">
