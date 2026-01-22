@@ -1817,75 +1817,25 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 #####################
+from .services import get_sales_dashboard_data
 @login_required
-##from django.utils import timezone
-##from django.db.models import OuterRef, Subquery
-##from masters.models import Shipment, ShipmentPhase
-
 def sales_dashboard(request):
-    today = timezone.now().date()
-
-    # 🔹 Subquery to get CURRENT PHASE per shipment
-    latest_phase = ShipmentPhase.objects.filter(
-        shipment=OuterRef("pk")
-    ).order_by("-order").values("phase_name")[:1]
-
-    context = {
-        # ---------------- KPI CARDS ----------------
-
-        # Active shipments (not fully completed)
-        "total_active_shipments": Shipment.objects.filter(
-            grn_complete_at_warehouse=False
-        ).count(),
-
-        # New shipment (arrival notice)
-        "new_shipment": Shipment.objects.filter(
-            ship_status=1
-        ).count(),
-
-        # Goods at Port = clearance initiated but not completed
-        "goods_at_port": Shipment.objects.filter(
-            C_Process_Initiated=True,
-            C_Process_completed=False
-        ).count(),
-
-        # On the Way = clearance completed, not yet arrived
-        "on_the_way_shipment": Shipment.objects.filter(
-            C_Process_completed=True,
-            arrival_at_warehouse=False
-        ).count(),
-
-        # GRN stage
-        "grn": Shipment.objects.filter(
-            grn_upload_at_warehouse=True,
-            grn_complete_at_warehouse=False
-        ).count(),
-
-        # Completed shipments
-        "completed_shipment": Shipment.objects.filter(
-            grn_complete_at_warehouse=True
-        ).count(),
-
-        # ---------------- ACTIVE SHIPMENT TABLE ----------------
-
-        "active_shipments": (
-            Shipment.objects
-            .filter(grn_complete_at_warehouse=False)
-            .annotate(current_phase=Subquery(latest_phase))
-            .values(
-                "shipment_code",
-                "expected_arrival_date",
-                "current_phase",
-            )
-            .order_by("expected_arrival_date")
-        ),
-
-        "today": today,
-    }
-
+    context = get_sales_dashboard_data()
     return render(request, "dash/sales_dashboard.html", context)
 
 
+
+@login_required
+def sales_dashboard_api(request):
+    data = get_sales_dashboard_data()
+    return JsonResponse({
+        "total_active_shipments": data["total_active_shipments"],
+        "new_shipment": data["new_shipment"],
+        "goods_at_port": data["goods_at_port"],
+        "on_the_way_shipment": data["on_the_way_shipment"],
+        "grn": data["grn"],
+        "completed_shipment": data["completed_shipment"],
+    })
 
 
 ###################################################################################3

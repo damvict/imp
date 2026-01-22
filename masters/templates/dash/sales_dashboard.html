@@ -3,126 +3,189 @@
 
 {% block content %}
 <style>
+  body {
+    background: #f1f5f9;
+  }
+
   .dashboard-container {
-    padding: 20px;
+    padding: 24px 32px;
   }
 
   .dashboard-title {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 20px;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #1e293b;
   }
 
+  .last-updated {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 24px;
+  }
+
+  /* ===== KPI CARDS ===== */
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 1400px) {
+    .cards {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
   }
 
   .card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    transition: transform 0.2s ease;
+    border-radius: 18px;
+    padding: 26px;
+    color: #fff;
+    min-height: 140px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.18);
+    transition: transform .2s ease;
   }
 
   .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
   }
 
   .card-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 10px;
+    opacity: .9;
   }
 
   .card-value {
-    font-size: 36px;
-    font-weight: 700;
-    color: #111827;
+    font-size: 48px;
+    font-weight: 800;
+    margin-top: 6px;
   }
 
-  /* Status Colors */
-  .blue { border-left: 6px solid #2563eb; }
-  .orange { border-left: 6px solid #f97316; }
-  .yellow { border-left: 6px solid #eab308; }
-  .green { border-left: 6px solid #16a34a; }
-  .purple { border-left: 6px solid #7c3aed; }
-  .gray { border-left: 6px solid #6b7280; }
+  /* Gradient themes */
+  .blue   { background: linear-gradient(135deg,#2563eb,#60a5fa); }
+  .gray   { background: linear-gradient(135deg,#374151,#9ca3af); }
+  .orange { background: linear-gradient(135deg,#f97316,#fdba74); }
+  .yellow { background: linear-gradient(135deg,#eab308,#fde047); color:#1f2937; }
+  .green  { background: linear-gradient(135deg,#16a34a,#4ade80); }
+  .purple { background: linear-gradient(135deg,#7c3aed,#c4b5fd); }
 
+  /* ===== TABLE ===== */
+  h3 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #334155;
+  }
+
+  table {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    font-size: 15px;
+  }
+
+  thead {
+    background: #f8fafc;
+  }
+
+  th {
+    font-weight: 700;
+    padding: 14px;
+  }
+
+  td {
+    padding: 14px;
+    vertical-align: middle;
+  }
+
+  .badge {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
 </style>
 
 <div class="dashboard-container">
 
-  <div class="dashboard-title">
-    📊 Sales Dashboard
+  <div class="dashboard-title">📊 Sales Dashboard</div>
+  <div class="last-updated" id="lastUpdated">
+    Last updated: {{ today|date:"d M Y" }}
   </div>
 
+  <!-- KPI CARDS -->
   <div class="cards">
 
-    <!-- Total Active Shipments -->
     <div class="card blue">
       <div class="card-title">Total Active Shipments</div>
-      <div class="card-value">{{ total_active_shipments }}</div>
+      <div class="card-value" id="total_active_shipments">
+        {{ total_active_shipments }}
+      </div>
     </div>
 
-    <!-- New Shipment -->
     <div class="card gray">
       <div class="card-title">New Shipment</div>
-      <div class="card-value">{{ new_shipment }}</div>
+      <div class="card-value" id="new_shipment">
+        {{ new_shipment }}
+      </div>
     </div>
 
-    <!-- Goods At Port -->
     <div class="card orange">
-      <div class="card-title">Goods at Port<br><small>(Clearance Initiated)</small></div>
-      <div class="card-value">{{ goods_at_port }}</div>
+      <div class="card-title">
+        Goods at Port<br><small>(Clearance Initiated)</small>
+      </div>
+      <div class="card-value" id="goods_at_port">
+        {{ goods_at_port }}
+      </div>
     </div>
 
-    <!-- On the Way Shipment -->
     <div class="card yellow">
-      <div class="card-title">On the Way Shipment<br><small>(Clearance Completed)</small></div>
-      <div class="card-value">{{ on_the_way_shipment }}</div>
+      <div class="card-title">
+        On the Way Shipment<br><small>(Clearance Completed)</small>
+      </div>
+      <div class="card-value" id="on_the_way_shipment">
+        {{ on_the_way_shipment }}
+      </div>
     </div>
 
-    <!-- GRN -->
     <div class="card purple">
       <div class="card-title">GRN</div>
-      <div class="card-value">{{ grn }}</div>
+      <div class="card-value" id="grn">
+        {{ grn }}
+      </div>
     </div>
 
-    <!-- Completed Shipment -->
     <div class="card green">
       <div class="card-title">Completed Shipment</div>
-      <div class="card-value">{{ completed_shipment }}</div>
+      <div class="card-value" id="completed_shipment">
+        {{ completed_shipment }}
+      </div>
     </div>
 
   </div>
 
-
+  <!-- ACTIVE SHIPMENTS TABLE -->
   <h3>Active Shipments</h3>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Shipment</th>
-      <th>Expected Arrival</th>
-      <th>Current Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for s in active_shipments %}
+  <table class="table table-striped">
+    <thead>
       <tr>
-       <td>
-  <a href="{% url 'shipment-timeline' s.shipment_code %}"
-     class="fw-bold text-primary text-decoration-none">
-    {{ s.shipment_code }}
-  </a>
-</td>
+        <th>Shipment</th>
+        <th>Expected Arrival</th>
+        <th>Current Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in active_shipments %}
+      <tr>
+        <td>
+          <a href="{% url 'shipment-timeline' s.shipment_code %}"
+             class="fw-bold text-primary text-decoration-none">
+            {{ s.shipment_code }}
+          </a>
+        </td>
 
-
-        <td class="{% if s.expected_arrival_date < today %}text-danger{% endif %}">
+        <td class="{% if s.expected_arrival_date < today %}text-danger fw-bold{% endif %}">
           {{ s.expected_arrival_date|date:"d M Y" }}
         </td>
 
@@ -132,13 +195,39 @@
           </span>
         </td>
       </tr>
-    {% empty %}
+      {% empty %}
       <tr>
-        <td colspan="3" class="text-center">No active shipments</td>
+        <td colspan="3" class="text-center text-muted py-4">
+          No active shipments
+        </td>
       </tr>
-    {% endfor %}
-  </tbody>
-</table>
+      {% endfor %}
+    </tbody>
+  </table>
 
 </div>
+
+<!-- ASYNC AUTO REFRESH -->
+<script>
+  function refreshDashboard() {
+    fetch("{% url 'sales-dashboard-api' %}")
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("total_active_shipments").innerText = data.total_active_shipments;
+        document.getElementById("new_shipment").innerText = data.new_shipment;
+        document.getElementById("goods_at_port").innerText = data.goods_at_port;
+        document.getElementById("on_the_way_shipment").innerText = data.on_the_way_shipment;
+        document.getElementById("grn").innerText = data.grn;
+        document.getElementById("completed_shipment").innerText = data.completed_shipment;
+
+        document.getElementById("lastUpdated").innerText =
+          "Last updated: " + new Date().toLocaleTimeString();
+      })
+      .catch(err => console.error("Dashboard refresh failed", err));
+  }
+
+  // Refresh every 5 minutes (300,000 ms)
+  setInterval(refreshDashboard, 300000);
+</script>
+
 {% endblock %}

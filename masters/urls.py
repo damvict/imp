@@ -163,6 +163,11 @@ urlpatterns = [
     path("shipments/approve-duty/<int:shipment_id>/", views.approve_duty_paid_md, name="approve_duty_paid_md"),
 
     path("shipments/sales-dashboard/", views.sales_dashboard, name="sales_dashboard"),
+    path(
+        "sales-dashboard/api/",
+        views.sales_dashboard_api,
+        name="sales-dashboard-api"
+    ),
 
 
     path("reports/stage-times/", views.shipment_stage_times_report, name="shipment_stage_times_report"),
