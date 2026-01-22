@@ -63,7 +63,6 @@
     margin-top: 6px;
   }
 
-  /* Gradient themes */
   .blue   { background: linear-gradient(135deg,#2563eb,#60a5fa); }
   .gray   { background: linear-gradient(135deg,#374151,#9ca3af); }
   .orange { background: linear-gradient(135deg,#f97316,#fdba74); }
@@ -79,30 +78,74 @@
     color: #334155;
   }
 
-  table {
-    background: #fff;
-    border-radius: 14px;
-    overflow: hidden;
-    font-size: 15px;
+  .shipment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
   }
 
-  thead {
+  .shipment-table thead th {
     background: #f8fafc;
-  }
-
-  th {
+    color: #334155;
     font-weight: 700;
     padding: 14px;
   }
 
-  td {
+  .shipment-table tbody tr {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  }
+
+  .shipment-table td {
     padding: 14px;
     vertical-align: middle;
   }
 
-  .badge {
+  .shipment-link {
+    font-weight: 700;
+    color: #2563eb;
+    text-decoration: none;
+  }
+
+  .shipment-link:hover {
+    text-decoration: underline;
+  }
+
+  .late {
+    color: #dc2626;
+    font-weight: 700;
+  }
+
+  .status-pill {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 6px 12px;
+    border-radius: 999px;
     font-size: 13px;
-    padding: 6px 10px;
+    font-weight: 600;
+  }
+
+  /* ===== PROGRESS BAR (FIXED) ===== */
+  .progress-track {
+    width: 220px;
+    height: 14px;
+    background: #e5e7eb;     /* total lifecycle */
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,#22c55e,#4ade80); /* completed */
+    border-radius: 999px;
+    transition: width .4s ease;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 24px;
+    color: #94a3b8;
   }
 </style>
 
@@ -116,90 +159,77 @@
   <!-- KPI CARDS -->
   <div class="cards">
 
-    <div class="card blue">
+    <div class="card gray">
       <div class="card-title">Total Active Shipments</div>
-      <div class="card-value" id="total_active_shipments">
-        {{ total_active_shipments }}
-      </div>
+      <div class="card-value" id="total_active_shipments">{{ total_active_shipments }}</div>
     </div>
 
-    <div class="card gray">
+    <div class="card blue">
       <div class="card-title">New Shipment</div>
-      <div class="card-value" id="new_shipment">
-        {{ new_shipment }}
-      </div>
+      <div class="card-value" id="new_shipment">{{ new_shipment }}</div>
     </div>
 
     <div class="card orange">
-      <div class="card-title">
-        Goods at Port<br><small>(Clearance Initiated)</small>
-      </div>
-      <div class="card-value" id="goods_at_port">
-        {{ goods_at_port }}
-      </div>
+      <div class="card-title">Goods at Port<br><small>(Clearance Initiated)</small></div>
+      <div class="card-value" id="goods_at_port">{{ goods_at_port }}</div>
     </div>
 
     <div class="card yellow">
-      <div class="card-title">
-        On the Way Shipment<br><small>(Clearance Completed)</small>
-      </div>
-      <div class="card-value" id="on_the_way_shipment">
-        {{ on_the_way_shipment }}
-      </div>
+      <div class="card-title">On the Way Shipment<br><small>(Clearance Completed)</small></div>
+      <div class="card-value" id="on_the_way_shipment">{{ on_the_way_shipment }}</div>
     </div>
 
     <div class="card purple">
       <div class="card-title">GRN</div>
-      <div class="card-value" id="grn">
-        {{ grn }}
-      </div>
+      <div class="card-value" id="grn">{{ grn }}</div>
     </div>
 
     <div class="card green">
       <div class="card-title">Completed Shipment</div>
-      <div class="card-value" id="completed_shipment">
-        {{ completed_shipment }}
-      </div>
+      <div class="card-value" id="completed_shipment">{{ completed_shipment }}</div>
     </div>
 
   </div>
 
-  <!-- ACTIVE SHIPMENTS TABLE -->
+  <!-- ACTIVE SHIPMENTS -->
   <h3>Active Shipments</h3>
 
-  <table class="table table-striped">
+  <table class="shipment-table">
     <thead>
       <tr>
         <th>Shipment</th>
         <th>Expected Arrival</th>
-        <th>Current Status</th>
+        <th>Status</th>
+        <th>Progress</th>
       </tr>
     </thead>
+
     <tbody>
       {% for s in active_shipments %}
       <tr>
         <td>
-          <a href="{% url 'shipment-timeline' s.shipment_code %}"
-             class="fw-bold text-primary text-decoration-none">
+          <a href="{% url 'shipment-timeline' s.shipment_code %}" class="shipment-link">
             {{ s.shipment_code }}
           </a>
         </td>
 
-        <td class="{% if s.expected_arrival_date < today %}text-danger fw-bold{% endif %}">
+        <td class="{% if s.expected_arrival_date < today %}late{% endif %}">
           {{ s.expected_arrival_date|date:"d M Y" }}
         </td>
 
         <td>
-          <span class="badge bg-info">
-            {{ s.current_phase|default:"Not Started" }}
-          </span>
+          <span class="status-pill">{{ s.current_phase }}</span>
+        </td>
+
+        <td>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: {{ s.progress }}%;"></div>
+          </div>
         </td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="3" class="text-center text-muted py-4">
-          No active shipments
-        </td>
+        <td colspan="4" class="empty">No active shipments</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -207,11 +237,10 @@
 
 </div>
 
-<!-- ASYNC AUTO REFRESH -->
 <script>
   function refreshDashboard() {
     fetch("{% url 'sales-dashboard-api' %}")
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
         document.getElementById("total_active_shipments").innerText = data.total_active_shipments;
         document.getElementById("new_shipment").innerText = data.new_shipment;
@@ -219,14 +248,11 @@
         document.getElementById("on_the_way_shipment").innerText = data.on_the_way_shipment;
         document.getElementById("grn").innerText = data.grn;
         document.getElementById("completed_shipment").innerText = data.completed_shipment;
-
         document.getElementById("lastUpdated").innerText =
           "Last updated: " + new Date().toLocaleTimeString();
-      })
-      .catch(err => console.error("Dashboard refresh failed", err));
+      });
   }
 
-  // Refresh every 5 minutes (300,000 ms)
   setInterval(refreshDashboard, 300000);
 </script>
 
