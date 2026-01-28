@@ -362,7 +362,9 @@ class Shipment(models.Model):
          ##return f"{self.bl} ({self.shipment_code})"
         supplier_name = self.supplier.supplier_name if self.supplier else "No Supplier"
         return f"{self.bl} ({self.shipment_code}) — {supplier_name}"
-
+    
+    def is_completed(self):
+        return self.ship_status == 13
     
 
     def get_status(self):
@@ -513,6 +515,8 @@ class BankDocument(models.Model):
 
     def __str__(self):
         return f"{self.doc_type} for Shipment {self.shipment.id} - {self.reference_number}"
+
+
 
 
 

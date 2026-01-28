@@ -22,16 +22,6 @@
   color: #1E3A8A;
 }
 
-.status {
-  font-size: 13px;
-  font-weight: 600;
-  margin: 6px 0;
-}
-
-.status.active { color: #2563EB; }
-.status.overdue { color: #EAB308; }
-.status.completed { color: #16A34A; }
-
 .meta {
   font-size: 13px;
   color: #374151;
@@ -42,83 +32,191 @@
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .filter-btn {
   padding: 6px 14px;
   border-radius: 20px;
-  border: none;
   background: #E0E7FF;
   font-weight: 600;
   color: #1E3A8A;
+  text-decoration: none;
 }
 
 .filter-btn.active {
   background: #1E3A8A;
   color: #fff;
 }
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-active { background: #DBEAFE; color: #1D4ED8; }
+.badge-completed { background: #DCFCE7; color: #166534; }
 </style>
 
 <div class="page-wrapper">
 
-  <h2>Shipments</h2>
+  <h2 class="mb-3">Shipments</h2>
 
-  <!-- SEARCH -->
-  <form method="get" style="margin-bottom:12px;">
-    <input
-      type="text"
-      name="q"
-      value="{{ q }}"
-      placeholder="Search by BL or Supplier"
-      class="form-control"
-    />
+  <!-- FILTER FORM -->
+  <form method="get" class="row g-2 mb-4">
+
+    <input type="hidden" name="status" value="{{ status }}">
+
+    <div class="col-md-3">
+      <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+    </div>
+
+    <div class="col-md-3">
+      <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+    </div>
+
+    <div class="col-md-4">
+      <input
+        type="text"
+        name="q"
+        value="{{ q }}"
+        class="form-control"
+        placeholder="Search by BL or Supplier">
+    </div>
+
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100">Apply</button>
+    </div>
+
   </form>
 
-  <!-- FILTERS -->
+  <!-- STATUS FILTERS -->
   <div class="filters">
-   {% for s in statuses %}
-  <a href="?status={{ s }}&q={{ q }}"
-     class="filter-btn {% if status == s %}active{% endif %}">
-    {{ s }}
-  </a>
-{% endfor %}
-
+    {% for s in statuses %}
+      <a href="?status={{ s }}&q={{ q }}&start_date={{ start_date }}&end_date={{ end_date }}"
+         class="filter-btn {% if status == s %}active{% endif %}">
+        {{ s }}
+      </a>
+    {% endfor %}
   </div>
 
-  <!-- LIST -->
-  <div class="shipment-grid">
+  <!-- ========================= -->
+  <!-- DASHBOARD MODE -->
+  <!-- ========================= -->
+  {% if dashboard %}
 
-    {% for s in shipments %}
-    <div class="shipment-card">
+    <h4 class="mt-4">Active Shipments</h4>
+    <div class="shipment-grid">
+      {% for s in active_shipments %}
+        <div class="shipment-card">
+          <div class="shipment-code">{{ s.shipment_code }}</div>
+          <div class="meta">{{ s.supplier.supplier_name }}</div>
+          <span class="badge badge-active">Active</span>
 
-      <div class="shipment-code">{{ s.shipment_code }}</div>
-      <div class="meta">{{ s.supplier.supplier_name }}</div>
+          <div class="meta mt-2">BL: {{ s.bl }}</div>
+          <div class="meta">Amount: {{ s.amount }}</div>
+          <div class="meta">Order Date: {{ s.order_date }}</div>
 
-      {% if s.ship_status == 1 %}
-        <div class="status active">📦 Active Shipment</div>
-      {% elif s.ship_status == 2 %}
-        <div class="status overdue">⚠️ Overdue Shipment</div>
-      {% elif s.ship_status == 3 %}
-        <div class="status completed">✅ Completed</div>
+          <a href="{% url 'shipment-timeline' s.shipment_code %}"
+             class="btn btn-sm btn-primary mt-2">
+            View Details
+          </a>
+        </div>
+      {% empty %}
+        <p>No active shipments.</p>
+      {% endfor %}
+    </div>
+
+    <hr class="my-4">
+
+    <h4>Last 10 Shipments</h4>
+    <div class="shipment-grid">
+      {% for s in last_shipments %}
+        <div class="shipment-card">
+          <div class="shipment-code">{{ s.shipment_code }}</div>
+          <div class="meta">{{ s.supplier.supplier_name }}</div>
+
+          {% if s.ship_status == 13 %}
+            <span class="badge badge-completed">Completed</span>
+          {% else %}
+            <span class="badge badge-active">Active</span>
+          {% endif %}
+
+          <div class="meta mt-2">BL: {{ s.bl }}</div>
+          <div class="meta">Amount: {{ s.amount }}</div>
+          <div class="meta">Order Date: {{ s.order_date }}</div>
+
+          <a href="{% url 'shipment-timeline' s.shipment_code %}"
+             class="btn btn-sm btn-primary mt-2">
+            View Details
+          </a>
+        </div>
+      {% empty %}
+        <p>No shipments found.</p>
+      {% endfor %}
+    </div>
+
+  <!-- ========================= -->
+  <!-- FULL LIST MODE -->
+  <!-- ========================= -->
+  {% else %}
+
+    <h4 class="mt-4">Filtered Shipments</h4>
+
+    <div class="shipment-grid">
+      {% for s in shipments %}
+        <div class="shipment-card">
+          <div class="shipment-code">{{ s.shipment_code }}</div>
+          <div class="meta">{{ s.supplier.supplier_name }}</div>
+
+          {% if s.ship_status == 13 %}
+            <span class="badge badge-completed">Completed</span>
+          {% else %}
+            <span class="badge badge-active">Active</span>
+          {% endif %}
+
+          <div class="meta mt-2">BL: {{ s.bl }}</div>
+          <div class="meta">Amount: {{ s.amount }}</div>
+          <div class="meta">Order Date: {{ s.order_date }}</div>
+
+          <a href="{% url 'shipment-timeline' s.shipment_code %}"
+             class="btn btn-sm btn-primary mt-2">
+            View Details
+          </a>
+        </div>
+      {% empty %}
+        <p>No shipments found.</p>
+      {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-primary btn-sm"
+           href="?page={{ page_obj.previous_page_number }}&status={{ status }}&q={{ q }}&start_date={{ start_date }}&end_date={{ end_date }}">
+          ← Previous
+        </a>
+      {% else %}
+        <span></span>
       {% endif %}
 
-      <div class="meta">BL: {{ s.bl }}</div>
-      <div class="meta">Amount: {{ s.amount }}</div>
-      <div class="meta">Order Date: {{ s.order_date }}</div>
+      <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
 
-     <a href="{% url 'shipment-timeline' s.shipment_code %}"
-   class="btn btn-sm btn-primary">
-  View Details
-</a>
-
-
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-primary btn-sm"
+           href="?page={{ page_obj.next_page_number }}&status={{ status }}&q={{ q }}&start_date={{ start_date }}&end_date={{ end_date }}">
+          Next →
+        </a>
+      {% else %}
+        <span></span>
+      {% endif %}
     </div>
-    {% endfor %}
+    {% endif %}
 
-  </div>
-
-  {% if shipments|length == 0 %}
-    <p style="margin-top:20px;">No shipments found.</p>
   {% endif %}
 
 </div>

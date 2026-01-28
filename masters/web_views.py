@@ -45,32 +45,46 @@ def create_arrival_notice_view(request):
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from .models import Shipment, ShipmentPhase
+from .models import Shipment, ShipmentPhase,ShipmentPhaseMaster
 
 
 @login_required
 def shipment_timeline(request, shipment_code):
-    shipment = get_object_or_404(
-        Shipment,
-        shipment_code=shipment_code
-    )
+    shipment = get_object_or_404(Shipment, shipment_code=shipment_code)
 
-    phases = ShipmentPhase.objects.filter(
-        shipment=shipment
-    ).order_by("order")
+    # 1️⃣ Get ALL master phases (13 phases)
+    master_phases = ShipmentPhaseMaster.objects.all().order_by("order")
 
-    # detect if user came right after creation
-    from_create = request.GET.get("from") == "create"
+    # 2️⃣ Get completed phases for this shipment
+    completed_phases = {
+        p.phase_code: p
+        for p in ShipmentPhase.objects.filter(shipment=shipment)
+    }
 
+    # 3️⃣ Merge them
+    phases = []
+    for mp in master_phases:
+        sp = completed_phases.get(mp.phase_code)
+
+        phases.append({
+            "phase_name": mp.phase_name,
+            "order": mp.order,
+            "completed": sp.completed if sp else False,
+            "completed_at": sp.completed_at if sp else None,
+        })
+
+
+
+    
     return render(
         request,
         "shipments/shipment_timeline.html",
         {
             "shipment": shipment,
             "phases": phases,
-            "from_create": from_create,
         }
     )
+
 
 
 

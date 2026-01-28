@@ -352,7 +352,7 @@
       <div class="nav_menu">
         <div class="nav toggle">
           <a id="menu_toggle"><i class="fa fa-bars"></i>
-          <span class="menu-text">Import Shipment Workflow Management
+          <span class="menu-text">IMPORT SHIPMENT WORKFLOW MANAGEMENT
 </span>
           </a>
         </div>
@@ -416,11 +416,13 @@
   {# ---------------- SHIPMENTS ---------------- #}
 {# ---------------- SHIPMENTS ---------------- #}
   {# SHIPMENTS (COMMON) #}
-  <a href="{% url 'shipments_web' %}"
-     class="footer-item {% if request.resolver_match.url_name == 'shipments_web' %}active{% endif %}">
-    <i class="fas fa-truck"></i>
-    <span>Shipments</span>
-  </a>
+  {% if request.resolver_match.url_name != 'clearing_agent_dashboard' %}
+    <a href="{% url 'shipments_web' %}"
+      class="footer-item {% if request.resolver_match.url_name == 'shipments_web' %}active{% endif %}">
+      <i class="fas fa-truck"></i>
+      <span>Shipments</span>
+    </a>
+  {% endif %}
 
 
   {# ---------------- LOGOUT ---------------- #}

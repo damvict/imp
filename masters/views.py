@@ -3941,11 +3941,15 @@ def is_bank_manager(user):
 def bank_manager_payment_details(request, shipment_id):
     print("BANK MANAGER PAYMENT DETAILS VIEW HIT:", shipment_id)
     shipment = get_object_or_404(Shipment, id=shipment_id)
-
+    banks = Bank.objects.all().order_by("b_name")
+    
     return render(
         request,
         "dash/bank_manager_payment_details.html",
-        {"shipment": shipment}
+        {
+            "shipment": shipment,
+            "banks": banks,
+        }
     )
 
 
@@ -3959,18 +3963,25 @@ def bank_manager_submit_payment(request, shipment_id):
 
     if request.method == "POST":
         payment_type = request.POST.get("payment_type")
-        duty_paid_bank = request.POST.get("bank_name")
+        duty_paid_bank = request.POST.get("duty_paid_bank")
         pay_note = request.POST.get("notes")
+        
+        if not payment_type:
+            messages.error(request, "Please select a payment method.")
+            return redirect("bank_manager_payment_details", shipment_id=shipment.id)
 
+        if not duty_paid_bank:
+            messages.error(request, "Please select a bank.")
+            return redirect("bank_manager_payment_details", shipment_id=shipment.id)
+        
         # Map payment type (same logic as mobile)
         shipment.payment_type = payment_type
         shipment.duty_paid_bank = duty_paid_bank
         shipment.pay_note = pay_note
-
         shipment.payment_marked = True
-        shipment.payment_marked_date = timezone.now().date()
+        shipment.payment_marked_date = timezone.now()
         shipment.save()
-
+        messages.success(request, "Payment details sent for MD approval.")
         return redirect("bank_manager_initiate_payment")
 
     return redirect("bank_manager_payment_details", shipment_id=shipment.id)
@@ -4428,18 +4439,49 @@ def grn_record_web(request):
     return render(request, "ws/grn_record.html", context)   
 
 
+#!!!!!!! physical stck count
+@login_required
+def verify_physical_stock_web(request, shipment_id):
+    if not request.user.groups.filter(name="Warehouse Staff").exists():
+        return render(request, "dashboard/access_denied.html")
+
+    shipment = get_object_or_404(
+        Shipment,
+        id=shipment_id,
+        arrival_at_warehouse=True
+    )
+
+    if request.method == "POST":
+        shipment.physical_stock_verified = True
+        shipment.save()
+
+        messages.success(
+            request,
+            f"Physical stock verified for {shipment.shipment_code}"
+        )
+
+    return redirect("grn-record-web")
+
+
+
+
 @login_required
 def record_grn_upload_web(request, shipment_id):
     if not request.user.groups.filter(name="Warehouse Staff").exists():
         return render(request, "dashboard/access_denied.html")
 
-    shipment = get_object_or_404(Shipment, id=shipment_id)
+    ###shipment = get_object_or_404(Shipment, id=shipment_id)
+    shipment = get_object_or_404(
+        Shipment,
+        id=shipment_id,
+        physical_stock_verified=True   # 🔐 ENFORCED
+    )
 
     if request.method == "POST":
         grn_number = request.POST.get("grn_number", "").strip()
         receiving_notes = request.POST.get("receiving_notes", "")
-        physical_stock_verified = request.POST.get("physical_stock_verified") == "on"
-        grn_uploaded = request.POST.get("grn_uploaded") == "on"
+        ##physical_stock_verified = request.POST.get("physical_stock_verified") == "on"
+        #grn_uploaded = request.POST.get("grn_uploaded") == "on"
 
         if not grn_number:
             messages.error(request, "GRN Number is required.")
@@ -4447,12 +4489,13 @@ def record_grn_upload_web(request, shipment_id):
 
         shipment.grn_number = grn_number
         shipment.receiving_notes = receiving_notes
-        shipment.physical_stock_verified = physical_stock_verified
-        shipment.grn_uploaded = grn_uploaded
+        ###shipment.physical_stock_verified = physical_stock_verified
+        ###shipment.grn_upload_at_warehouse = True
+        ###shipment.grn_uploaded = grn_uploaded
 
-        if physical_stock_verified and grn_uploaded:
-            shipment.grn_upload_at_warehouse = True
-            shipment.grn_upload_at_warehouse_date = timezone.now()
+        ##if physical_stock_verified and grn_uploaded:
+        shipment.grn_upload_at_warehouse = True
+        shipment.grn_upload_at_warehouse_date = timezone.now()
 
         shipment.save()
 
@@ -4674,21 +4717,57 @@ def dashboard_kpi_web(request):
 
 
     ############## shipments 
+from django.db.models import Q, Exists, OuterRef
+from .models import ShipmentPhase
+from django.core.paginator import Paginator
+from django.db.models import Q
+from datetime import datetime
+
 @login_required
+
 def shipments_web(request):
-    status = request.GET.get("status", "All")
+    status = request.GET.get("status", "Active")
     q = request.GET.get("q", "").strip()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    page_number = request.GET.get("page", 1)
 
-    statuses = ["All", "Active", "Overdue", "Completed"]
+    statuses = ["Active", "Completed", "All"]
 
-    queryset = Shipment.objects.all().order_by("-id")
+    base_qs = Shipment.objects.select_related("supplier").order_by("-id")
 
-    if status == "Active":
-        queryset = queryset.filter(ship_status=1)
-    elif status == "Overdue":
-        queryset = queryset.filter(ship_status=2)
-    elif status == "Completed":
-        queryset = queryset.filter(ship_status=3)
+    # 🔍 Check if user applied any filter
+    is_dashboard = not (start_date or end_date or q)
+
+    # =====================
+    # DASHBOARD MODE
+    # =====================
+    if is_dashboard:
+        active_shipments = base_qs.exclude(ship_status=13)
+        last_shipments = base_qs[:10]
+
+        return render(
+            request,
+            "shipments/shipments_web.html",
+            {
+                "dashboard": True,
+                "active_shipments": active_shipments,
+                "last_shipments": last_shipments,
+                "status": status,
+                "statuses": statuses,
+                "q": q,
+            }
+        )
+
+    # =====================
+    # FULL LIST MODE
+    # =====================
+    queryset = base_qs
+
+    if status == "Completed":
+        queryset = queryset.filter(ship_status=13)
+    elif status == "Active":
+        queryset = queryset.exclude(ship_status=13)
 
     if q:
         queryset = queryset.filter(
@@ -4696,18 +4775,26 @@ def shipments_web(request):
             Q(supplier__supplier_name__icontains=q)
         )
 
-    serializer = ShipmentSerializer(queryset, many=True)
+    if start_date:
+        queryset = queryset.filter(order_date__gte=start_date)
+
+    if end_date:
+        queryset = queryset.filter(order_date__lte=end_date)
+
+    paginator = Paginator(queryset, 12)
+    page_obj = paginator.get_page(page_number)
 
     return render(
         request,
         "shipments/shipments_web.html",
         {
-            "shipments": serializer.data,
+            "dashboard": False,
+            "shipments": page_obj,
+            "page_obj": page_obj,
             "status": status,
-            "statuses": statuses,   # ✅ pass list
+            "statuses": statuses,
             "q": q,
+            "start_date": start_date,
+            "end_date": end_date,
         }
     )
-
-
-

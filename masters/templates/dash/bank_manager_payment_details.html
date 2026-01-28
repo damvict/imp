@@ -196,14 +196,17 @@ textarea { resize:none; }
     </label>
 
     <!-- Bank Name -->
-    <div class="section-title">Bank Name</div>
-    <input
-      type="text"
-      name="bank_name"
-      class="input"
-      placeholder="Enter Bank Name"
-      required
-    >
+   <div class="section-title">Select Bank</div>
+
+<select name="duty_paid_bank" class="input" required>
+  <option value="">-- Select Bank --</option>
+
+  {% for bank in banks %}
+    <option value="{{ bank.b_name }}">
+      {{ bank.b_name }} | {{ bank.branch }} | {{ bank.accno }}
+    </option>
+  {% endfor %}
+</select>
 
     <!-- Notes -->
     <div class="section-title">Payment Notes</div>

@@ -64,6 +64,7 @@ from .views import clearing_agent_users
 from .views import outstanding_report
 from .views import outstanding_export_excel
 from .views import outstanding_report_email
+from .views import verify_physical_stock_web
 from . import web_views
 
 
@@ -472,6 +473,13 @@ path(
 
 
 path("ws/grn/", views.grn_record_web, name="grn-record-web"),
+
+path(
+    "warehouse/grn/verify/<int:shipment_id>/",
+    verify_physical_stock_web,
+    name="verify-physical-stock-web"
+),
+
 path(
     "ws/grn/record/<int:shipment_id>/",
     views.record_grn_upload_web,
