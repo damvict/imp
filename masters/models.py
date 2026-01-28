@@ -186,7 +186,7 @@ class Shipment(models.Model):
     id = models.AutoField(primary_key=True)  
     shipment_sequence = models.IntegerField(default=0)
     shipment_code = models.CharField(max_length=20, unique=True, blank=True, null=True)      
-    bl = models.CharField(max_length=100,default=0)
+    bl = models.CharField(max_length=100,null=False,blank=False)
     vessel = models.CharField(max_length=200,default=' ')
     supplier_invoice = models.CharField(max_length=100,null=True, blank=True)
     #order_date = models.DateField()  ########### Notice  arival date
@@ -196,8 +196,8 @@ class Shipment(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     remark = models.CharField(max_length=100,null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=True, blank=True)  
-    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.PROTECT, null=False, blank=False)  
+    supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, null=False, blank=False)
     cbm = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     #ship_status=models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     ship_status = models.IntegerField(null=True, blank=True)
@@ -359,7 +359,9 @@ class Shipment(models.Model):
 
     def __str__(self):
         #return f"{self.shipment_code or 'Unassigned'}"
-         return f"{self.bl} ({self.shipment_code})"
+         ##return f"{self.bl} ({self.shipment_code})"
+        supplier_name = self.supplier.supplier_name if self.supplier else "No Supplier"
+        return f"{self.bl} ({self.shipment_code}) — {supplier_name}"
 
     
 

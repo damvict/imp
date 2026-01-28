@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  body { background: #f1f5f9; }
+
+  .dashboard-container { padding: 24px 32px; }
+
+  .dashboard-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #1e293b;
+  }
+
+  .last-updated {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 24px;
+  }
+
+  /* KPI CARDS */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 1400px) {
+    .cards { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  }
+
+  .card {
+    border-radius: 18px;
+    padding: 26px;
+    color: #fff;
+    min-height: 140px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.18);
+    transition: transform .2s ease;
+  }
+
+  .card:hover { transform: translateY(-6px); }
+
+  .card-title { font-size: 16px; font-weight: 600; opacity: .9; }
+  .card-value { font-size: 48px; font-weight: 800; margin-top: 6px; }
+
+  .blue   { background: linear-gradient(135deg,#2563eb,#60a5fa); }
+  .gray   { background: linear-gradient(135deg,#374151,#9ca3af); }
+  .orange { background: linear-gradient(135deg,#f97316,#fdba74); }
+  .yellow { background: linear-gradient(135deg,#eab308,#fde047); color:#1f2937; }
+  .green  { background: linear-gradient(135deg,#16a34a,#4ade80); }
+  .purple { background: linear-gradient(135deg,#7c3aed,#c4b5fd); }
+
+  /* TABLE */
+  h3 { font-size: 26px; font-weight: 700; margin-bottom: 16px; color: #334155; }
+
+  .shipment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .shipment-table thead th {
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 700;
+    padding: 14px;
+  }
+
+  .shipment-table tbody tr {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  }
+
+  .shipment-table td { padding: 14px; }
+
+  .status-pill {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .late { color: #dc2626; font-weight: 700; }
+
+  .progress-track {
+    width: 220px;
+    height: 14px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,#22c55e,#4ade80);
+    border-radius: 999px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 24px;
+    color: #94a3b8;
+  }
+</style>
+
+<div class="dashboard-container">
+
+  <div class="dashboard-title">🏭 Warehouse Dashboard</div>
+  <div class="last-updated" id="lastUpdated">
+    Last updated: {{ today|date:"d M Y" }}
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="cards">
+
+    <div class="card gray">
+      <div class="card-title">Inbound Shipments</div>
+      <div class="card-value">{{ inbound_shipments }}</div>
+    </div>
+
+    <div class="card blue">
+      <div class="card-title">Pending GRN</div>
+      <div class="card-value">{{ pending_grn }}</div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-title">Awaiting Putaway</div>
+      <div class="card-value">{{ awaiting_putaway }}</div>
+    </div>
+
+    <div class="card yellow">
+      <div class="card-title">Ready for Dispatch</div>
+      <div class="card-value">{{ ready_for_dispatch }}</div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-title">GRN Completed</div>
+      <div class="card-value">{{ grn_completed }}</div>
+    </div>
+
+    <div class="card green">
+      <div class="card-title">Dispatched Orders</div>
+      <div class="card-value">{{ dispatched_orders }}</div>
+    </div>
+
+  </div>
+
+  <!-- WAREHOUSE TASKS -->
+  <h3>Warehouse Operations</h3>
+
+  <table class="shipment-table">
+    <thead>
+      <tr>
+        <th>Reference</th>
+        <th>ETA / Due Date</th>
+        <th>Warehouse Status</th>
+        <th>Process</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for w in warehouse_tasks %}
+      <tr>
+        <td>
+          <a href="{% url 'shipment-timeline' w.shipment_code %}" class="shipment-link">
+            {{ w.shipment_code }}
+          </a>
+        </td>
+
+        <td class="{% if w.expected_date < today %}late{% endif %}">
+          {{ w.expected_date|date:"d M Y" }}
+        </td>
+
+        <td>
+          <span class="status-pill">{{ w.warehouse_status }}</span>
+        </td>
+
+        <td>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: {{ w.progress }}%;"></div>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="empty">No warehouse tasks</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+
+<script>
+  function refreshDashboard() {
+    fetch("{% url 'warehouse-dashboard-api' %}")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("lastUpdated").innerText =
+          "Last updated: " + new Date().toLocaleTimeString();
+      });
+  }
+  setInterval(refreshDashboard, 300000);
+</script>
+
+{% endblock %}

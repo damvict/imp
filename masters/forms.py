@@ -505,7 +505,7 @@ class NewShipmentForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     supplier_invoice = forms.CharField(
-        required=False,
+        required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     amount = forms.DecimalField(
@@ -541,7 +541,7 @@ class NewShipmentForm(forms.Form):
     )
 
     packing_list_ref = forms.CharField(
-        required=False,
+        required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     gross_weight = forms.DecimalField(required=False)

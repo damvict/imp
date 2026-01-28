@@ -217,9 +217,18 @@
         </div>
 
         <div class="card-actions">
-          <a href="{{ s.payref_document }}" target="_blank" class="action-btn btn-view">
-            View Proof
-          </a>
+         {% if s.payref_document %}
+  <a href="{{ s.payref_document.url }}"
+     target="_blank"
+     class="action-btn btn-view">
+    View Proof
+  </a>
+{% else %}
+  <span class="action-btn btn-view" style="opacity:.4;cursor:not-allowed;">
+    No Proof
+  </span>
+{% endif %}
+
 
           <form method="POST"
                 action="{% url 'initiate-clearing-submit-web' s.id %}"

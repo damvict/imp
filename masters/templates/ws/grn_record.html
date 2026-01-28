@@ -79,7 +79,8 @@
         <div class="grn-card">
 
           <div class="grn-code">{{ s.shipment_code }}</div>
-          <div class="grn-supplier">{{ s.supplier_name|default:"-" }}</div>
+          {{ s.supplier.supplier_name|default:"-" }}
+
 
           <div class="grn-row">
             <strong>Phone:</strong>

@@ -161,6 +161,7 @@ urlpatterns = [
     path('shipments/warehouse-dashboard/', views.warehouse_dashboard, name='warehouse_dashboard'),
     path('shipments/md-dashboard/', views.md_dashboard, name='md_dashboard'),
     path("shipments/approve-duty/<int:shipment_id>/", views.approve_duty_paid_md, name="approve_duty_paid_md"),
+    path("md/reject-duty/<int:shipment_id>/",views.reject_duty_paid_web, name="md-reject-web"),
 
     path("shipments/sales-dashboard/", views.sales_dashboard, name="sales_dashboard"),
     path(
@@ -169,6 +170,18 @@ urlpatterns = [
         name="sales-dashboard-api"
     ),
 
+    ###path("dashboard/warehouse/", views.warehouse_dashboard, name="warehouse_dashboard"),
+     path(
+        "warehouse-dashboard/",
+        views.warehouse_dashboard,
+        name="warehouse_dashboard"
+    ),
+
+ path(
+        "warehouse-dashboard/api/",
+        views.warehouse_dashboard_api,
+        name="warehouse-dashboard-api"
+    ),
 
     path("reports/stage-times/", views.shipment_stage_times_report, name="shipment_stage_times_report"),
     path('reports/stage-times/pdf/', views.shipment_stage_times_report_pdf, name='shipment_stage_times_report_pdf'),
@@ -380,7 +393,7 @@ path(
 # urls.py
 path("md/payment-approvals/", views.md_payment_approvals, name="md-payment-approvals"),
 path("md/payment-approvals/approve/<int:shipment_id>/", views.md_approve_web, name="md-approve-web"),
-path("md/payment-approvals/reject/<int:shipment_id>/", views.md_reject_web, name="md-reject-web"),
+###path("md/payment-approvals/reject/<int:shipment_id>/", views.md_reject_web, name="md-reject-web"),
 
 
 # masters/urls.py

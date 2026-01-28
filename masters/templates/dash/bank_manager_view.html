@@ -20,8 +20,10 @@ body { background:#F9FAFB; }
 .shipment-card{
   background:#fff;
   border-radius:12px;
+  margin:10px auto;
   margin:10px 0;
   padding:15px;
+  max-width:520px; 
   box-shadow:0 2px 6px rgba(0,0,0,.08);
 }
 
@@ -95,12 +97,13 @@ body { background:#F9FAFB; }
     </div>
     {% endif %}
 
-    {% if item.assessment_document %}
-      <a class="btn btn-danger" target="_blank"
-         href="{% url 'bank_manager_payment_details' item.id %}">
-        📄 View Assessment Document
-      </a>
-    {% endif %}
+   {% if item.assessment_document %}
+  <a class="btn btn-danger"
+     href="{{ item.assessment_document.url }}"
+     target="_blank">
+    📄 View Assessment Document
+  </a>
+{% endif %}
 
     {% if not item.duty_paid %}
       <a class="btn btn-primary"

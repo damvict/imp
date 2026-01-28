@@ -1013,8 +1013,93 @@ from django.contrib.auth.decorators import login_required
 
 from masters.models import StatusColor, ShipmentDetail, UserProfile
 
+
+
+    ####################### dashboard warehousefrom django.http import JsonResponse
+
+@login_required
+def warehouse_dashboard_api(request):
+    today = timezone.now().date()
+
+    inbound_shipments = Shipment.objects.filter(
+        C_Process_completed=True,
+        arrival_at_warehouse=False
+    ).count()
+
+    pending_grn = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_complete_at_warehouse=False
+    ).count()
+
+    record_grn = Shipment.objects.filter(
+        arrival_at_warehouse=True,
+        grn_upload_at_warehouse=False
+    ).count()
+
+    confirm_grn = Shipment.objects.filter(
+        grn_upload_at_warehouse=True,
+        grn_complete_at_warehouse=False
+    ).count()
+
+    grn_completed = Shipment.objects.filter(
+        grn_complete_at_warehouse=True,
+        grn_complete_at_warehouse_date__month=today.month,
+        grn_complete_at_warehouse_date__year=today.year
+    ).count()
+
+    overdue_shipments = Shipment.objects.filter(
+        expected_arrival_date__lt=today,
+        arrival_at_warehouse=False
+    ).count()
+
+    return JsonResponse({
+        "inbound_shipments": inbound_shipments,
+        "pending_grn": pending_grn,
+        "record_grn": record_grn,
+        "confirm_grn": confirm_grn,
+        "grn_completed": grn_completed,
+        "overdue_shipments": overdue_shipments,
+    })
+
+
 @login_required
 def warehouse_dashboard(request):
+    today = timezone.now().date()
+
+    context = {
+        "today": today,
+
+        "inbound_shipments": Shipment.objects.filter(
+            C_Process_completed=True,
+            arrival_at_warehouse=False
+        ).count(),
+
+        "pending_grn": Shipment.objects.filter(
+            arrival_at_warehouse=True,
+            grn_complete_at_warehouse=False
+        ).count(),
+
+        "record_grn": Shipment.objects.filter(
+            arrival_at_warehouse=True,
+            grn_upload_at_warehouse=False
+        ).count(),
+
+        "confirm_grn": Shipment.objects.filter(
+            grn_upload_at_warehouse=True,
+            grn_complete_at_warehouse=False
+        ).count(),
+
+        "grn_completed": Shipment.objects.filter(
+            grn_complete_at_warehouse=True,
+            grn_complete_at_warehouse_date__month=today.month,
+            grn_complete_at_warehouse_date__year=today.year
+        ).count(),
+    }
+
+    return render(request, "dash/ws_dashboard.html", context)
+
+@login_required
+def warehouse_dashboard_old(request):
     today = timezone.now().date()
 
     # Get the user's assigned warehouse
@@ -1025,7 +1110,7 @@ def warehouse_dashboard(request):
         user_warehouse = None
 
     if not user_warehouse:
-        return render(request, 'dash/warehouse_dashboard.html', {
+        return render(request, 'dash/ws_dashboard.html', {
             'error': 'No warehouse assigned to your profile.'
         })
 
@@ -1353,6 +1438,43 @@ def approve_duty_paid_md(request, shipment_id):
 
     messages.success(request, f"Duty approved successfully for Shipment {shipment.id}")
     return redirect("md_dashboard")
+
+
+##################### Reject Duty Paid MD
+from django.contrib import messages
+@login_required
+def reject_duty_paid_web(request, shipment_id):
+    if request.method != "POST":
+        messages.error(request, "Invalid request method")
+        return redirect("md_dashboard")
+
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    # --- SAME CHECK AS API ---
+    if not shipment.payment_marked:
+        messages.error(request, "Payment not marked yet")
+        return redirect(request.META.get("HTTP_REFERER", "md_dashboard"))
+
+    reason = request.POST.get("reason", "").strip()
+    if not reason:
+        messages.error(request, "Rejection reason is required")
+        return redirect(request.META.get("HTTP_REFERER", "md_dashboard"))
+
+    # --- SAME REJECT LOGIC AS API ---
+    shipment.duty_paid = False
+    shipment.duty_paid_reject = True
+    shipment.md_reject_reason = reason
+    shipment.md_rejected_at = timezone.now()
+    print("BEFORE REJECT:", shipment.payment_marked)
+    shipment.payment_marked = False
+    shipment.payment_marked_date = None
+
+    shipment.save()
+
+    messages.success(request, "Duty rejected successfully")
+    print("AFTER REJECT:", shipment.payment_marked)
+    return redirect(request.META.get("HTTP_REFERER", "md_dashboard"))
+
 
 
 
@@ -3919,18 +4041,7 @@ def md_payment_approvals(request):
         "shipments": shipments
     })
 
-@login_required
-def md_reject_web(request, shipment_id):
-    if request.method == "POST":
-        reason = request.POST.get("reason")
 
-        shipment = get_object_or_404(Shipment, id=shipment_id)
-        shipment.duty_paid_reject = True
-        shipment.md_reject_reason = reason
-        shipment.md_rejected_at = timezone.now()
-        shipment.save()
-
-    return redirect("md-payment-approvals")
 
 @login_required
 def md_approve_web(request, shipment_id):
@@ -4289,13 +4400,13 @@ def ws_dashboard(request):
 
 
 
-@login_required
-def grn_record_web(request):
+#@login_required
+#def grn_record_web(request):
     # Only Warehouse Staff
-    if not request.user.groups.filter(name="Warehouse Staff").exists():
-        return render(request, "dashboard/access_denied.html")
+    #if not request.user.groups.filter(name="Warehouse Staff").exists():
+       # return render(request, "dashboard/access_denied.html")
 
-    return render(request, "ws/grn_record.html")
+    #return render(request, "ws/grn_record.html")
 
 
 
@@ -4597,3 +4708,6 @@ def shipments_web(request):
             "q": q,
         }
     )
+
+
+
