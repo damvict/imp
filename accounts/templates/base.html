@@ -245,20 +245,20 @@
                 </ul>
               </li>
 
-
-              <li><a><i class="fa fa-truck"></i> Shipment Management <span class="fa fa-chevron-down"></span></a>
-                <ul class="nav child_menu">
-                  {% if perms.masters.can_create_shipment %}
-                  
-                    <li><a href="{% url 'arrival-notice-create' %}"> New Shipment Arrival Notice </a></li>
-                    <li><a href="{% url 'new-shipment' %}">Create New Shipment </a></li>
-                    <li><a href="{% url 'document_handover_web' %}">  Document Handover</a>    </li>
-                           
-
-
+               {% if request.user.groups.all.0.name == 'Admin' or request.user.groups.all.0.name == 'Bank Controller' or request.user.groups.all.0.name == 'Imports Department' %}
+                <li><a><i class="fa fa-truck"></i> Shipment Management <span class="fa fa-chevron-down"></span></a>
+                  <ul class="nav child_menu">
+                    {% if perms.masters.can_create_shipment %}
+                    
+                      <li><a href="{% url 'arrival-notice-create' %}"> New Shipment Arrival Notice </a></li>
+                      <li><a href="{% url 'new-shipment' %}">Create New Shipment </a></li>
+                      <li><a href="{% url 'document_handover_web' %}">  Document Handover</a>    </li>
+                            
 
 
-                  {% endif %}
+
+                    {% endif %}
+                {% endif %}
                   
                 </ul>
               </li>
