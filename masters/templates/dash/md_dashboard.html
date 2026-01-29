@@ -221,6 +221,86 @@
 .kpi-red { border-left-color: #DC2626; }
 .kpi-red .kpi-icon { background-color: rgba(220,38,38,0.15); color:#DC2626; }
 
+
+/* -------- CA-style Quick Action Cards -------- */
+.ca-actions {
+  padding: 0 16px;
+  row-gap: 16px;
+}
+
+.ca-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #ffffff;
+  padding: 22px 24px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: all 0.2s ease;
+  position: relative;
+  width: 100%;
+}
+
+.ca-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+
+.ca-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.ca-icon.primary { background: #2563eb; }
+.ca-icon.danger  { background: #dc2626; }
+
+.ca-content {
+  text-align: left;
+}
+
+.ca-content h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.ca-content p {
+  font-size: 14px;
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.ca-card.alert {
+  background: #fff7f7;
+  border-left: 4px solid #dc2626;
+}
+
+.ca-card .badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 </style>
 
 <div class="page-wrapper">
@@ -301,49 +381,55 @@
   </div>
 
   <!-- QUICK ACTIONS -->
-  <div class="section-title">Quick Actions</div>
+<div class="section-title">Quick Actions</div>
 
-  <div class="actions-grid">
+<div class="row ca-actions">
 
-    <!-- Payment Approvals (ALERT) -->
-<a href="{% url 'md-payment-approvals' %}"
-   class="action-card {% if md.payment_app > 0 %}alert{% endif %}">
+  <!-- Payment Approvals -->
+  <div class="col-xl-6 col-lg-6">
+    <a href="{% url 'md-payment-approvals' %}"
+       class="ca-card {% if md.payment_app > 0 %}alert{% endif %}">
 
-  <div class="action-inner">
+      {% if md.payment_app > 0 %}
+        <span class="badge">{{ md.payment_app }}</span>
+      {% endif %}
 
-    {% if md.payment_app > 0 %}
-      <div class="badge">{{ md.payment_app }}</div>
-    {% endif %}
-
-    <div class="action-icon">✔️</div>
-
-    <div class="action-title">
-      Payment Approvals
-    </div>
-
-    {% if md.payment_app > 0 %}
-      <div class="sub-alert">
-        Approval(s) pending
+      <div class="ca-icon danger">
+        <i class="fa fa-check-circle"></i>
       </div>
-    {% else %}
-      <div class="sub-alert">&nbsp;</div>
-    {% endif %}
 
-  </div>
-</a>
+      <div class="ca-content">
+        <h4>Payment Approvals</h4>
 
-
-    <!-- Bank Balance -->
-    <a href="#" class="action-card">
-      <div class="action-inner">
-        <div class="action-icon">💰</div>
-        <div class="action-title">Bank Balance</div>
+        {% if md.payment_app > 0 %}
+          <p>{{ md.payment_app }} approval(s) pending</p>
+        {% else %}
+          <p>No approvals pending</p>
+        {% endif %}
       </div>
+
     </a>
+  </div>
 
+  <!-- Bank Balance -->
+  <div class="col-xl-6 col-lg-6">
+    <a href="#"
+       class="ca-card">
+
+      <div class="ca-icon primary">
+        <i class="fa fa-university"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Bank Balance</h4>
+        <p>View current balances</p>
+      </div>
+
+    </a>
   </div>
 
 </div>
+
 
 <script>
   // Refresh page every 1 minute (60,000 ms)
