@@ -1,7 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Clearing Agent Dashboard{% endblock %}
 
 {% block content %}
+<style>
+  
+</style>
 <div class="container-fluid ca-dashboard">
 
   <!-- HEADER -->
@@ -18,7 +22,8 @@
       <a href="{% url 'ca_pending_assessment' %}"
          class="ca-card {% if stats.pen_ass > 0 %}alert{% endif %}">
         <div class="ca-icon danger">
-          <i class="fa fa-file-text-o"></i>
+      <i class="fa fa-spinner fa-spin"></i>
+
         </div>
 
         <div class="ca-content">
@@ -39,7 +44,14 @@
       <a href="{% url 'initiate-clearing-web' %}"
          class="ca-card {% if stats.init_clearing > 0 %}alert{% endif %}">
         <div class="ca-icon warning">
-          <i class="fa fa-dropbox"></i>
+    <i class="fa-solid fa-unlock"></i>
+
+
+
+
+
+
+
         </div>
 
         <div class="ca-content">
