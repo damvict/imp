@@ -421,7 +421,7 @@
   {# ---------------- SHIPMENTS ---------------- #}
 {# ---------------- SHIPMENTS ---------------- #}
   {# SHIPMENTS (COMMON) #}
-  {% if request.resolver_match.url_name != 'clearing_agent_dashboard' %}
+ {% if request.user.groups.all.0.name != 'Clearing Agent' %}
     <a href="{% url 'shipments_web' %}"
       class="footer-item {% if request.resolver_match.url_name == 'shipments_web' %}active{% endif %}">
       <i class="fas fa-truck"></i>
