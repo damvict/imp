@@ -256,6 +256,8 @@ class Shipment(models.Model):
     C_Process_Initiated_date = models.DateTimeField(null=True, blank=True)   
     C_Process_completed= models.BooleanField(default=False)
     C_Process_completed_date = models.DateTimeField(null=True, blank=True)  
+    ship_dispatch= models.BooleanField(default=False)
+    ship_dispatch_date = models.DateTimeField(null=True, blank=True) 
 
     arrival_at_warehouse= models.BooleanField(default=False)
     arrival_at_warehouse_date= models.DateTimeField(null=True, blank=True) 

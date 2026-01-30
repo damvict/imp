@@ -53,6 +53,91 @@
   .green  { background: linear-gradient(135deg,#16a34a,#4ade80); }
   .purple { background: linear-gradient(135deg,#7c3aed,#c4b5fd); }
 
+  /* SHIPMENT TIMELINE GRID */
+  .shipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+    margin-bottom: 50px;
+  }
+
+  .shipment-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    overflow: hidden;
+  }
+
+  .shipment-card-header {
+    background: #f8fafc;
+    padding: 14px 18px;
+    font-weight: 700;
+    color: #1e293b;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .shipment-card-body {
+    padding: 18px;
+  }
+
+  /* TIMELINE */
+  .timeline {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .timeline-item {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    padding-left: 40px;
+    padding-bottom: 20px;
+    color: #212529;
+  }
+
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    top: 20px;
+    height: 100%;
+    width: 2px;
+    background: #dee2e6;
+  }
+
+  .timeline-item:last-child::before {
+    display: none;
+  }
+
+  .timeline-item .icon {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #adb5bd;
+    color: #fff;
+    text-align: center;
+    line-height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .timeline-item.done .icon {
+    background: #16a34a;
+  }
+
+  .timeline-item .content {
+    margin-left: 10px;
+    font-size: 14px;
+  }
+
+  .timeline-item .content small {
+    color: #6c757d;
+  }
+
   /* TABLE */
   h3 { font-size: 26px; font-weight: 700; margin-bottom: 16px; color: #334155; }
 
@@ -118,9 +203,13 @@
 
   <!-- KPI CARDS -->
   <div class="cards">
+    <div class="card green">
+      <div class="card-title">Total Shipments (Month)</div>
+      <div class="card-value">{{ total_shipments_month }}</div>
+    </div>
 
-    <div class="card gray">
-      <div class="card-title">Inbound Shipments</div>
+    <div class="card orange">
+      <div class="card-title">On the Way Shipments</div>
       <div class="card-value">{{ inbound_shipments }}</div>
     </div>
 
@@ -129,84 +218,49 @@
       <div class="card-value">{{ pending_grn }}</div>
     </div>
 
-    <div class="card orange">
-      <div class="card-title">Awaiting Putaway</div>
-      <div class="card-value">{{ awaiting_putaway }}</div>
-    </div>
-
     <div class="card yellow">
-      <div class="card-title">Ready for Dispatch</div>
-      <div class="card-value">{{ ready_for_dispatch }}</div>
+      <div class="card-title">Arriving Today</div>
+      <div class="card-value">{{ arriving_today }}</div>
     </div>
 
     <div class="card purple">
       <div class="card-title">GRN Completed</div>
       <div class="card-value">{{ grn_completed }}</div>
     </div>
+  </div>
 
-    <div class="card green">
-      <div class="card-title">Dispatched Orders</div>
-      <div class="card-value">{{ dispatched_orders }}</div>
+  <!-- SHIPMENT TIMELINES -->
+  <div class="shipment-grid">
+    {% for item in shipment_timelines %}
+    <div class="shipment-card">
+      <div class="shipment-card-header">
+        {{ item.shipment.shipment_code }} – {{ item.shipment.company.name }}
+      </div>
+
+      <div class="shipment-card-body">
+        <ul class="timeline">
+          {% for step in item.timeline %}
+          <li class="timeline-item {% if step.done %}done{% endif %}">
+            <span class="icon">
+              {% if step.done %}✓{% else %}○{% endif %}
+            </span>
+            <div class="content">
+              <strong>{{ step.label }}</strong><br>
+              {% if step.date %}
+                <small>{{ step.date|date:"Y-m-d H:i" }}</small>
+              {% else %}
+                <small>Pending</small>
+              {% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
-
+    {% endfor %}
   </div>
 
   <!-- WAREHOUSE TASKS -->
-  <h3>Warehouse Operations</h3>
-
-  <table class="shipment-table">
-    <thead>
-      <tr>
-        <th>Reference</th>
-        <th>ETA / Due Date</th>
-        <th>Warehouse Status</th>
-        <th>Process</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {% for w in warehouse_tasks %}
-      <tr>
-        <td>
-          <a href="{% url 'shipment-timeline' w.shipment_code %}" class="shipment-link">
-            {{ w.shipment_code }}
-          </a>
-        </td>
-
-        <td class="{% if w.expected_date < today %}late{% endif %}">
-          {{ w.expected_date|date:"d M Y" }}
-        </td>
-
-        <td>
-          <span class="status-pill">{{ w.warehouse_status }}</span>
-        </td>
-
-        <td>
-          <div class="progress-track">
-            <div class="progress-fill" style="width: {{ w.progress }}%;"></div>
-          </div>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" class="empty">No warehouse tasks</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
+  
 </div>
-
-<script>
-  function refreshDashboard() {
-    fetch("{% url 'warehouse-dashboard-api' %}")
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("lastUpdated").innerText =
-          "Last updated: " + new Date().toLocaleTimeString();
-      });
-  }
-  setInterval(refreshDashboard, 300000);
-</script>
-
 {% endblock %}

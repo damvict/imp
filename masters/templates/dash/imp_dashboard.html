@@ -5,132 +5,231 @@
 <div class="container-fluid">
 
   <!-- HEADER BAR -->
-  <div class="row">
-    <div class="col-md-12">
-      <div class="x_panel">
-        <div class="x_title">
-          <h2>Imports Dashboard</h2>
+  <!-- KPI OVERVIEW -->
+<div class="kpi-grid">
 
-          <ul class="nav navbar-right panel_toolbox">
-            <!-- Refresh -->
-            <li>
-              <a href="{% url 'imports_dashboard' %}">
-                <i class="fa fa-refresh"></i>
-              </a>
-            </li>
-
-            <!-- Logout -->
-            <li>
-              <a href="{% url 'logout' %}">
-                <i class="fa fa-user"></i>
-              </a>
-            </li>
-          </ul>
-
-          <div class="clearfix"></div>
-        </div>
-
-        <!-- WELCOME -->
-        <div class="x_content">
-          <div class="alert alert-info">
-            <strong>Welcome Back,</strong>
-            {{ request.user.groups.all.0.name|upper|default:"USER" }}
-          </div>
-        </div>
+  <!-- Pending GRN -->
+  <div class="kpi-card kpi-yellow">
+    <div class="kpi-title">On the Way Shipments</div>
+    <div class="kpi-row">
+      <div class="kpi-value">{{ on_the_way_shipment}}</div>
+      <div class="kpi-icon">
+        <i class="fa fa-clipboard-list"></i>
       </div>
     </div>
   </div>
 
-  <!-- QUICK ACTIONS -->
-  <div class="row">
-    <div class="col-md-12">
-      <div class="x_panel">
-        <div class="x_title">
-          <h2>Quick Actions</h2>
-          <div class="clearfix"></div>
-        </div>
+  <!-- Total Shipments -->
+  <div class="kpi-card kpi-purple">
+    <div class="kpi-title">Total Shipments (Month) </div>
+    <div class="kpi-row">
+      <div class="kpi-value">{{ total_shipments }}</div>
+      <div class="kpi-icon">
+        <i class="fa fa-ship"></i>
+      </div>
+    </div>
+  </div>
 
-        <div class="x_content">
-          <div class="row">
+  <!-- Arrivals Today -->
+  <div class="kpi-card kpi-green">
+    <div class="kpi-title">Dispatch Shipment</div>
+    <div class="kpi-row">
+      <div class="kpi-value">{{ dispatch_count }}</div>
+      <div class="kpi-icon">
+        <i class="fa fa-truck"></i>
+      </div>
+    </div>
+  </div>
 
-            <!-- NEW ARRIVAL NOTICE -->
-            <div class="col-md-3 col-sm-6">
-              <a href="{% url 'arrival-notice-create' %}" class="quick-action">
-                <i class="fa fa-truck"></i>
-                <span>New Arrival Notice</span>
-              </a>
-            </div>
-
-            <!-- CONFIRM GRN -->
-            <div class="col-md-3 col-sm-6">
-              <a href="{% url 'grn_confirm_list' %}" class="quick-action">
-                <i class="fa fa-check-circle"></i>
-                <span>Confirm GRN</span>
-
-                {% if pending_grn_count and pending_grn_count > 0 %}
-                  <span class="badge badge-danger">{{ pending_grn_count }}</span>
-                {% endif %}
-              </a>
-            </div>
-
-            <!-- SHIPMENTS -->
-            <div class="col-md-3 col-sm-6">
-              <a href="{% url 'shipment_list' %}" class="quick-action">
-                <i class="fa fa-cubes"></i>
-                <span>View Shipments</span>
-              </a>
-            </div>
-
-            <!-- DOCUMENT HANDOVER -->
-            <div class="col-md-3 col-sm-6">
-              <a href="{% url 'document_handover_web' %}" class="quick-action">
-                <i class="fa fa-file-text"></i>
-                <span>Document Handover</span>
-              </a>
-            </div>
-
-          </div>
-        </div>
+  <!-- Pending Documents -->
+  <div class="kpi-card kpi-red">
+    <div class="kpi-title">Active Shipments</div>
+    <div class="kpi-row">
+      <div class="kpi-value">{{ active_shipments }}</div>
+      <div class="kpi-icon">
+        <i class="fa fa-file-text"></i>
       </div>
     </div>
   </div>
 
 </div>
 
+
+
+ <!-- QUICK ACTIONS -->
+<div class="row ca-actions">
+
+  <!-- New Arrival Notice -->
+  <div class="col-xl-4 col-lg-6">
+    <a href="{% url 'arrival-notice-create' %}" class="ca-card">
+      <div class="ca-icon info">
+        <i class="fa fa-truck"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>New Arrival Notice</h4>
+        <p>Create and register a new arrival</p>
+      </div>
+    </a>
+  </div>
+
+  <!-- Document Handover -->
+  <div class="col-xl-4 col-lg-6">
+    <a href="{% url 'document_handover_web' %}" class="ca-card">
+      <div class="ca-icon warning">
+        <i class="fa fa-file-text"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Document Handover</h4>
+        <p>Submit shipping documents</p>
+      </div>
+    </a>
+  </div>
+
+    <!--New Shipment -->
+  <div class="col-xl-4 col-lg-6">
+    <a href="{% url 'new-shipment' %}" class="ca-card">
+      <div class="ca-icon primary">
+        <i class="fa fa-ship"></i>
+
+      </div>
+
+      <div class="ca-content">
+        <h4>Create Shipment</h4>
+    
+      </div>
+    </a>
+  </div>
+
+
+</div>
+
+
 <style>
-.quick-action {
-  display: block;
+/* ================= GRID ================= */
+.ca-actions {
+  row-gap: 22px;
+}
+
+/* ================= CARD ================= */
+.ca-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
   background: #ffffff;
-  padding: 24px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 22px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: all 0.2s ease;
   position: relative;
-  transition: all 0.2s ease-in-out;
+  height: 100%;
 }
 
-.quick-action:hover {
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-  transform: translateY(-2px);
+.ca-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
 }
 
-.quick-action i {
-  font-size: 30px;
-  color: #1E3A8A;
+/* ================= ICON ================= */
+.ca-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
 }
 
-.quick-action span {
-  display: block;
-  margin-top: 10px;
+.ca-icon.primary { background: #2563eb; }
+.ca-icon.warning { background: #f97316; }
+.ca-icon.danger  { background: #dc2626; }
+.ca-icon.info    { background: #0ea5e9; }
+
+/* ================= CONTENT ================= */
+.ca-content h4 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.ca-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 6px 0 0;
+  font-weight: 500;
+}
+
+/* -------- KPI / OVERVIEW -------- */
+.kpi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  width: 47%;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  border-left: 6px solid #3B82F6;
+}
+
+.kpi-title {
+  font-size: 14px;
+  color: #6B7280;
   font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
   color: #1F2937;
 }
 
-.quick-action .badge {
-  position: absolute;
-  top: 10px;
-  right: 12px;
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: rgba(59,130,246,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #3B82F6;
 }
+
+/* KPI color variants */
+.kpi-green { border-left-color: #10B981; }
+.kpi-green .kpi-icon { background-color: rgba(16,185,129,0.15); color:#10B981; }
+
+.kpi-yellow { border-left-color: #F59E0B; }
+.kpi-yellow .kpi-icon { background-color: rgba(245,158,11,0.15); color:#F59E0B; }
+
+.kpi-purple { border-left-color: #8B5CF6; }
+.kpi-purple .kpi-icon { background-color: rgba(139,92,246,0.15); color:#8B5CF6; }
+
+.kpi-red { border-left-color: #DC2626; }
+.kpi-red .kpi-icon { background-color: rgba(220,38,38,0.15); color:#DC2626; }
+
 </style>
+
 
 {% endblock %}

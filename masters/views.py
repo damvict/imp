@@ -1061,19 +1061,68 @@ def warehouse_dashboard_api(request):
         "overdue_shipments": overdue_shipments,
     })
 
+def build_warehouse_timeline(shipment):
+    return [
+        {
+            "label": "Arrival at Warehouse",
+            "done": shipment.arrival_at_warehouse,
+            "date": shipment.arrival_at_warehouse_date,
+            "icon": "truck",
+        },
+        {
+            "label": "Truck Departure",
+            "done": shipment.departure_at_warehouse,
+            "date": shipment.departure_at_warehouse_date,
+            "icon": "arrow-right",
+        },
+        {
+            "label": "GRN Uploaded",
+            "done": shipment.grn_upload_at_warehouse,
+            "date": shipment.grn_upload_at_warehouse_date,
+            "icon": "file-text",
+        },
+        {
+            "label": "GRN Completed",
+            "done": shipment.grn_complete_at_warehouse,
+            "date": shipment.grn_complete_at_warehouse_date,
+            "icon": "check-circle",
+        },
+    ]
+
 
 @login_required
 def warehouse_dashboard(request):
-    today = timezone.now().date()
+    today = timezone.localdate()
+
+    current_month_filter = Q(
+        order_date__year=today.year,
+        order_date__month=today.month
+    )
 
     context = {
         "today": today,
 
+        # Inbound shipments
         "inbound_shipments": Shipment.objects.filter(
             C_Process_completed=True,
             arrival_at_warehouse=False
         ).count(),
 
+        # Monthly stats
+        "total_shipments_month": Shipment.objects.filter(
+            current_month_filter,
+            ship_status__gt=1
+        ).count(),
+
+        "completed_shipments": Shipment.objects.filter(
+            ship_status=13
+        ).count(),
+
+        "active_shipments": Shipment.objects.filter(
+            ship_status__lt=13
+        ).count(),
+
+        # GRN stats
         "pending_grn": Shipment.objects.filter(
             arrival_at_warehouse=True,
             grn_complete_at_warehouse=False
@@ -1091,12 +1140,37 @@ def warehouse_dashboard(request):
 
         "grn_completed": Shipment.objects.filter(
             grn_complete_at_warehouse=True,
-            grn_complete_at_warehouse_date__month=today.month,
-            grn_complete_at_warehouse_date__year=today.year
+            grn_complete_at_warehouse_date__year=today.year,
+            grn_complete_at_warehouse_date__month=today.month
+        ).count(),
+
+        # Arriving today (DISPATCHED TODAY)
+        "arriving_today": Shipment.objects.filter(
+            ship_dispatch=True,
+            ship_dispatch_date__date=today
         ).count(),
     }
 
+    shipments = Shipment.objects.filter(
+    arrival_at_warehouse=True
+    ).exclude(
+        ship_status=13
+    )
+
+
+    shipment_timelines = []
+    for s in shipments:
+        shipment_timelines.append({
+                "shipment": s,
+                "timeline": build_warehouse_timeline(s)
+    })
+
+    context["shipment_timelines"] = shipment_timelines
+
+    
     return render(request, "dash/ws_dashboard.html", context)
+
+
 
 @login_required
 def warehouse_dashboard_old(request):
@@ -4262,6 +4336,11 @@ def clearing_agent_dispatch_detail_web(request, shipment_id):
             created_by=request.user,
         )
 
+            # ✅ UPDATE SHIPMENT DISPATCH STATUS
+        shipment.ship_dispatch = True
+        shipment.ship_dispatch_date = timezone.now()
+        shipment.save(update_fields=["ship_dispatch", "ship_dispatch_date"])
+
         # Create shipment phase (same as API)
         try:
             phase_master = ShipmentPhaseMaster.objects.get(id=9)
@@ -4527,13 +4606,42 @@ def record_grn_upload_web(request, shipment_id):
     #########################   Import Department
 @login_required
 def imports_dashboard(request):
+    today = timezone.now().date()
+    current_month_filter = Q(order_date__month=today.month, order_date__year=today.year)
     pending_grn_count = Shipment.objects.filter(
         grn_complete_at_warehouse=False,
         grn_upload_at_warehouse=True
     ).count()
+    
+    dispatch_count = Shipment.objects.filter(
+        ship_dispatch=True     
+    ).count()
 
+    total_shipments = Shipment.objects.filter(
+        current_month_filter, ship_status__gt=1
+    ).count()
+
+    completed_shipments = Shipment.objects.filter(ship_status=13).count()
+    active_shipments = Shipment.objects.filter(ship_status__lt=13).count()
+
+    on_the_way_shipment = Shipment.objects.filter(
+        C_Process_completed=True,
+        arrival_at_warehouse=False
+    ).count()
+
+    approved_duty_payments = Shipment.objects.filter(
+        duty_paid=True
+    ).count()
+   
+    
     return render(request, "dash/imp_dashboard.html", {
-        "pending_grn_count": pending_grn_count
+        "pending_grn_count": pending_grn_count,
+        "total_shipments": total_shipments,
+        "completed_shipments": completed_shipments,
+        "active_shipments": active_shipments,
+        "on_the_way_shipment": on_the_way_shipment,
+        "approved_duty_payments": approved_duty_payments,
+        "dispatch_count": dispatch_count,
     })
 
 
