@@ -5,7 +5,7 @@ def group_check(request):
         user_groups = request.user.groups.values_list('name', flat=True)
         print("DEBUG: Authenticated user:", user.username)
         print("DEBUG: User groups:", user_groups)
-        show_common_masters_menu = bool(set(user_groups) & {"Imports Department", "Admin"})
+        show_common_masters_menu = bool(set(user_groups) & {"Imports Department", "Admin","Bank Controller"})
         print("DEBUG: Show menu?", show_common_masters_menu)
     else:
         show_common_masters_menu = False
