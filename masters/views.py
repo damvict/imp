@@ -1152,7 +1152,7 @@ def warehouse_dashboard(request):
     }
 
     shipments = Shipment.objects.filter(
-    arrival_at_warehouse=True
+    ship_dispatch=True
     ).exclude(
         ship_status=13
     )
