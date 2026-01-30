@@ -1,0 +1,31 @@
+<div class="shipment-grid">
+  {% for item in shipment_timelines %}
+  <div class="shipment-card">
+    <div class="shipment-card-header">
+      {{ item.shipment.shipment_code }} – {{ item.shipment.company.name }}
+    </div>
+
+    <div class="shipment-card-body">
+      <ul class="timeline">
+        {% for step in item.timeline %}
+        <li class="timeline-item {% if step.done %}done{% endif %}">
+          <span class="icon">{% if step.done %}✓{% else %}○{% endif %}</span>
+          <div class="content">
+            <strong>{{ step.label }}</strong><br>
+            <small>
+              {% if step.date %}
+                {{ step.date|date:"Y-m-d H:i" }}
+              {% else %}
+                Pending
+              {% endif %}
+            </small>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% empty %}
+    <div class="empty">No active shipments</div>
+  {% endfor %}
+</div>

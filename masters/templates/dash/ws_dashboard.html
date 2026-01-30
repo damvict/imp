@@ -198,7 +198,7 @@
 
   <div class="dashboard-title">🏭 Warehouse Dashboard</div>
   <div class="last-updated" id="lastUpdated">
-    Last updated: {{ today|date:"d M Y" }}
+    Last updated: {{ today|date:"Y-m-d H:i:s" }}
   </div>
 
   <!-- KPI CARDS -->
@@ -263,4 +263,10 @@
   <!-- WAREHOUSE TASKS -->
   
 </div>
+<script>
+  setTimeout(function () {
+    location.reload();
+  }, 60000); // refresh every 60 seconds
+</script>
+
 {% endblock %}
