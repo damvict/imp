@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bank Document Settlement{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <!-- ================= HEADER ================= -->
+  <div class="card bg-primary text-white mb-3">
+    <div class="card-body d-flex align-items-center">
+      <a href="javascript:history.back()" class="btn btn-light btn-sm me-3">
+        ←
+      </a>
+      <h5 class="mb-0">🏦 Bank Document Settlement</h5>
+    </div>
+  </div>
+
+  <!-- ================= FILTERS ================= -->
+  <div class="card mb-3">
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+      <!-- Document Type Buttons -->
+      <div>
+        {% for t in doc_types %}
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary me-1 doc-type {% if t == 'DA' %}btn-primary text-white{% endif %}"
+            data-type="{{ t }}">
+            {{ t }}
+          </button>
+        {% endfor %}
+      </div>
+
+      <!-- Date Picker -->
+      <input
+        type="date"
+        id="filter-date"
+        class="form-control form-control-sm w-auto"
+      >
+    </div>
+  </div>
+
+  <!-- ================= SEARCH BUTTON ================= -->
+  <button class="btn btn-success mb-3" onclick="loadDocuments()">
+    🔍 Search / Load Documents
+  </button>
+
+  <!-- ================= TABLE ================= -->
+  <div class="card">
+    <div class="card-body table-responsive">
+      <table class="table table-bordered table-sm text-center align-middle" id="docs-table">
+        <thead class="table-primary">
+          <tr>
+            <th>#</th>
+            <th>Document No</th>
+            <th>Company</th>
+            <th>Issue Date</th>
+            <th>Due Date</th>
+            <th class="text-end">Amount</th>
+            <th class="text-end">Balance</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="8" class="text-muted">
+              Please select date and click <b>Search / Load Documents</b>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+let selectedType = "DA";
+
+/* -------- Document type selection -------- */
+document.querySelectorAll(".doc-type").forEach(btn => {
+  btn.addEventListener("click", function () {
+    document.querySelectorAll(".doc-type").forEach(b => {
+      b.classList.remove("btn-primary", "text-white");
+      b.classList.add("btn-outline-primary");
+    });
+
+    this.classList.remove("btn-outline-primary");
+    this.classList.add("btn-primary", "text-white");
+    selectedType = this.dataset.type;
+  });
+});
+
+/* -------- Load documents -------- */
+function loadDocuments() {
+  const date = document.getElementById("filter-date").value;
+
+  if (!date) {
+    alert("Please select a date");
+    return;
+  }
+
+  fetch(`/api/bank-documents/?date=${date}`)
+    .then(response => response.json())
+    .then(data => renderTable(data))
+    .catch(error => {
+      console.error(error);
+      alert("Failed to load bank documents");
+    });
+}
+
+/* -------- Render table -------- */
+function renderTable(docs) {
+  const tbody = document.querySelector("#docs-table tbody");
+  tbody.innerHTML = "";
+
+  const filtered = docs.filter(doc => {
+    if (Number(doc.balance || 0) === 0) return false;
+    if (selectedType === "ALL") return true;
+    return doc.doc_type === selectedType;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-muted">No records found</td>
+      </tr>
+    `;
+    return;
+  }
+
+  filtered.forEach((doc, index) => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${doc.reference_number || ""}</td>
+        <td>${doc.company_name || ""}</td>
+        <td>${doc.issue_date ? doc.issue_date.split("T")[0] : ""}</td>
+        <td>${doc.due_date ? doc.due_date.split("T")[0] : ""}</td>
+        <td class="text-end">${Number(doc.amount || 0).toLocaleString()}</td>
+        <td class="text-end">${Number(doc.balance || 0).toLocaleString()}</td>
+        <td>
+          <a href="/bank-documents/${doc.id}/settle/"
+             class="btn btn-sm btn-primary">
+            Settle
+          </a>
+        </td>
+      </tr>
+    `;
+  });
+}
+</script>
+
+{% endblock %}

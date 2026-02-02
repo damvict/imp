@@ -1093,6 +1093,7 @@ def build_warehouse_timeline(shipment):
 @login_required
 def warehouse_dashboard(request):
     today = timezone.localdate()
+    
 
     current_month_filter = Q(
         order_date__year=today.year,
@@ -4906,3 +4907,293 @@ def shipments_web(request):
             "end_date": end_date,
         }
     )
+
+
+
+
+    #################### bank settlemenet ###############
+
+@login_required
+def bank_document_settlement_web(request):
+    context = {
+        "doc_types": ["ALL", "DA", "DP", "LC", "TT", "IMP"]
+    }
+    return render(
+        request,
+        "bc/bank_document_settlement_web.html",
+        context
+    )
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.db.models import Sum
+from .models import BankDocument, Settlement
+
+@login_required
+def add_settlement_web(request, doc_id):
+    document = get_object_or_404(BankDocument, pk=doc_id)
+
+    # ---------- Calculate outstanding balance ----------
+    total_settled = (
+        Settlement.objects
+        .filter(document=document)
+        .aggregate(total=Sum("amount"))["total"] or 0
+    )
+    outstanding_amount = (document.amount or 0) - total_settled
+
+    context = {
+        "document": document,
+        "outstanding_amount": outstanding_amount,
+    }
+
+    if request.method == "POST":
+        settlement_type = request.POST.get("settlement_type")
+        settlement_date = request.POST.get("settlement_date")
+        amount = request.POST.get("amount")
+        reference_number = request.POST.get("reference_number")
+        remarks = request.POST.get("remarks")
+        due_date = request.POST.get("due_date") or None
+
+        # ---------- Validation ----------
+        if not amount or float(amount) <= 0:
+            context["error"] = "Settlement amount must be greater than 0"
+            return render(request, "bc/add_settlement_web.html", context)
+
+        if float(amount) > outstanding_amount:
+            context["error"] = "Settlement amount cannot exceed outstanding balance"
+            return render(request, "bc/add_settlement_web.html", context)
+
+        if settlement_type == "IMP" and not due_date:
+            context["error"] = "IMP Due Date is required"
+            return render(request, "bc/add_settlement_web.html", context)
+
+        # ---------- Create Settlement ----------
+        Settlement.objects.create(
+            document=document,
+            settlement_type=settlement_type,
+            settlement_date=settlement_date,
+            amount=amount,
+            reference_number=reference_number,
+            remarks=remarks,
+            created_by=request.user,
+        )
+
+        # ---------- Create IMP BankDocument ----------
+        if settlement_type == "IMP":
+            BankDocument.objects.create(
+                shipment=document.shipment,
+                bank=document.bank,
+                doc_type="IMP",
+                reference_number=reference_number,
+                company=document.company,
+                amount=amount,
+                issue_date=timezone.now().date(),
+                due_date=due_date,
+                settlement_date=settlement_date,
+                created_by=request.user,
+            )
+
+        return redirect("bank_document_settlement_web")
+
+    return render(request, "bc/add_settlement_web.html", context)
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def bank_document_report_web(request):
+    return render(
+        request,
+        "bc/bank_document_report_web.html"
+    )
+
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from django.utils.dateparse import parse_date
+from .models import BankDocument, Settlement, Company
+
+@login_required
+def outstanding_report_web(request):
+    companies = Company.objects.all().order_by("name")
+    doc_types = ["ALL", "DA", "DP", "TT", "IMP"]
+
+    results = []
+    selected_company = ""
+    selected_doc_type = "ALL"
+    as_at = ""
+
+    if request.method == "POST":
+        selected_company = request.POST.get("company_id") or ""
+        selected_doc_type = request.POST.get("doc_type") or "ALL"
+        as_at = request.POST.get("date")
+
+        as_at_date = parse_date(as_at)
+
+        documents = BankDocument.objects.select_related("company")
+
+        if selected_company:
+            documents = documents.filter(company_id=selected_company)
+
+        if selected_doc_type != "ALL":
+            documents = documents.filter(doc_type=selected_doc_type)
+
+        for doc in documents:
+            settled_amount = (
+                Settlement.objects
+                .filter(
+                    document=doc,
+                    settlement_date__lte=as_at_date
+                )
+                .aggregate(total=Sum("amount"))["total"] or 0
+            )
+
+            balance = (doc.amount or 0) - settled_amount
+
+            if balance > 0:
+                results.append({
+                    "company": doc.company.name if doc.company else "",
+                    "doc_type": doc.doc_type,
+                    "reference_number": doc.reference_number,
+                    "amount": doc.amount or 0,
+                    "balance": balance,
+                })
+
+    context = {
+        "companies": companies,
+        "doc_types": doc_types,
+        "results": results,
+        "selected_company": selected_company,
+        "selected_doc_type": selected_doc_type,
+        "as_at": as_at,
+        "total_amount": sum([item["amount"] for item in results]),
+        "total_balance": sum([item["balance"] for item in results]),
+    }
+
+    return render(
+        request,
+        "bc/outstanding_report_web.html",
+        context
+    )
+
+
+from django.http import HttpResponse
+from reportlab.pdfgen import canvas
+
+@login_required
+def outstanding_report_pdf(request):
+    # reuse same query params
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "attachment; filename=outstanding_report.pdf"
+
+    p = canvas.Canvas(response)
+    p.drawString(50, 800, "Outstanding Report")
+
+    y = 760
+    for item in outstanding_report(request).data:
+        p.drawString(50, y, f"{item['company']} - {item['balance']}")
+        y -= 20
+
+    p.showPage()
+    p.save()
+    return response
+
+
+
+####################### Bank dahboard
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Bank, BankDocument
+
+def bank_dashboard_web(request):
+    banks = Bank.objects.all()
+    dashboard_data = []
+
+    for bank in banks:
+        # IMP calculations
+        imp_used = (
+            BankDocument.objects
+            .filter(bank=bank, doc_type="IMP")
+            .aggregate(total=Sum("amount"))["total"] or 0
+        )
+
+        imp_limit = bank.imp or 0
+        imp_balance = imp_limit - imp_used
+        imp_utilization = (imp_used / imp_limit * 100) if imp_limit > 0 else 0
+
+        # DA calculations
+        da_used = (
+            BankDocument.objects
+            .filter(bank=bank, doc_type="DA")
+            .aggregate(total=Sum("amount"))["total"] or 0
+        )
+
+        da_limit = bank.da or 0
+        da_balance = da_limit - da_used
+
+        dashboard_data.append({
+            "bank": bank,
+            "imp_limit": imp_limit,
+            "imp_used": imp_used,
+            "imp_balance": imp_balance,
+            "imp_utilization": round(imp_utilization, 1),
+
+            "da_limit": da_limit,
+            "da_used": da_used,
+            "da_balance": da_balance,
+        })
+
+    context = {
+        "dashboard_data": dashboard_data
+    }
+    return render(request, "bank/bank_dashboard.html", context)
+
+
+
+from django.http import JsonResponse
+from django.db.models import Sum
+from django.utils import timezone   # ✅ THIS WAS MISSING
+from .models import Bank, BankDocument
+
+def bank_dashboard_data(request):
+    data = []
+
+    for bank in Bank.objects.all():
+        imp_used = BankDocument.objects.filter(
+            bank=bank, doc_type="IMP"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        imp_limit = bank.imp or 0
+        imp_balance = imp_limit - imp_used
+        utilization = (imp_used / imp_limit * 100) if imp_limit else 0
+
+        da_used = BankDocument.objects.filter(
+            bank=bank, doc_type="DA"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        da_limit = bank.da or 0
+        da_balance = da_limit - da_used
+
+        data.append({
+            "bank_id": bank.b_id,
+            "imp_limit": float(imp_limit),
+            "imp_used": float(imp_used),
+            "imp_balance": float(imp_balance),
+            "utilization": round(utilization, 1),
+            "da_limit": float(da_limit),
+            "da_used": float(da_used),
+            "da_balance": float(da_balance),
+        })
+
+    return JsonResponse({
+        "timestamp": timezone.now().strftime("%I:%M %p"),
+        "banks": data
+    })

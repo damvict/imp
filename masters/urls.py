@@ -64,7 +64,7 @@ from .views import clearing_agent_users
 from .views import outstanding_report
 from .views import outstanding_export_excel
 from .views import outstanding_report_email
-from .views import verify_physical_stock_web
+from .views import verify_physical_stock_web,outstanding_report_pdf
 from . import web_views
 
 
@@ -523,6 +523,43 @@ path(
     views.shipments_web,
     name="shipments_web"
 ),
+
+
+path(
+    "bank-documents/settlement/",
+    views.bank_document_settlement_web,
+    name="bank_document_settlement_web"
+),
+
+
+
+path(
+    "bank-documents/<int:doc_id>/settle/",
+    views.add_settlement_web,
+    name="add_settlement_web"
+),
+
+
+path(
+    "bank-documents/reports/",
+    views.bank_document_report_web,
+    name="bank_document_report_web",
+),
+
+path("reports/outstanding/pdf/", outstanding_report_pdf),
+
+
+path(
+    "bank-documents/reports/outstanding/",
+    views.outstanding_report_web,
+    name="outstanding_report_web",
+),
+
+ path("bank-dashboard/", views.bank_dashboard_web, name="bank_dashboard_web"),
+
+ path("bank-dashboard/data/", views.bank_dashboard_data, name="bank_dashboard_data"),
+
+
 
 
 ]       
