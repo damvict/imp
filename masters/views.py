@@ -5120,25 +5120,25 @@ def get_outstanding_results(request):
     return qs
 
 
-from django.http import HttpResponse
-from reportlab.pdfgen import canvas
-from django.template.loader import get_template
-from xhtml2pdf import pisa
+#from django.http import HttpResponse
+#from reportlab.pdfgen import canvas
+#from django.template.loader import get_template
+#from xhtml2pdf import pisa
 
-@login_required
+#@login_required
 
 
-def outstanding_report_pdf(request):
-    results = get_outstanding_results(request)
+#def outstanding_report_pdf(request):
+   # results = get_outstanding_results(request)
 
-    template = get_template("reports/outstanding_pdf.html")
-    html = template.render({"results": results})
+   # template = get_template("reports/outstanding_pdf.html")
+   # html = template.render({"results": results})
 
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="outstanding_report.pdf"'
+#response = HttpResponse(content_type="application/pdf")
+#response["Content-Disposition"] = 'attachment; filename="outstanding_report.pdf"'
 
-    pisa.CreatePDF(html, dest=response)
-    return response
+   # pisa.CreatePDF(html, dest=response)
+   # return response
 
 
 

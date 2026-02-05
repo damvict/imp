@@ -64,7 +64,7 @@ from .views import clearing_agent_users
 from .views import outstanding_report
 from .views import outstanding_export_excel
 from .views import outstanding_report_email
-from .views import verify_physical_stock_web,outstanding_report_pdf
+from .views import verify_physical_stock_web
 from . import web_views
 
 
@@ -547,11 +547,11 @@ path(
 ),
 
 ###path("reports/outstanding/pdf/", outstanding_report_pdf),
-path(
-  "bank-documents/reports/outstanding/pdf/",
-  outstanding_report_pdf,
-  name="outstanding-report-pdf"
-),
+#path(
+  #"bank-documents/reports/outstanding/pdf/",
+  #outstanding_report_pdf,
+  #name="outstanding-report-pdf"
+#),
 
 
 path(
