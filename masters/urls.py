@@ -65,6 +65,7 @@ from .views import outstanding_report
 from .views import outstanding_export_excel
 from .views import outstanding_report_email
 from .views import verify_physical_stock_web
+from .views import md_dashboard_data_api
 from . import web_views
 
 
@@ -567,6 +568,9 @@ path(
 
 path('clearing-agent/history/', views.ca_history, name='ca_history'),
 path("md-dashboard/", views.md_dashboard_web, name="md_dashboard_web"),
+
+# urls.py
+path("api/md-dashboard/", md_dashboard_data_api, name="md_dashboard_data_api"),
 
 
 ]       

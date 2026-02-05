@@ -155,6 +155,7 @@ def get_sales_dashboard_data():
     active_shipments = (
         Shipment.objects
         .filter(grn_complete_at_warehouse=False)
+        .select_related("supplier") 
         .annotate(
             phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
             current_phase=Subquery(latest_phase_name),
@@ -172,9 +173,13 @@ def get_sales_dashboard_data():
             "current_phase",
             "phase_order",
             "progress",
+             "supplier__supplier_name",      
         )
         .order_by("expected_arrival_date")
     )
+
+
+    
 
     context = {
         # ---------------- KPI CARDS ----------------
@@ -214,4 +219,4 @@ def get_sales_dashboard_data():
 
 
 
-###################### mdi dashboard Services ###########################
+###################### mdi dashboard

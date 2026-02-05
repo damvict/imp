@@ -5305,6 +5305,7 @@ def md_dashboard_web(request):
 
         da_limit = bank.da or 0
         da_balance = da_limit - da_used
+        da_utilization = (da_used / da_limit * 100) if da_limit else 0
 
         dashboard_data.append({
             "bank": bank,
@@ -5315,6 +5316,7 @@ def md_dashboard_web(request):
             "da_limit": da_limit,
             "da_used": da_used,
             "da_balance": da_balance,
+            "da_utilization": round(da_utilization, 1),
         })
 
     bank_context = {
@@ -5333,3 +5335,105 @@ def md_dashboard_web(request):
 
     return render(request, "md/md_dashboard_new.html", context)
 
+
+
+
+############# asynchrinize web page
+from django.http import JsonResponse
+from django.db.models import OuterRef, Subquery, IntegerField, Value, Case, When, F, Sum
+from django.utils import timezone
+
+TOTAL_PHASES = 7  # adjust if needed
+
+@login_required
+def md_dashboard_data_api(request):
+
+    # ================= PHASE SUBQUERIES =================
+    latest_phase_order = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order").values("order")[:1]
+
+    latest_phase_name = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order").values("phase_name")[:1]
+
+    # ================= SHIPMENTS =================
+    shipments_qs = (
+        Shipment.objects
+        .filter(grn_complete_at_warehouse=False)
+        .select_related("supplier")
+        .annotate(
+            phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
+            current_phase=Subquery(latest_phase_name),
+        )
+        .annotate(
+            progress=Case(
+                When(phase_order__isnull=True, then=Value(0)),
+                default=(F("phase_order") * 100 / TOTAL_PHASES),
+                output_field=IntegerField(),
+            )
+        )
+        .order_by("expected_arrival_date")
+    )
+
+    shipments = []
+    for s in shipments_qs:
+        shipments.append({
+            "shipment_code": s.shipment_code,
+            "supplier": s.supplier.supplier_name if s.supplier else "-",
+            "arrival": s.expected_arrival_date.strftime("%b %d, %Y"),
+            "phase": s.current_phase or "-",
+            "progress": min(s.progress, 100),
+        })
+
+    # ================= KPIs =================
+    kpis = {
+        "total_active": Shipment.objects.filter(grn_complete_at_warehouse=False).count(),
+        "new": Shipment.objects.filter(ship_status=1).count(),
+        "at_port": Shipment.objects.filter(
+            C_Process_Initiated=True,
+            C_Process_completed=False
+        ).count(),
+        "on_the_way": Shipment.objects.filter(
+            C_Process_completed=True,
+            arrival_at_warehouse=False
+        ).count(),
+        "grn": Shipment.objects.filter(
+            grn_upload_at_warehouse=True,
+            grn_complete_at_warehouse=False
+        ).count(),
+        "completed": Shipment.objects.filter(grn_complete_at_warehouse=True).count(),
+    }
+
+    # ================= BANKS =================
+    banks_data = []
+
+    for bank in Bank.objects.all():
+        imp_used = BankDocument.objects.filter(
+            bank=bank, doc_type="IMP"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        da_used = BankDocument.objects.filter(
+            bank=bank, doc_type="DA"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        imp_limit = bank.imp or 0
+        da_limit = bank.da or 0
+
+        banks_data.append({
+            "bank": bank.b_name,
+            "accno": bank.accno,
+            "imp_balance": imp_limit - imp_used,
+            "imp_limit": imp_limit,
+            "imp_utilization": round((imp_used / imp_limit * 100), 1) if imp_limit else 0,
+            "da_balance": da_limit - da_used,
+            "da_limit": da_limit,
+            "da_utilization": round((da_used / da_limit * 100), 1) if da_limit else 0,
+        })
+
+    # ================= RESPONSE =================
+    return JsonResponse({
+        "kpis": kpis,
+        "shipments": shipments,
+        "banks": banks_data,
+    })

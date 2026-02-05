@@ -124,7 +124,9 @@ def home(request):
     elif user.groups.filter(name="Imports Department").exists():
          return redirect('imports_dashboard')   
     elif user.groups.filter(name="Warehouse Dash").exists():
-         return redirect('warehouse_dashboard')    
+         return redirect('warehouse_dashboard')  
+    elif user.groups.filter(name="Md Dash").exists():
+         return redirect('md_dashboard_web')   
     
     
     else:

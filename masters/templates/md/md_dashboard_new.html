@@ -1,252 +1,308 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>MD Dashboard</title>
+<title>Managing Director Dashboard</title>
 
 <style>
-/* ================= COMMON STYLES ================= */
 :root {
-    --primary: #0f2a44;
-    --success: #2ecc71;
-    --warning: #f1c40f;
-    --danger: #e74c3c;
-    --bg: #f3f6fa;
+    --blue: #2563eb;
+    --green: #16a34a;
+    --orange: #f59e0b;
+    --red: #dc2626;
+    --purple: #7c3aed;
+
+    --bg: #0a3369;
     --card: #ffffff;
-    --muted: #6b778c;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
 }
+
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
-    padding: 24px;
+    padding: 16px 24px;
     background: var(--bg);
-    font-family: "Segoe UI", system-ui, sans-serif;
-    color: #2c3e50;
-}
-
-h1 {
-    font-size: 28px;
-    color: var(--primary);
-    margin-bottom: 10px;
+    font-family: "Inter","Segoe UI",system-ui,sans-serif;
+    color: var(--text);
+    
 }
 
 h2 {
-    font-size: 20px;
-    margin: 25px 0 10px;
-    color: var(--primary);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: #ffffff;
 }
 
-/* ================= KPI CARDS ================= */
-.kpi-row {
+/* ===== MAIN GRID ===== */
+.page-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
-    margin-bottom: 15px;
+    grid-template-columns: 3fr 1.2fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ===== KPI ===== */
+.shipment-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
 }
 
 .kpi-card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.06);
-    text-align: center;
+    height: 100px;
+    padding: 16px;
+    border-radius: 18px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.kpi-title {
+.kpi-card span {
     font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 4px;
+    letter-spacing: .08em;
+    opacity: .9;
+    margin-bottom: 6px;
 }
 
-.kpi-value {
-    font-size: 20px;
+.kpi-card h3 {
+    margin: 0;
+    font-size: 28px;
     font-weight: 700;
 }
 
-/* ================= TABLE ================= */
+.kpi-blue { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+.kpi-green { background: linear-gradient(135deg,#22c55e,#16a34a); }
+.kpi-orange { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+.kpi-purple { background: linear-gradient(135deg,#a78bfa,#7c3aed); }
+.kpi-red { background: linear-gradient(135deg,#f87171,#dc2626); }
+
+/* ===== TABLE ===== */
+.table-wrapper {
+    background: var(--card);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.shipment-table-wrapper {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--card);
-    box-shadow: 0 4px 12px rgba(0,0,0,.06);
-    border-radius: 12px;
-    overflow: hidden;
     font-size: 13px;
 }
 
 th {
-    background: #eef3f9;
-    padding: 10px;
-    text-align: left;
+    background: #eef3ff;
+    color: #1e3a8a;
+    padding: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
 }
 
 td {
-    padding: 10px;
-    border-bottom: 1px solid #ecf0f1;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
 }
 
-/* ================= BANK GRID ================= */
-.bank-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: 18px;
+.progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.bank-section {
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,#22c55e,#16a34a);
+}
+
+/* ===== BANKS ===== */
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 680px;
+    overflow-y: auto;
+}
+
+.bank-card {
     background: var(--card);
     border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 6px 18px rgba(15,42,68,.07);
+    padding: 12px 14px;
+    border-left: 4px solid var(--green);
+}
+
+.bank-card.danger {
+    border-left-color: var(--red);
 }
 
 .bank-header {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
-.low { color: var(--success); }
-.medium { color: var(--warning); }
-.high { color: var(--danger); }
-.negative { color: var(--danger); font-weight: 600; }
+.bank-line {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 50px;
+    gap: 6px;
+    align-items: center;
+    font-size: 12.5px;
+    margin-bottom: 6px;
+}
 
-.right { text-align: right; }
+.tag { font-size: 11px; font-weight: 600; color: #2563eb; }
+.num { text-align: right; font-weight: 500; }
+.muted { color: #6b7280; }
+
+.pct { text-align: right; font-weight: 600; }
+.pct.ok { color: #16a34a; }
+.pct.warn { color: #f59e0b; }
+.pct.danger { color: #dc2626; }
+
+.negative { color: var(--red); font-weight: 600; }
 </style>
 </head>
 
 <body>
 
-<h1>Managing Director Dashboard</h1>
+<div class="page-grid">
 
-<!-- ================= SHIPMENTS SECTION ================= -->
-<h2>Shipment Overview</h2>
+    <!-- LEFT -->
+    <div class="left-column">
 
-<div class="kpi-row">
-    <div class="kpi-card">
-        <div class="kpi-title">ACTIVE</div>
-        <div class="kpi-value">{{ total_active_shipments }}</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-title">NEW</div>
-        <div class="kpi-value">{{ new_shipment }}</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-title">AT PORT</div>
-        <div class="kpi-value">{{ goods_at_port }}</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-title">ON THE WAY</div>
-        <div class="kpi-value">{{ on_the_way_shipment }}</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-title">GRN PENDING</div>
-        <div class="kpi-value">{{ grn }}</div>
-    </div>
-
-    <div class="kpi-card">
-        <div class="kpi-title">COMPLETED</div>
-        <div class="kpi-value">{{ completed_shipment }}</div>
-    </div>
-</div>
-
-<h2>Active Shipments</h2>
-
-<table>
-<thead>
-<tr>
-    <th>Shipment Code</th>
-    <th>Expected Arrival</th>
-    <th>Current Phase</th>
-    <th>Progress</th>
-</tr>
-</thead>
-<tbody>
-{% for s in active_shipments %}
-<tr>
-    <td>{{ s.shipment_code }}</td>
-    <td>{{ s.expected_arrival_date }}</td>
-    <td>{{ s.current_phase }}</td>
-    <td>{{ s.progress }}%</td>
-</tr>
-{% empty %}
-<tr>
-    <td colspan="4">No active shipments</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-
-<!-- ================= BANK SECTION ================= -->
-<h2 style="margin-top:30px;">Bank Facilities Overview</h2>
-
-<div class="bank-grid">
-
-{% for item in dashboard_data %}
-<div class="bank-section">
-
-    <div class="bank-header">
-        {{ item.bank.b_name }} – {{ item.bank.accno }}
-    </div>
-
-    <div class="kpi-row">
-        <div class="kpi-card">
-            <div class="kpi-title">IMP LIMIT</div>
-            <div class="kpi-value">{{ item.imp_limit|floatformat:2 }}</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-title">IMP USED</div>
-            <div class="kpi-value">{{ item.imp_used|floatformat:2 }}</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-title">IMP BAL</div>
-            <div class="kpi-value">{{ item.imp_balance|floatformat:2 }}</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-title">UTIL %</div>
-            <div class="kpi-value
-                {% if item.imp_utilization < 60 %}
-                    low
-                {% elif item.imp_utilization < 80 %}
-                    medium
-                {% else %}
-                    high
-                {% endif %}
-            ">
-                {{ item.imp_utilization }}%
+        <!-- KPI -->
+        <div>
+            <h2>Shipment Overview</h2>
+            <div class="shipment-overview">
+                <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
+                <div class="kpi-card kpi-green"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+                <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
+                <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
+                <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
+                <div class="kpi-card kpi-green"><span>COMPLETED</span><h3 id="kpi-completed">0</h3></div>
             </div>
         </div>
+
+        <!-- TABLE -->
+        <div>
+            <h2>Active Shipments</h2>
+            <div class="table-wrapper shipment-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Shipment</th>
+                            <th>Supplier</th>
+                            <th>Arrival</th>
+                            <th>Phase</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipment-body"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
-    <table>
-        <tr>
-            <td>DA LIMIT</td>
-            <td class="right">{{ item.da_limit|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td>DA USED</td>
-            <td class="right">{{ item.da_used|floatformat:2 }}</td>
-        </tr>
-        <tr>
-            <td>DA BALANCE</td>
-            <td class="right {% if item.da_balance < 0 %}negative{% endif %}">
-                {{ item.da_balance|floatformat:2 }}
-            </td>
-        </tr>
-    </table>
+    <!-- RIGHT -->
+    <div class="right-column">
+        <h2>Bank Facilities</h2>
+        <div class="bank-list" id="bank-list"></div>
+    </div>
 
 </div>
-{% endfor %}
 
-</div>
+<script>
+function refreshDashboard() {
+    fetch("{% url 'md_dashboard_data_api' %}")
+        .then(res => res.json())
+        .then(data => {
+
+            // KPIs
+            document.getElementById("kpi-active").innerText = data.kpis.total_active;
+            document.getElementById("kpi-new").innerText = data.kpis.new;
+            document.getElementById("kpi-at-port").innerText = data.kpis.at_port;
+            document.getElementById("kpi-on-way").innerText = data.kpis.on_the_way;
+            document.getElementById("kpi-grn").innerText = data.kpis.grn;
+            document.getElementById("kpi-completed").innerText = data.kpis.completed;
+
+            // Shipments
+            const tbody = document.getElementById("shipment-body");
+            tbody.innerHTML = "";
+            data.shipments.forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${s.shipment_code}</td>
+                        <td>${s.supplier}</td>
+                        <td>${s.arrival}</td>
+                        <td>${s.phase}</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:${s.progress}%"></div>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+
+            // Banks
+            const bankList = document.getElementById("bank-list");
+            bankList.innerHTML = "";
+            data.banks.forEach(b => {
+                bankList.innerHTML += `
+                    <div class="bank-card ${b.da_balance < 0 ? 'danger' : ''}">
+                        <div class="bank-header">${b.bank} – ${b.accno}</div>
+
+                        <div class="bank-line">
+                            <span class="tag">IMP</span>
+                            <span class="num">${b.imp_balance.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
+                            <span class="num muted">${b.imp_limit.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
+                            <span class="pct ok">${b.imp_utilization}%</span>
+                        </div>
+
+                        <div class="bank-line">
+                            <span class="tag">DA</span>
+                            <span class="num ${b.da_balance < 0 ? 'negative' : ''}">
+                                ${b.da_balance.toLocaleString(undefined,{minimumFractionDigits:2})}
+                            </span>
+                            <span class="num muted">${b.da_limit.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
+                            <span class="pct ${b.da_utilization > 80 ? 'warn' : 'ok'}">${b.da_utilization}%</span>
+                        </div>
+                    </div>`;
+            });
+        });
+}
+
+refreshDashboard();
+setInterval(refreshDashboard, 30000);
+</script>
+<script>
+document.addEventListener("click", () => {
+    document.documentElement.requestFullscreen();
+});
+</script>
 
 </body>
 </html>
