@@ -468,7 +468,10 @@ def bank_manager_view(request):
     # Filter shipments same as your API
     shipments = Shipment.objects.filter(
         send_to_clearing_agent=True,
-        payment_marked=False
+        payment_marked=False,
+        c_ass_send=True
+
+        
     )
 
     return render(request, 'dash/bank_manager_view.html', {'shipments': shipments})
