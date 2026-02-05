@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'masters',
     'widget_tweaks',
     'django.contrib.humanize',
+    
    
 ]
 
