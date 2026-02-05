@@ -202,6 +202,7 @@ class Shipment(models.Model):
     #ship_status=models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     ship_status = models.IntegerField(null=True, blank=True)
     container=models.CharField(max_length=200,default=' ')
+    vehicle = models.CharField(max_length=100,null=True, blank=True)
 
     ############### 2nd stage Shiment 
     packing_list_ref = models.CharField(max_length=100)

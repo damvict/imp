@@ -84,6 +84,8 @@ def update_shipment_stage(data, user):
         shipment.gross_weight = data.get('gross_weight', 0)
         shipment.net_weight = data.get('net_weight', 0)
         shipment.cbm = data.get('cbm', 0)
+        shipment.vehicle = data.get("vehicle")
+
         shipment.save()
 
         phase_master = ShipmentPhaseMaster.objects.get(id=2)
@@ -209,3 +211,7 @@ def get_sales_dashboard_data():
     }
 
     return context
+
+
+
+###################### mdi dashboard Services ###########################

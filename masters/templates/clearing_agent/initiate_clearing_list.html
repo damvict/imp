@@ -192,7 +192,13 @@
         <div class="card-header">
           <div>
             <div class="shipment-code">{{ s.shipment_code }}</div>
-            <div class="supplier">{{ s.supplier_name|default:"N/A" }}</div>
+            <div class="shipment-code">{{ s.bl }}</div>
+          
+            <div class="supplier">
+  <strong>Supplier:</strong>
+  {{ s.supplier.supplier_name|default:"-" }}
+</div>
+
           </div>
 
           <span class="status-badge">Pending</span>

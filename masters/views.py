@@ -4247,8 +4247,9 @@ def initiate_clearing_web(request):
         send_to_clearing_agent_payment=True,
         clearing_agent=request.user,
         C_Process_Initiated=False
-    ).order_by("-duty_paid_date")
+      ).select_related("supplier").order_by("duty_paid_date")
 
+         
     return render(
         request,
         "clearing_agent/initiate_clearing_list.html",
@@ -4297,8 +4298,8 @@ def clearing_agent_dispatch_web(request):
     shipments = Shipment.objects.filter(
         C_Process_Initiated=True,
         C_Process_completed=False,
-        clearing_agent=request.user
-    ).order_by("-C_Process_Initiated_date")
+        clearing_agent=request.user   
+    ).select_related("supplier").order_by("-C_Process_Initiated_date")
 
     return render(
         request,
@@ -5084,27 +5085,61 @@ def outstanding_report_web(request):
         context
     )
 
+from django.db.models import Sum, F, DecimalField
+from django.db.models.functions import Coalesce
+
+def get_outstanding_results(request):
+    company_id = request.POST.get("company_id") or request.GET.get("company_id")
+    doc_type = request.POST.get("doc_type") or request.GET.get("doc_type")
+    as_at = request.POST.get("date") or request.GET.get("date")
+
+    qs = BankDocument.objects.annotate(
+        settled_amount=Coalesce(
+            Sum("settlements__amount"),
+            0,
+            output_field=DecimalField(max_digits=18, decimal_places=2)
+        ),
+        outstanding=F("amount") - Coalesce(
+            Sum("settlements__amount"),
+            0,
+            output_field=DecimalField(max_digits=18, decimal_places=2)
+        )
+    )
+
+    if as_at:
+        qs = qs.filter(issue_date__lte=as_at)
+
+    if company_id:
+        qs = qs.filter(company_id=company_id)
+
+    if doc_type and doc_type != "ALL":
+        qs = qs.filter(doc_type=doc_type)
+
+    qs = qs.filter(outstanding__gt=0)
+
+    return qs
+
 
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 @login_required
+
+
 def outstanding_report_pdf(request):
-    # reuse same query params
+    results = get_outstanding_results(request)
+
+    template = get_template("reports/outstanding_pdf.html")
+    html = template.render({"results": results})
+
     response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = "attachment; filename=outstanding_report.pdf"
+    response["Content-Disposition"] = 'attachment; filename="outstanding_report.pdf"'
 
-    p = canvas.Canvas(response)
-    p.drawString(50, 800, "Outstanding Report")
-
-    y = 760
-    for item in outstanding_report(request).data:
-        p.drawString(50, y, f"{item['company']} - {item['balance']}")
-        y -= 20
-
-    p.showPage()
-    p.save()
+    pisa.CreatePDF(html, dest=response)
     return response
+
 
 
 
@@ -5197,3 +5232,101 @@ def bank_dashboard_data(request):
         "timestamp": timezone.now().strftime("%I:%M %p"),
         "banks": data
     })
+
+
+
+from django.utils.timezone import now
+
+def ca_history(request):
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    search = request.GET.get('search')
+
+    qs = Shipment.objects.filter(
+        clearing_agent=request.user
+    ).order_by('-updated_at')
+
+    if from_date and to_date:
+        qs = qs.filter(updated_at__date__range=[from_date, to_date])
+
+    if search:
+        qs = qs.filter(reference_no__icontains=search)
+
+    context = {
+        'shipments': qs,
+        'from_date': from_date,
+        'to_date': to_date,
+        'search': search,
+    }
+    return render(request, 'clearing_agent/history.html', context)
+
+
+
+#############md special dashboard
+# masters/views.py (or dashboard/views.py)
+
+from django.contrib.auth.decorators import login_required
+#from .services import get_bank_dashboard_data
+from .services import get_sales_dashboard_data
+
+
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from django.utils import timezone
+
+# import sales service
+
+
+# import bank models
+from .models import Bank, BankDocument
+
+@login_required
+def md_dashboard_web(request):
+
+    # ================= BANK DATA (same as bank_dashboard_web) =================
+    banks = Bank.objects.all()
+    dashboard_data = []
+
+    for bank in banks:
+        imp_used = BankDocument.objects.filter(
+            bank=bank, doc_type="IMP"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        imp_limit = bank.imp or 0
+        imp_balance = imp_limit - imp_used
+        imp_utilization = (imp_used / imp_limit * 100) if imp_limit else 0
+
+        da_used = BankDocument.objects.filter(
+            bank=bank, doc_type="DA"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        da_limit = bank.da or 0
+        da_balance = da_limit - da_used
+
+        dashboard_data.append({
+            "bank": bank,
+            "imp_limit": imp_limit,
+            "imp_used": imp_used,
+            "imp_balance": imp_balance,
+            "imp_utilization": round(imp_utilization, 1),
+            "da_limit": da_limit,
+            "da_used": da_used,
+            "da_balance": da_balance,
+        })
+
+    bank_context = {
+        "dashboard_data": dashboard_data,
+        "today": timezone.now().date(),
+    }
+
+    # ================= SALES DATA (reuse existing service) =================
+    sales_context = get_sales_dashboard_data()
+
+    # ================= MERGE =================
+    context = {
+        **bank_context,
+        **sales_context,
+    }
+
+    return render(request, "md/md_dashboard_new.html", context)
+

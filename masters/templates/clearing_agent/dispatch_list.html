@@ -156,8 +156,10 @@
           </div>
 
           <div class="shipment-subtitle">
-            Supplier: {{ s.supplier_name|default:"-" }}
-          </div>
+          <strong>Supplier:</strong>
+          {{ s.supplier.supplier_name|default:"-" }}
+        </div>
+
 
           <div class="detail-row">
             <span class="label">Amount:</span>

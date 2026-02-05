@@ -546,7 +546,12 @@ path(
     name="bank_document_report_web",
 ),
 
-path("reports/outstanding/pdf/", outstanding_report_pdf),
+###path("reports/outstanding/pdf/", outstanding_report_pdf),
+path(
+  "bank-documents/reports/outstanding/pdf/",
+  outstanding_report_pdf,
+  name="outstanding-report-pdf"
+),
 
 
 path(
@@ -560,6 +565,8 @@ path(
  path("bank-dashboard/data/", views.bank_dashboard_data, name="bank_dashboard_data"),
 
 
+path('clearing-agent/history/', views.ca_history, name='ca_history'),
+path("md-dashboard/", views.md_dashboard_web, name="md_dashboard_web"),
 
 
 ]       

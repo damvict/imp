@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MD Dashboard</title>
+
+<style>
+/* ================= COMMON STYLES ================= */
+:root {
+    --primary: #0f2a44;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --bg: #f3f6fa;
+    --card: #ffffff;
+    --muted: #6b778c;
+}
+
+body {
+    margin: 0;
+    padding: 24px;
+    background: var(--bg);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: #2c3e50;
+}
+
+h1 {
+    font-size: 28px;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 20px;
+    margin: 25px 0 10px;
+    color: var(--primary);
+}
+
+/* ================= KPI CARDS ================= */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.kpi-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    text-align: center;
+}
+
+.kpi-title {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* ================= TABLE ================= */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    border-radius: 12px;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+th {
+    background: #eef3f9;
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+/* ================= BANK GRID ================= */
+.bank-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 18px;
+}
+
+.bank-section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(15,42,68,.07);
+}
+
+.bank-header {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.low { color: var(--success); }
+.medium { color: var(--warning); }
+.high { color: var(--danger); }
+.negative { color: var(--danger); font-weight: 600; }
+
+.right { text-align: right; }
+</style>
+</head>
+
+<body>
+
+<h1>Managing Director Dashboard</h1>
+
+<!-- ================= SHIPMENTS SECTION ================= -->
+<h2>Shipment Overview</h2>
+
+<div class="kpi-row">
+    <div class="kpi-card">
+        <div class="kpi-title">ACTIVE</div>
+        <div class="kpi-value">{{ total_active_shipments }}</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">NEW</div>
+        <div class="kpi-value">{{ new_shipment }}</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">AT PORT</div>
+        <div class="kpi-value">{{ goods_at_port }}</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">ON THE WAY</div>
+        <div class="kpi-value">{{ on_the_way_shipment }}</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">GRN PENDING</div>
+        <div class="kpi-value">{{ grn }}</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">COMPLETED</div>
+        <div class="kpi-value">{{ completed_shipment }}</div>
+    </div>
+</div>
+
+<h2>Active Shipments</h2>
+
+<table>
+<thead>
+<tr>
+    <th>Shipment Code</th>
+    <th>Expected Arrival</th>
+    <th>Current Phase</th>
+    <th>Progress</th>
+</tr>
+</thead>
+<tbody>
+{% for s in active_shipments %}
+<tr>
+    <td>{{ s.shipment_code }}</td>
+    <td>{{ s.expected_arrival_date }}</td>
+    <td>{{ s.current_phase }}</td>
+    <td>{{ s.progress }}%</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="4">No active shipments</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<!-- ================= BANK SECTION ================= -->
+<h2 style="margin-top:30px;">Bank Facilities Overview</h2>
+
+<div class="bank-grid">
+
+{% for item in dashboard_data %}
+<div class="bank-section">
+
+    <div class="bank-header">
+        {{ item.bank.b_name }} – {{ item.bank.accno }}
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-title">IMP LIMIT</div>
+            <div class="kpi-value">{{ item.imp_limit|floatformat:2 }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-title">IMP USED</div>
+            <div class="kpi-value">{{ item.imp_used|floatformat:2 }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-title">IMP BAL</div>
+            <div class="kpi-value">{{ item.imp_balance|floatformat:2 }}</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-title">UTIL %</div>
+            <div class="kpi-value
+                {% if item.imp_utilization < 60 %}
+                    low
+                {% elif item.imp_utilization < 80 %}
+                    medium
+                {% else %}
+                    high
+                {% endif %}
+            ">
+                {{ item.imp_utilization }}%
+            </div>
+        </div>
+    </div>
+
+    <table>
+        <tr>
+            <td>DA LIMIT</td>
+            <td class="right">{{ item.da_limit|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>DA USED</td>
+            <td class="right">{{ item.da_used|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>DA BALANCE</td>
+            <td class="right {% if item.da_balance < 0 %}negative{% endif %}">
+                {{ item.da_balance|floatformat:2 }}
+            </td>
+        </tr>
+    </table>
+
+</div>
+{% endfor %}
+
+</div>
+
+</body>
+</html>

@@ -549,6 +549,9 @@ class NewShipmentForm(forms.Form):
     cbm = forms.DecimalField(required=False)
     origin_country = forms.CharField(required=False)
     due_date = forms.DateField(required=False)
+    vehicle = forms.CharField(
+               widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
     #expected_arrival_date = forms.DateField(required=True)
 
     def clean(self):

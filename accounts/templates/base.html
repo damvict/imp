@@ -230,6 +230,9 @@
                       {% elif request.user.groups.all.0.name == 'Managing Director' %}
                     <li><a href="{% url 'md_dashboard' %}">MD Dashboard</a></li>
                     <li><a href="{% url 'bank_dashboard_web' %}">Bank Dashboard</a></li>
+                  <li><a href="{% url 'md_dashboard_web' %}">sp Dashboard</a></li>
+
+                    
                
 
                     {% elif request.user.groups.all.0.name == 'Clearing Agent' %}
@@ -422,6 +425,11 @@
        class="footer-item {% if request.resolver_match.url_name == 'clearing_agent_dashboard' %}active{% endif %}">
       <i class="fas fa-home"></i>
       <span>Dashboard</span>
+    </a>
+
+    <a href="{% url 'ca_history' %}">
+      <i class="fa fa-clock-rotate-left"></i>
+      <span>History</span>
     </a>
   {% endif %}
 
