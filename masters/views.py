@@ -5439,7 +5439,7 @@ def md_dashboard_data_api(request):
             "imp_utilization": round(((imp_limit -imp_used) / imp_limit * 100), 1) if imp_limit else 0,
             "da_balance": da_limit - da_used,
             "da_limit": da_limit,
-            "da_utilization": round((da_used / da_limit * 100), 1) if da_limit else 0,
+            "da_utilization": round(((da_limit-da_used) / da_limit * 100), 1) if da_limit else 0,
         })
 
     # ================= RESPONSE =================
