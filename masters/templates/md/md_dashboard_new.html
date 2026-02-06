@@ -129,7 +129,7 @@ body{
 }
 
 .kpi-card span{
-  font-size: 11px;
+  font-size: 20px;
   letter-spacing: .08em;
   opacity: .9;
   margin-bottom: 6px;
@@ -140,11 +140,32 @@ body{
   font-weight:800;
 }
 
-.kpi-blue { background: linear-gradient(135deg,#2563eb,#1e3a8a); }
-.kpi-green { background: linear-gradient(135deg,#22c55e,#15803d); }
-.kpi-orange { background: linear-gradient(135deg,#f59e0b,#b45309); }
-.kpi-purple { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
-.kpi-red { background: linear-gradient(135deg,#ef4444,#991b1b); }
+/* Logistics KPI colors (original recommendation) */
+
+.kpi-blue {
+  background: linear-gradient(135deg, #2563EB, #1E40AF);
+}
+
+.kpi-green {
+  background: linear-gradient(135deg, #16A34A, #14532D);
+}
+
+.kpi-orange {
+  background: linear-gradient(135deg, #F59E0B, #B45309);
+}
+
+.kpi-purple {
+  background: linear-gradient(135deg, #7C3AED, #5B21B6);
+}
+
+.kpi-red {
+  background: linear-gradient(135deg, #DC2626, #991B1B);
+}
+
+.kpi-teal {
+  background: linear-gradient(135deg, #2dbae4, #045e80);
+}
+
 
 /* ===== TABLE ===== */
 .table-wrapper{
@@ -321,7 +342,7 @@ tbody tr:hover{
 
 <div class="topbar">
   <div class="title">
-    <h1>Managing Director Dashboard</h1>
+    <h1>Management Dashboard</h1>
     <small>Shipment Overview • Active Shipments • Bank Facilities</small>
   </div>
   <div class="actions">
@@ -339,7 +360,7 @@ tbody tr:hover{
       <h2>Shipment Overview</h2>
       <div class="shipment-overview">
         <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
-        <div class="kpi-card kpi-green"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+        <div class="kpi-card kpi-teal"><span>NEW</span><h3 id="kpi-new">0</h3></div>
         <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
         <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
         <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
@@ -378,10 +399,11 @@ tbody tr:hover{
 <script>
 const utilClass = (p) => {
   p = Number(p || 0);
-  if (p > 80) return "danger";
-  if (p > 60) return "warn";
-  return "ok";
+  if (p < 10) return "danger";   // almost exhausted
+  if (p < 25) return "warn";     // low buffer
+  return "ok";                   // healthy available
 };
+
 
 const calcUtil = (bal, limit) => {
   bal = Number(bal || 0);
@@ -453,7 +475,7 @@ function refreshDashboard() {
               <span></span>
               <span>Bal</span>
               <span>Limit</span>
-              <span>%</span>
+              <span>avai.%</span>
             </div>
 
             <div class="bank-line">

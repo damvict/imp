@@ -230,7 +230,7 @@
                       {% elif request.user.groups.all.0.name == 'Managing Director' %}
                     <li><a href="{% url 'md_dashboard' %}">MD Dashboard</a></li>
                   
-                  <li><a href="{% url 'md_dashboard_web' %}">All Dashboard</a></li>
+                
 
                     
                
@@ -400,11 +400,7 @@
     </a>
 
     
-    <a href="{% url 'bank_dashboard_web' %}"
-       class="footer-item {% if request.resolver_match.url_name == 'bank_dashboard_web' %}active{% endif %}">
-      <i class="fas fa-bank"></i>
-      <span>Bank Dashboard</span>
-    </a>
+
 
   {% elif request.user.groups.all.0.name == "Admin" %}
     <a href="{% url 'admin_dashboard' %}"

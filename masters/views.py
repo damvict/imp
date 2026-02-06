@@ -5342,6 +5342,7 @@ def md_dashboard_web(request):
 from django.http import JsonResponse
 from django.db.models import OuterRef, Subquery, IntegerField, Value, Case, When, F, Sum
 from django.utils import timezone
+from django.db.models import DateField
 
 TOTAL_PHASES = 7  # adjust if needed
 
@@ -5365,6 +5366,11 @@ def md_dashboard_data_api(request):
         .annotate(
             phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
             current_phase=Subquery(latest_phase_name),
+            arrival_date=Coalesce(
+            "ship_arival_date",
+            "expected_arrival_date",
+            output_field=DateField()
+        )
         )
         .annotate(
             progress=Case(
@@ -5373,7 +5379,7 @@ def md_dashboard_data_api(request):
                 output_field=IntegerField(),
             )
         )
-        .order_by("expected_arrival_date")
+        .order_by("arrival_date")
     )
 
     shipments = []
@@ -5381,7 +5387,12 @@ def md_dashboard_data_api(request):
         shipments.append({
             "shipment_code": s.shipment_code,
             "supplier": s.supplier.supplier_name if s.supplier else "-",
-            "arrival": s.expected_arrival_date.strftime("%b %d, %Y"),
+           "arrival": (
+    s.arrival_date.strftime("%b %d, %Y")
+    if s.arrival_date
+    else "-"
+),
+
             "phase": s.current_phase or "-",
             "progress": min(s.progress, 100),
         })

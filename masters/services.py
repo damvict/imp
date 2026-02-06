@@ -169,7 +169,7 @@ def get_sales_dashboard_data():
         )
         .values(
             "shipment_code",
-            "expected_arrival_date",
+            "ship_arival_date",
             "current_phase",
             "phase_order",
             "progress",
