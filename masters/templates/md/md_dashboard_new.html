@@ -28,7 +28,6 @@ body {
     background: var(--bg);
     font-family: "Inter","Segoe UI",system-ui,sans-serif;
     color: var(--text);
-    
 }
 
 h2 {
@@ -43,9 +42,9 @@ h2 {
     display: grid;
     grid-template-columns: 3fr 1.2fr;
     gap: 24px;
-    align-items: start;
 }
 
+/* ===== LEFT ===== */
 .left-column {
     display: flex;
     flex-direction: column;
@@ -124,7 +123,6 @@ td {
     height: 8px;
     background: #e5e7eb;
     border-radius: 10px;
-    overflow: hidden;
 }
 
 .progress-fill {
@@ -132,7 +130,7 @@ td {
     background: linear-gradient(90deg,#22c55e,#16a34a);
 }
 
-/* ===== BANKS ===== */
+/* ===== RIGHT / BANKS ===== */
 .right-column {
     display: flex;
     flex-direction: column;
@@ -161,16 +159,35 @@ td {
 .bank-header {
     font-size: 13px;
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
+/* column label row */
+.bank-col-labels {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr 50px;
+    gap: 6px;
+    font-size: 10px;
+    color: #9ca3af;
+    margin-bottom: 2px;
+}
+
+.bank-col-labels span {
+    text-align: right;
+}
+
+.bank-col-labels span:first-child {
+    text-align: left;
+}
+
+/* data rows */
 .bank-line {
     display: grid;
     grid-template-columns: 40px 1fr 1fr 50px;
     gap: 6px;
     align-items: center;
     font-size: 12.5px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .tag { font-size: 11px; font-weight: 600; color: #2563eb; }
@@ -183,6 +200,22 @@ td {
 .pct.danger { color: #dc2626; }
 
 .negative { color: var(--red); font-weight: 600; }
+.bank-name {
+    font-weight: 700;
+    color: #388e84; /* deep blue */
+}
+
+.bank-acc {
+    font-weight: 500;
+    color: #09584b; /* muted gray */
+    font-size: 12px;
+}
+
+.bank-sep {
+    margin: 0 4px;
+    color: #9ca3af;
+}
+
 </style>
 </head>
 
@@ -193,7 +226,6 @@ td {
     <!-- LEFT -->
     <div class="left-column">
 
-        <!-- KPI -->
         <div>
             <h2>Shipment Overview</h2>
             <div class="shipment-overview">
@@ -206,7 +238,6 @@ td {
             </div>
         </div>
 
-        <!-- TABLE -->
         <div>
             <h2>Active Shipments</h2>
             <div class="table-wrapper shipment-table-wrapper">
@@ -236,12 +267,18 @@ td {
 </div>
 
 <script>
+
+    const money = (val) =>
+    Number(val || 0).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
 function refreshDashboard() {
     fetch("{% url 'md_dashboard_data_api' %}")
         .then(res => res.json())
         .then(data => {
 
-            // KPIs
             document.getElementById("kpi-active").innerText = data.kpis.total_active;
             document.getElementById("kpi-new").innerText = data.kpis.new;
             document.getElementById("kpi-at-port").innerText = data.kpis.at_port;
@@ -249,56 +286,66 @@ function refreshDashboard() {
             document.getElementById("kpi-grn").innerText = data.kpis.grn;
             document.getElementById("kpi-completed").innerText = data.kpis.completed;
 
-            // Shipments
             const tbody = document.getElementById("shipment-body");
             tbody.innerHTML = "";
             data.shipments.forEach(s => {
                 tbody.innerHTML += `
-                    <tr>
-                        <td>${s.shipment_code}</td>
-                        <td>${s.supplier}</td>
-                        <td>${s.arrival}</td>
-                        <td>${s.phase}</td>
-                        <td>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width:${s.progress}%"></div>
-                            </div>
-                        </td>
-                    </tr>`;
+                <tr>
+                    <td>${s.shipment_code}</td>
+                    <td>${s.supplier}</td>
+                    <td>${s.arrival}</td>
+                    <td>${s.phase}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:${s.progress}%"></div>
+                        </div>
+                    </td>
+                </tr>`;
             });
 
-            // Banks
             const bankList = document.getElementById("bank-list");
             bankList.innerHTML = "";
             data.banks.forEach(b => {
                 bankList.innerHTML += `
-                    <div class="bank-card ${b.da_balance < 0 ? 'danger' : ''}">
-                        <div class="bank-header">${b.bank} – ${b.accno}</div>
+                <div class="bank-card ${b.da_balance < 0 ? 'danger' : ''}">
+                   <div class="bank-header">
+    <span class="bank-name">${b.bank}</span>
+    <span class="bank-sep">–</span>
+    <span class="bank-acc">${b.accno}</span>
+</div>
 
-                        <div class="bank-line">
-                            <span class="tag">IMP</span>
-                            <span class="num">${b.imp_balance.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
-                            <span class="num muted">${b.imp_limit.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
-                            <span class="pct ok">${b.imp_utilization}%</span>
-                        </div>
 
-                        <div class="bank-line">
-                            <span class="tag">DA</span>
-                            <span class="num ${b.da_balance < 0 ? 'negative' : ''}">
-                                ${b.da_balance.toLocaleString(undefined,{minimumFractionDigits:2})}
-                            </span>
-                            <span class="num muted">${b.da_limit.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
-                            <span class="pct ${b.da_utilization > 80 ? 'warn' : 'ok'}">${b.da_utilization}%</span>
-                        </div>
-                    </div>`;
+                    <div class="bank-col-labels">
+                        <span></span>
+                        <span>Bal</span>
+                        <span>Limit</span>
+                        <span>%</span>
+                    </div>
+
+                    <div class="bank-line">
+                        <span class="tag">IMP</span>
+                        <span class="num">${money(b.imp_balance)}
+</span>
+                        <span class="num muted">${money(b.imp_limit)}</span>
+                        <span class="pct ok">${b.imp_utilization}%</span>
+                    </div>
+
+                    <div class="bank-line">
+                        <span class="tag">DA</span>
+                        <span class="num ${b.da_balance < 0 ? 'negative' : ''}">
+                            ${money(b.da_balance)}
+                        </span>
+                        <span class="num muted">${money(b.da_limit)}</span>
+                        <span class="pct ${b.da_utilization > 80 ? 'warn' : 'ok'}">${b.da_utilization}%</span>
+                    </div>
+                </div>`;
             });
         });
 }
 
 refreshDashboard();
 setInterval(refreshDashboard, 30000);
-</script>
-<script>
+
 document.addEventListener("click", () => {
     document.documentElement.requestFullscreen();
 });
