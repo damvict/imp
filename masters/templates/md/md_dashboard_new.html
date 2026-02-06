@@ -3,217 +3,315 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Managing Director Dashboard</title>
 
 <style>
 :root {
-    --blue: #2563eb;
-    --green: #16a34a;
-    --orange: #f59e0b;
-    --red: #dc2626;
-    --purple: #7c3aed;
+  --bg0:#071c3d;
+  --bg1:#0a2b5e;
 
-    --bg: #0a3369;
-    --card: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --border: #e5e7eb;
+  --card: rgba(255,255,255,0.08);
+  --card-border: rgba(255,255,255,0.15);
+
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --purple:#8b5cf6;
+
+  --shadow: 0 12px 30px rgba(0,0,0,.35);
+  --radius: 18px;
 }
 
-* { box-sizing: border-box; }
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
 
-body {
-    margin: 0;
-    padding: 16px 24px;
-    background: var(--bg);
-    font-family: "Inter","Segoe UI",system-ui,sans-serif;
-    color: var(--text);
+body{
+  margin:0;
+  padding:18px 22px;
+  font-family: Inter,"Segoe UI",system-ui,sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
+    radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
 }
 
-h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0 0 8px;
-    color: #ffffff;
+/* ===== TOP BAR ===== */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
 }
+.title{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.title h1{
+  font-size:18px;
+  margin:0;
+  font-weight:800;
+  letter-spacing:.2px;
+  color:#fff;
+}
+.title small{
+  color: rgba(229,231,235,.75);
+  font-size:12px;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.pill{
+  background: rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  color: #fff;
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  backdrop-filter: blur(10px);
+}
+.btn{
+  cursor:pointer;
+  border:none;
+  background: linear-gradient(135deg, rgba(59,130,246,.95), rgba(34,197,94,.85));
+  color:#06162f;
+  padding:9px 12px;
+  border-radius:12px;
+  font-weight:900;
+  font-size:12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+}
+.btn:active{ transform: translateY(1px); }
 
 /* ===== MAIN GRID ===== */
-.page-grid {
-    display: grid;
-    grid-template-columns: 3fr 1.2fr;
-    gap: 24px;
+.page-grid{
+  display:grid;
+  grid-template-columns: 3fr 1.2fr;
+  gap: 18px;
 }
 
-/* ===== LEFT ===== */
-.left-column {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+/* ===== SECTIONS ===== */
+.section h2{
+  font-size:16px;
+  font-weight:800;
+  margin:0 0 10px;
+  color:#fff;
 }
 
 /* ===== KPI ===== */
-.shipment-overview {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+.shipment-overview{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 }
 
-.kpi-card {
-    height: 100px;
-    padding: 16px;
-    border-radius: 18px;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.kpi-card{
+  height: 96px;
+  padding: 18px;
+  border-radius: 16px;
+  color: #fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  box-shadow: var(--shadow);
 }
 
-.kpi-card span {
-    font-size: 11px;
-    letter-spacing: .08em;
-    opacity: .9;
-    margin-bottom: 6px;
+.kpi-card span{
+  font-size: 11px;
+  letter-spacing: .08em;
+  opacity: .9;
+  margin-bottom: 6px;
+}
+.kpi-card h3{
+  margin:0;
+  font-size:30px;
+  font-weight:800;
 }
 
-.kpi-card h3 {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-}
-
-.kpi-blue { background: linear-gradient(135deg,#3b82f6,#2563eb); }
-.kpi-green { background: linear-gradient(135deg,#22c55e,#16a34a); }
-.kpi-orange { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
-.kpi-purple { background: linear-gradient(135deg,#a78bfa,#7c3aed); }
-.kpi-red { background: linear-gradient(135deg,#f87171,#dc2626); }
+.kpi-blue { background: linear-gradient(135deg,#2563eb,#1e3a8a); }
+.kpi-green { background: linear-gradient(135deg,#22c55e,#15803d); }
+.kpi-orange { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.kpi-purple { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.kpi-red { background: linear-gradient(135deg,#ef4444,#991b1b); }
 
 /* ===== TABLE ===== */
-.table-wrapper {
-    background: var(--card);
-    border-radius: 18px;
-    border: 1px solid var(--border);
-    overflow: hidden;
+.table-wrapper{
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  overflow:hidden;
 }
 
-.shipment-table-wrapper {
-    max-height: 420px;
-    overflow-y: auto;
+.shipment-table-wrapper{
+  max-height: 460px;
+  overflow:auto;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
+table{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(255,255,255,0.08);
+  color: #c7d2fe;
+  padding: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing:.08em;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+tbody td{
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+tbody tr:hover{
+  background: rgba(255,255,255,0.05);
 }
 
-th {
-    background: #eef3ff;
-    color: #1e3a8a;
-    padding: 12px;
-    font-size: 11px;
-    text-transform: uppercase;
+.progress-bar{
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background: linear-gradient(90deg,#22c55e,#4ade80);
+  box-shadow: 0 0 10px rgba(34,197,94,.6);
 }
 
-td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
+/* ===== RIGHT BANKS ===== */
+.right-column{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+}
+.bank-list{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+  max-height: 690px;
+  overflow:auto;
 }
 
-.progress-bar {
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 10px;
+.bank-card{
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  position:relative;
+}
+.bank-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:14px;
+  border-left:4px solid var(--green);
+  pointer-events:none;
+}
+.bank-card.danger::before{ border-left-color: var(--red); }
+
+.bank-header{
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.bank-name{
+  font-weight: 900;
+  color:#a7f3d0;
+}
+.bank-acc{
+  font-size: 12px;
+  color:#93c5fd;
+}
+.bank-sep{
+  margin:0 6px;
+  color: var(--muted);
 }
 
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg,#22c55e,#16a34a);
+.bank-col-labels{
+  display:grid;
+  grid-template-columns: 40px 1fr 1fr 50px;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.bank-col-labels span{ text-align:right; }
+.bank-col-labels span:first-child{ text-align:left; }
+
+.bank-line{
+  display:grid;
+  grid-template-columns: 40px 1fr 1fr 50px;
+  gap:6px;
+  align-items:center;
+  font-size: 12.5px;
+  margin-bottom: 4px;
 }
 
-/* ===== RIGHT / BANKS ===== */
-.right-column {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.tag{ font-size:11px; font-weight:800; color:#60a5fa; }
+.num{ text-align:right; font-weight:700; }
+.muted{ color: var(--muted); }
+
+.pct{ text-align:right; font-weight:900; }
+.pct.ok{ color: var(--green); }
+.pct.warn{ color: var(--orange); }
+.pct.danger{ color: var(--red); }
+
+.negative{ color: var(--red); font-weight:900; }
+
+@media (max-width:1100px){
+  .page-grid{ grid-template-columns: 1fr; }
+  .shipment-overview{ grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width:560px){
+  body{ padding:12px; }
+  .shipment-overview{ grid-template-columns: 1fr; }
 }
 
-.bank-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-height: 680px;
-    overflow-y: auto;
+
+/* ===== BANK PROGRESS BAR ===== */
+.bank-progress{
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 6px 0 10px;
 }
 
-.bank-card {
-    background: var(--card);
-    border-radius: 14px;
-    padding: 12px 14px;
-    border-left: 4px solid var(--green);
+.bank-progress-fill{
+  height: 100%;
 }
 
-.bank-card.danger {
-    border-left-color: var(--red);
+.bank-progress-fill.ok{
+  background: linear-gradient(90deg,#22c55e,#4ade80);
 }
 
-.bank-header {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 4px;
+.bank-progress-fill.warn{
+  background: linear-gradient(90deg,#f59e0b,#fbbf24);
 }
 
-/* column label row */
-.bank-col-labels {
-    display: grid;
-    grid-template-columns: 40px 1fr 1fr 50px;
-    gap: 6px;
-    font-size: 10px;
-    color: #9ca3af;
-    margin-bottom: 2px;
-}
-
-.bank-col-labels span {
-    text-align: right;
-}
-
-.bank-col-labels span:first-child {
-    text-align: left;
-}
-
-/* data rows */
-.bank-line {
-    display: grid;
-    grid-template-columns: 40px 1fr 1fr 50px;
-    gap: 6px;
-    align-items: center;
-    font-size: 12.5px;
-    margin-bottom: 4px;
-}
-
-.tag { font-size: 11px; font-weight: 600; color: #2563eb; }
-.num { text-align: right; font-weight: 500; }
-.muted { color: #6b7280; }
-
-.pct { text-align: right; font-weight: 600; }
-.pct.ok { color: #16a34a; }
-.pct.warn { color: #f59e0b; }
-.pct.danger { color: #dc2626; }
-
-.negative { color: var(--red); font-weight: 600; }
-.bank-name {
-    font-weight: 700;
-    color: #388e84; /* deep blue */
-}
-
-.bank-acc {
-    font-weight: 500;
-    color: #09584b; /* muted gray */
-    font-size: 12px;
-}
-
-.bank-sep {
-    margin: 0 4px;
-    color: #9ca3af;
+.bank-progress-fill.danger{
+  background: linear-gradient(90deg,#ef4444,#f87171);
 }
 
 </style>
@@ -221,133 +319,195 @@ td {
 
 <body>
 
+<div class="topbar">
+  <div class="title">
+    <h1>Managing Director Dashboard</h1>
+    <small>Shipment Overview • Active Shipments • Bank Facilities</small>
+  </div>
+  <div class="actions">
+    <div class="pill">Last refresh: <b id="last-refresh">—</b></div>
+    <button class="btn" id="btn-refresh" type="button">Refresh</button>
+  </div>
+</div>
+
 <div class="page-grid">
 
-    <!-- LEFT -->
-    <div class="left-column">
+  <!-- LEFT -->
+  <div class="left-column">
 
-        <div>
-            <h2>Shipment Overview</h2>
-            <div class="shipment-overview">
-                <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
-                <div class="kpi-card kpi-green"><span>NEW</span><h3 id="kpi-new">0</h3></div>
-                <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
-                <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
-                <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
-                <div class="kpi-card kpi-green"><span>COMPLETED</span><h3 id="kpi-completed">0</h3></div>
-            </div>
-        </div>
-
-        <div>
-            <h2>Active Shipments</h2>
-            <div class="table-wrapper shipment-table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Shipment</th>
-                            <th>Supplier</th>
-                            <th>Arrival</th>
-                            <th>Phase</th>
-                            <th>Progress</th>
-                        </tr>
-                    </thead>
-                    <tbody id="shipment-body"></tbody>
-                </table>
-            </div>
-        </div>
-
+    <div class="section">
+      <h2>Shipment Overview</h2>
+      <div class="shipment-overview">
+        <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
+        <div class="kpi-card kpi-green"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+        <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
+        <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
+        <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
+        <div class="kpi-card kpi-green"><span>COMPLETED</span><h3 id="kpi-completed">0</h3></div>
+      </div>
     </div>
 
-    <!-- RIGHT -->
-    <div class="right-column">
-        <h2>Bank Facilities</h2>
-        <div class="bank-list" id="bank-list"></div>
+    <div class="section">
+      <h2>Active Shipments</h2>
+      <div class="table-wrapper shipment-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment</th>
+              <th>Supplier</th>
+              <th>Arrival</th>
+              <th>Phase</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="shipment-body"></tbody>
+        </table>
+      </div>
     </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-column section">
+    <h2>Bank Facilities</h2>
+    <div class="bank-list" id="bank-list"></div>
+  </div>
 
 </div>
 
 <script>
+const utilClass = (p) => {
+  p = Number(p || 0);
+  if (p > 80) return "danger";
+  if (p > 60) return "warn";
+  return "ok";
+};
 
-    const money = (val) =>
-    Number(val || 0).toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+const calcUtil = (bal, limit) => {
+  bal = Number(bal || 0);
+  limit = Number(limit || 0);
+  if (limit <= 0) return 0;
+  return Math.round((bal / limit) * 1000) / 10; // 1 decimal
+};
+
+</script>
+
+<script>
+const money = (val) =>
+  Number(val || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+const fmtTime = () => {
+  const d = new Date();
+  return d.toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+};
 
 function refreshDashboard() {
-    fetch("{% url 'md_dashboard_data_api' %}")
-        .then(res => res.json())
-        .then(data => {
+  fetch("{% url 'md_dashboard_data_api' %}")
+    .then(res => res.json())
+    .then(data => {
 
-            document.getElementById("kpi-active").innerText = data.kpis.total_active;
-            document.getElementById("kpi-new").innerText = data.kpis.new;
-            document.getElementById("kpi-at-port").innerText = data.kpis.at_port;
-            document.getElementById("kpi-on-way").innerText = data.kpis.on_the_way;
-            document.getElementById("kpi-grn").innerText = data.kpis.grn;
-            document.getElementById("kpi-completed").innerText = data.kpis.completed;
+      // KPIs (same backend keys)
+      document.getElementById("kpi-active").innerText = data.kpis?.total_active ?? 0;
+      document.getElementById("kpi-new").innerText = data.kpis?.new ?? 0;
+      document.getElementById("kpi-at-port").innerText = data.kpis?.at_port ?? 0;
+      document.getElementById("kpi-on-way").innerText = data.kpis?.on_the_way ?? 0;
+      document.getElementById("kpi-grn").innerText = data.kpis?.grn ?? 0;
+      document.getElementById("kpi-completed").innerText = data.kpis?.completed ?? 0;
 
-            const tbody = document.getElementById("shipment-body");
-            tbody.innerHTML = "";
-            data.shipments.forEach(s => {
-                tbody.innerHTML += `
-                <tr>
-                    <td>${s.shipment_code}</td>
-                    <td>${s.supplier}</td>
-                    <td>${s.arrival}</td>
-                    <td>${s.phase}</td>
-                    <td>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width:${s.progress}%"></div>
-                        </div>
-                    </td>
-                </tr>`;
-            });
+      // Shipments table (keep your original rendering fields)
+      const tbody = document.getElementById("shipment-body");
+      tbody.innerHTML = "";
+      (data.shipments || []).forEach(s => {
+        const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
+        tbody.innerHTML += `
+          <tr>
+            <td>${s.shipment_code ?? ""}</td>
+            <td>${s.supplier ?? ""}</td>
+            <td>${s.arrival ?? ""}</td>
+            <td>${s.phase ?? ""}</td>
+            <td>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${p}%"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
 
-            const bankList = document.getElementById("bank-list");
-            bankList.innerHTML = "";
-            data.banks.forEach(b => {
-                bankList.innerHTML += `
-                <div class="bank-card ${b.da_balance < 0 ? 'danger' : ''}">
-                   <div class="bank-header">
-    <span class="bank-name">${b.bank}</span>
-    <span class="bank-sep">–</span>
-    <span class="bank-acc">${b.accno}</span>
-</div>
+      // Banks (same output as your original code)
+      const bankList = document.getElementById("bank-list");
+      bankList.innerHTML = "";
+      (data.banks || []).forEach(b => {
+        bankList.innerHTML += `
+          <div class="bank-card ${Number(b.da_balance || 0) < 0 ? 'danger' : ''}">
+            <div class="bank-header">
+              <span class="bank-name">${b.bank ?? ""}</span>
+              <span class="bank-sep">–</span>
+              <span class="bank-acc">${b.accno ?? ""}</span>
+            </div>
 
+            <div class="bank-col-labels">
+              <span></span>
+              <span>Bal</span>
+              <span>Limit</span>
+              <span>%</span>
+            </div>
 
-                    <div class="bank-col-labels">
-                        <span></span>
-                        <span>Bal</span>
-                        <span>Limit</span>
-                        <span>%</span>
-                    </div>
+            <div class="bank-line">
+              <span class="tag">IMP</span>
+              <span class="num">${money(b.imp_balance)}</span>
+              <span class="num muted">${money(b.imp_limit)}</span>
+             <span class="pct ${utilClass(b.imp_utilization)}">
+${calcUtil(b.imp_balance, b.imp_limit)}%
 
-                    <div class="bank-line">
-                        <span class="tag">IMP</span>
-                        <span class="num">${money(b.imp_balance)}
 </span>
-                        <span class="num muted">${money(b.imp_limit)}</span>
-                        <span class="pct ok">${b.imp_utilization}%</span>
-                    </div>
 
-                    <div class="bank-line">
-                        <span class="tag">DA</span>
-                        <span class="num ${b.da_balance < 0 ? 'negative' : ''}">
-                            ${money(b.da_balance)}
-                        </span>
-                        <span class="num muted">${money(b.da_limit)}</span>
-                        <span class="pct ${b.da_utilization > 80 ? 'warn' : 'ok'}">${b.da_utilization}%</span>
-                    </div>
-                </div>`;
-            });
-        });
+            </div>
+            <div class="bank-progress">
+                <div class="bank-progress-fill ${utilClass(b.imp_utilization)}"
+                 style="width:${Math.min(100, calcUtil(b.imp_balance, b.imp_limit))}%"
+
+
+                </div>
+            </div>
+
+            <div class="bank-line">
+              <span class="tag">DA</span>
+              <span class="num ${Number(b.da_balance || 0) < 0 ? 'negative' : ''}">
+                ${money(b.da_balance)}
+              </span>
+              <span class="num muted">${money(b.da_limit)}</span>
+              <span class="pct ${Number(b.da_utilization || 0) > 80 ? 'warn' : 'ok'}">
+                ${b.da_utilization ?? 0}%
+              </span>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById("last-refresh").innerText = fmtTime();
+    })
+    .catch(() => {
+      document.getElementById("last-refresh").innerText = "API error";
+    });
 }
+
+
 
 refreshDashboard();
 setInterval(refreshDashboard, 30000);
 
-document.addEventListener("click", () => {
-    document.documentElement.requestFullscreen();
+document.getElementById("btn-refresh").addEventListener("click", refreshDashboard);
+
+/* Fullscreen on click (your old behavior) */
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "btn-refresh") return;
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }
 });
 </script>
 

@@ -229,8 +229,8 @@
                     <li><a href="{% url 'home' %}">Dashboard</a></li>
                       {% elif request.user.groups.all.0.name == 'Managing Director' %}
                     <li><a href="{% url 'md_dashboard' %}">MD Dashboard</a></li>
-                    <li><a href="{% url 'bank_dashboard_web' %}">Bank Dashboard</a></li>
-                  <li><a href="{% url 'md_dashboard_web' %}">sp Dashboard</a></li>
+                  
+                  <li><a href="{% url 'md_dashboard_web' %}">All Dashboard</a></li>
 
                     
                
