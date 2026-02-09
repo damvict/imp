@@ -3835,6 +3835,40 @@ def confirm_handover_web(request, shipment_id):
             }
         )
 
+        ########################## Emil 
+        # ✅ SEND EMAIL TO CLEARING AGENT
+        if clearing_agent.email:
+            subject = f"Shipment Assigned for Clearing – {shipment.shipment_code}"
+
+            message = f"""
+Dear {clearing_agent.get_full_name() or clearing_agent.username},
+
+You have been assigned as the clearing agent for the following shipment.
+
+Shipment Code     : {shipment.shipment_code}
+Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
+Reference Number  : {shipment.reference_number or 'N/A'}
+Expected Arrival  : {shipment.ship_arival_date.strftime('%Y-%m-%d')}
+
+Please log in to the ISWM system to proceed with the clearing process.
+
+Regards,
+ISWM System
+"""
+
+            email = EmailMessage(
+                subject=subject,
+                body=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[clearing_agent.email],
+                cc=["damayanthi@anuragroup.lk"],  # optional
+            )
+            email.send(fail_silently=False)
+
+
+
+        ############################# end of Emial
+
         return JsonResponse(
             {"success": "Handover confirmed and phase recorded"},
             status=200
@@ -3908,6 +3942,10 @@ def ca_pending_assessment_web(request):
         clearing_agent=request.user,   # 🔐 security
     )
 
+    if shipment.c_ass_send:
+        messages.warning(request, "Assessment already submitted.")
+        return redirect("clearing_agent_dashboard")
+
     # ❌ File is mandatory (same as API)
     if not file:
         messages.error(request, "Assessment document is mandatory.")
@@ -3931,6 +3969,7 @@ def ca_pending_assessment_web(request):
         messages.error(request, "Phase master not found.")
         return redirect("ca_pending_assessment")
 
+    
     # ✅ Save assessment (same as API)
     shipment.assessment_document = file
     shipment.total_duty_value = total_duty
@@ -3940,6 +3979,40 @@ def ca_pending_assessment_web(request):
 
     messages.success(request, "Assessment uploaded successfully.")
     ###return redirect("ca_pending_assessment")
+
+    ###################### emial 
+    # ✅ SEND EMAIL TO BANK MANAGER (fixed email)
+    subject = f"Assessment Submitted – Shipment {shipment.shipment_code}"
+
+    message = f"""
+    Dear Sir / Madam,
+
+    The clearing agent has submitted the duty assessment for the following shipment.
+
+    Shipment Code     : {shipment.shipment_code}
+    Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
+    Reference Number  : {shipment.reference_number or 'N/A'}
+    Total Duty Value  : LKR {shipment.total_duty_value}
+    Assessment Date   : {shipment.assessment_uploaded_date.strftime('%Y-%m-%d')}
+
+    Please log in to the ISWM system to review and proceed with payment processing.
+
+    Regards,
+    ISWM System
+    """
+
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.BANK_MANAGER_EMAIL],
+        cc=[settings.CC_EMAIL],  # optional
+    )
+    email.send(fail_silently=False)
+
+
+
+    ############################
     return redirect("clearing_agent_dashboard")
 
 
@@ -4194,6 +4267,37 @@ def md_approve_web(request, shipment_id):
             order=phase_master.order,
         )
 
+        ##################### email
+                # ✅ SEND EMAIL TO BANK MANAGER
+        subject = f"MD Approval Granted – Shipment {shipment.shipment_code}"
+
+        message = f"""Dear Sir / Madam,
+
+The Managing Director has approved the duty payment for the following shipment.
+
+Shipment Code     : {shipment.shipment_code}
+Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
+Reference Number  : {shipment.reference_number or 'N/A'}
+Total Duty Value  : LKR {shipment.total_duty_value or 'N/A'}
+Approval Date     : {shipment.duty_paid_date.strftime('%Y-%m-%d')}
+
+You may now proceed with the payment process.
+
+Regards,
+ISWM System
+"""
+
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.BANK_MANAGER_EMAIL],
+            cc=[settings.CC_EMAIL],  # optional
+        )
+        email.send(fail_silently=False)
+
+        ############################
+
     return redirect("md-payment-approvals")
 
 
@@ -4224,7 +4328,7 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
         payref_document_ref = request.POST.get("payref_document_ref")
         file = request.FILES.get("payref_document")
 
-        # 🔴 Validation (same as API)
+        # 🔴 Validation
         if not payref_document_ref:
             messages.error(request, "Payment reference is required.")
             return redirect(request.path)
@@ -4236,13 +4340,14 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
 
         # 🔴 Delete old file if exists
         if (
-            file and shipment.payref_document
+            file
+            and shipment.payref_document
             and hasattr(shipment.payref_document, "path")
             and os.path.isfile(shipment.payref_document.path)
         ):
             os.remove(shipment.payref_document.path)
 
-        # 🔴 Assign values (same fields as API)
+        # 🔴 Assign values
         if file:
             shipment.payref_document = file
 
@@ -4250,8 +4355,8 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
         shipment.send_to_clearing_agent_payment = True
         shipment.send_to_clearing_agent_payment_date = timezone.now()
 
-        # 🔴 Atomic save + phase creation
         try:
+            # 🔒 DATABASE OPERATIONS ONLY
             with transaction.atomic():
                 shipment.save()
 
@@ -4269,6 +4374,35 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
                 except ShipmentPhaseMaster.DoesNotExist:
                     pass
 
+            # ✅ EMAIL (outside transaction)
+            if shipment.clearing_agent and shipment.clearing_agent.email:
+                subject = f"Payment Reference Issued – Shipment {shipment.shipment_code}"
+
+                message = f"""Dear {shipment.clearing_agent.get_full_name() or shipment.clearing_agent.username},
+
+The payment reference for the following shipment has been issued by the Bank Manager.
+
+Shipment Code        : {shipment.shipment_code}
+Supplier Invoice     : {shipment.supplier_invoice or 'N/A'}
+Reference Number     : {shipment.reference_number or 'N/A'}
+Payment Reference    : {shipment.payref_document_ref}
+Payment Date         : {shipment.send_to_clearing_agent_payment_date.strftime('%Y-%m-%d')}
+
+Please proceed with the clearing process using the above payment reference.
+
+Regards,
+ISWM System
+"""
+
+                email = EmailMessage(
+                    subject=subject,
+                    body=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[shipment.clearing_agent.email],
+                    cc=[settings.CC_EMAIL],  # optional
+                )
+                email.send(fail_silently=False)
+
             messages.success(request, "✅ Payment marked successfully.")
             return redirect("bank-manager-payment-references")
 
@@ -4281,6 +4415,7 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
         "bank_manager/payment_reference_detail.html",
         {"shipment": shipment}
     )
+
 
 
 @login_required
