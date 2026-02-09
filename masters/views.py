@@ -4106,11 +4106,50 @@ def bank_manager_send_md_approval(request, shipment_id):
         except ShipmentPhaseMaster.DoesNotExist:
             pass
 
-        # Redirect after success
+        # ---- SEND EMAIL TO MD ----
+        subject = f"MD Approval Required – Shipment {shipment.shipment_code}"
+
+        message = f"""
+Dear Sir,
+
+The Bank Manager has submitted payment details for MD approval.
+
+Shipment Code     : {shipment.shipment_code}
+Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
+Reference Number  : {shipment.reference_number or 'N/A'}
+Total Duty Value  : LKR {shipment.total_duty_value or 'N/A'}
+
+Payment Method    : {shipment.get_payment_type_display()}
+Duty Paid Bank    : {shipment.duty_paid_bank}
+
+Notes:
+{shipment.pay_note or 'No notes provided'}
+
+Submitted by:
+{request.user.get_full_name() or request.user.username}
+
+Please review and proceed with approval.
+
+Regards,
+ISWM System
+"""
+
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [settings.MD_EMAIL],
+                cc=["damayanthi@anuragroup.lk"],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print("MD EMAIL ERROR:", e)
+
         return redirect("bank_manager_view")
 
-    # Safety fallback
     return redirect("bank_manager_payment_details", shipment_id=shipment.id)
+
 
 
 
