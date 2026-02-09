@@ -4399,7 +4399,7 @@ ISWM System
                     body=message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[shipment.clearing_agent.email],
-                   cc=["damayanthi@anuragroup.lk"],  # optional
+                   cc=["damayanthi@anuragroup.lk","chathura@anuragroup.lk"],  # optional
                 )
                 email.send(fail_silently=False)
 
