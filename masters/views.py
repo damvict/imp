@@ -4006,7 +4006,7 @@ def ca_pending_assessment_web(request):
         body=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[settings.BANK_MANAGER_EMAIL],
-        cc=[settings.CC_EMAIL],  # optional
+        cc=["damayanthi@anuragroup.lk"],  # optional
     )
     email.send(fail_silently=False)
 
@@ -4292,7 +4292,7 @@ ISWM System
             body=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[settings.BANK_MANAGER_EMAIL],
-            cc=[settings.CC_EMAIL],  # optional
+            cc=["damayanthi@anuragroup.lk"],  # optional
         )
         email.send(fail_silently=False)
 
@@ -4399,7 +4399,7 @@ ISWM System
                     body=message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[shipment.clearing_agent.email],
-                    cc=[settings.CC_EMAIL],  # optional
+                   cc=["damayanthi@anuragroup.lk"],  # optional
                 )
                 email.send(fail_silently=False)
 
