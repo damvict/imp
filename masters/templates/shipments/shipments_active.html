@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Active Shipments{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">Active Shipments</h2>
+
+<div class="shipment-grid">
+  {% for s in active_shipments %}
+    <div class="shipment-card">
+      <div class="shipment-code">{{ s.shipment_code }}</div>
+      <div class="meta">{{ s.supplier.supplier_name }}</div>
+
+      <span class="badge badge-active">Active</span>
+
+      <div class="meta mt-2">BL: {{ s.bl }}</div>
+      <div class="meta">Amount: {{ s.amount }}</div>
+      <div class="meta">Order Date: {{ s.order_date }}</div>
+
+      <a href="{% url 'shipment-timeline' s.shipment_code %}"
+         class="btn btn-sm btn-primary mt-2">
+        View Details
+      </a>
+    </div>
+  {% empty %}
+    <p>No active shipments.</p>
+  {% endfor %}
+</div>
+{% endblock %}

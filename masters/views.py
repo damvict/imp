@@ -1401,8 +1401,10 @@ def md_dashboard(request):
     ).count()
 
     pending_grn = Shipment.objects.filter(
-        arrival_at_warehouse=True,
-        grn_complete_at_warehouse=False
+        arrival_at_warehouse=True
+    ).filter(
+        Q(grn_complete_at_warehouse=False) |
+        Q(grn_complete_at_warehouse__isnull=True)
     ).count()
 
     total_grn_value_month = (
@@ -3717,11 +3719,6 @@ def clearing_agent_dashboard(request):
 
 
 
-
-
-
-
-
 @login_required
 def bank_controller_shipments_web(request):
     # 🔐 Permission check
@@ -3758,8 +3755,6 @@ def clearing_agent_users_web(request):
     ]
 
     return JsonResponse(data, safe=False)
-
-
 
 
 
@@ -5086,7 +5081,84 @@ def shipments_web(request):
         }
     )
 
+############ active shipments #########
+from django.shortcuts import render
+from .models import Shipment
 
+def shipments_active(request):
+    active_shipments = (
+        Shipment.objects
+        .select_related("supplier")
+        .exclude(ship_status=13)
+        .order_by("-id")
+    )
+
+    return render(
+        request,
+        "shipments/shipments_active.html",
+        {
+            "active_shipments": active_shipments,
+        }
+    )
+
+
+########### All shipments
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+
+def shipments_list(request):
+    status = request.GET.get("status", "All")
+    q = request.GET.get("q", "").strip()
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    page_number = request.GET.get("page", 1)
+
+    statuses = ["All", "Active", "Completed"]
+
+    queryset = (
+        Shipment.objects
+        .select_related("supplier")
+        .order_by("-id")
+    )
+
+    # 🔹 STATUS FILTER
+    if status == "Active":
+        queryset = queryset.exclude(ship_status=13)
+    elif status == "Completed":
+        queryset = queryset.filter(ship_status=13)
+    # else: All → no filter
+
+    # 🔹 SEARCH
+    if q:
+        queryset = queryset.filter(
+            Q(bl__icontains=q) |
+            Q(supplier__supplier_name__icontains=q)
+        )
+
+    # 🔹 DATE FILTERS
+    if start_date:
+        queryset = queryset.filter(order_date__gte=start_date)
+
+    if end_date:
+        queryset = queryset.filter(order_date__lte=end_date)
+
+    paginator = Paginator(queryset, 12)
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "shipments/shipments_list.html",
+        {
+            "shipments": page_obj,
+            "page_obj": page_obj,
+            "statuses": statuses,
+            "status": status,
+            "q": q,
+            "start_date": start_date,
+            "end_date": end_date,
+        }
+    )
 
 
     #################### bank settlemenet ###############
@@ -5261,6 +5333,70 @@ def outstanding_report_web(request):
         "bc/outstanding_report_web.html",
         context
     )
+
+  ######################## payment report
+
+from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_date
+from django.utils import timezone
+from datetime import datetime, time
+
+@login_required
+def payment_report_web(request):
+    results = []
+    from_date = ""
+    to_date = ""
+
+    if request.method == "POST":
+        from_date = request.POST.get("from_date")
+        to_date = request.POST.get("to_date")
+
+        from_date_parsed = parse_date(from_date)
+        to_date_parsed = parse_date(to_date)
+
+        shipments = Shipment.objects.select_related("supplier").filter(
+            duty_paid=True,
+            send_to_clearing_agent_payment=True,
+        )
+
+        # ✅ Correct datetime range handling
+        if from_date_parsed and to_date_parsed:
+            start_dt = timezone.make_aware(
+                datetime.combine(from_date_parsed, time.min)
+            )
+            end_dt = timezone.make_aware(
+                datetime.combine(to_date_parsed, time.max)
+            )
+
+            shipments = shipments.filter(
+                duty_paid_date__range=(start_dt, end_dt)
+            )
+
+        for ship in shipments:
+            results.append({
+                "shipment_code": ship.shipment_code,
+                "supplier": ship.supplier.supplier_name  if ship.supplier else "",
+                "duty_paid_bank": ship.duty_paid_bank or "",
+                "total_duty_value": ship.total_duty_value or 0,
+                "duty_paid_date": ship.duty_paid_date,
+            })
+
+    context = {
+        "results": results,
+        "from_date": from_date,
+        "to_date": to_date,
+        "total_duty_value": sum(item["total_duty_value"] for item in results),
+    }
+
+    return render(
+        request,
+        "bc/payment_report_web.html",
+        context
+    )
+
+
+
+  ##############  
 
 from django.db.models import Sum, F, DecimalField
 from django.db.models.functions import Coalesce

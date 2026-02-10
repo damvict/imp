@@ -67,6 +67,7 @@ from .views import outstanding_report_email
 from .views import verify_physical_stock_web
 from .views import md_dashboard_data_api
 from . import web_views
+from .views import payment_report_web
 
 
 urlpatterns = [
@@ -524,6 +525,8 @@ path(
     views.shipments_web,
     name="shipments_web"
 ),
+path("shipments/active/", views.shipments_active, name="shipments_active"),
+path("shipments-web/", views.shipments_list, name="shipments_list"),
 
 
 path(
@@ -559,6 +562,12 @@ path(
     "bank-documents/reports/outstanding/",
     views.outstanding_report_web,
     name="outstanding_report_web",
+),
+
+path(
+    "bank-documents/reports/payment/",
+    views.payment_report_web,
+    name="payment_report_web",
 ),
 
  path("bank-dashboard/", views.bank_dashboard_web, name="bank_dashboard_web"),

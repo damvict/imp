@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Payment Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h3 class="mb-3">Shipment Payment Report</h3>
+
+  <!-- 🔍 Filter Form -->
+  <form method="post" class="card card-body mb-4">
+    {% csrf_token %}
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">From Date</label>
+        <input
+          type="date"
+          name="from_date"
+          value="{{ from_date }}"
+          class="form-control"
+          required
+        >
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">To Date</label>
+        <input
+          type="date"
+          name="to_date"
+          value="{{ to_date }}"
+          class="form-control"
+          required
+        >
+      </div>
+
+      <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">
+          Generate Report
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- 📊 Report Table -->
+  {% if results %}
+  <div class="card">
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Shipment Code</th>
+              <th>Supplier</th>
+              <th>Duty Paid Bank</th>
+              <th class="text-end">Total Duty Value (LKR)</th>
+              <th>Duty Paid Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in results %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ row.shipment_code }}</td>
+              <td>{{ row.supplier }}</td>
+              <td>{{ row.duty_paid_bank }}</td>
+              <td class="text-end">
+                {{ row.total_duty_value|floatformat:2|intcomma }}
+              </td>
+              <td>{{ row.duty_paid_date|date:"Y-m-d" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+          <!-- 🔢 Totals -->
+          <tfoot class="table-light">
+            <tr>
+              <th colspan="4" class="text-end">Total</th>
+              <th class="text-end">
+                {{ total_duty_value|floatformat:2|intcomma }}
+              </th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  {% else %}
+    <div class="alert alert-info">
+      No records found for the selected date range.
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

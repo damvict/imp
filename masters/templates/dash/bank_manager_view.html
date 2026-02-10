@@ -76,7 +76,7 @@ body { background:#F9FAFB; }
   <div class="shipment-card">
 
     <div class="card-header">
-      Shipment : {{ item.shipment_code }}
+      Shipment : {{ item.shipment_code }} - {{ item.supplier.supplier_name }}
     </div>
 
     <div class="card-text">Bank Doc Type: {{ item.bank_doc_type|default:"N/A" }}</div>

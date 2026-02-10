@@ -137,7 +137,7 @@ def update_shipment_stage(data, user):
 from django.db.models import OuterRef, Subquery, IntegerField, Value, Case, When, F
 from django.utils import timezone
 
-TOTAL_PHASES = 7  # adjust if needed
+TOTAL_PHASES = 12  # adjust if needed
 
 def get_sales_dashboard_data():
     today = timezone.now().date()
@@ -202,7 +202,7 @@ def get_sales_dashboard_data():
         ).count(),
 
         "grn": Shipment.objects.filter(
-            grn_upload_at_warehouse=True,
+            arrival_at_warehouse=True,
             grn_complete_at_warehouse=False
         ).count(),
 
