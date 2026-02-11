@@ -149,7 +149,7 @@ def get_sales_dashboard_data():
     # 🔹 Subquery: latest phase ORDER per shipment
     latest_phase_order = ShipmentPhase.objects.filter(
         shipment=OuterRef("pk")
-    ).order_by("-phase_code").values("-phase_code")[:1]
+    ).order_by("-order").values("order")[:1]
 
     # 🔹 Subquery: latest phase NAME per shipment
     latest_phase_name = ShipmentPhase.objects.filter(
@@ -168,17 +168,17 @@ def get_sales_dashboard_data():
             current_phase=Subquery(latest_phase_name),
         )
         .annotate(
-           progress=Case(
-        When(phase_order__isnull=True, then=Value(0)),
+            progress=Case(
+                When(phase_order__isnull=True, then=Value(0)),
 
-        # ONLY final phase = completed
-        When(phase_order=TOTAL_PHASES, then=Value(100)),
+                # ONLY final phase = completed
+                When(phase_order=TOTAL_PHASES, then=Value(100)),
 
-        # all other phases scale naturally
-        default=(F("phase_order") * 100.0 / TOTAL_PHASES),
+                # all other phases scale naturally
+                default=(F("phase_order") * 100.0 / TOTAL_PHASES),
 
-        output_field=IntegerField(),
-    )
+                output_field=IntegerField(),
+            )
         )
         .values(
             "shipment_code",
@@ -229,6 +229,7 @@ def get_sales_dashboard_data():
     }
 
     return context
+
 
 
 
