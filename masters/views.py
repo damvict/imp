@@ -5638,7 +5638,7 @@ def md_dashboard_web(request):
     sales_context = get_sales_dashboard_data()
     active_shipments = sales_context["active_shipments"]
 
-    print("DEBUG SHIPMENTS:", list(active_shipments))  # 👈 ADD HERE
+   
 
     # ================= MERGE =================
     context = {
