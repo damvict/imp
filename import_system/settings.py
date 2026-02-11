@@ -196,6 +196,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "damayanthi@anuragroup.lk"
 EMAIL_HOST_PASSWORD = "gpsh roor khaw hiyl "
 DEFAULT_FROM_EMAIL = "ISWM damayanthi@anuragroup.lk"
-MD_EMAIL = "damayanthi@anuragroup.lk"
+MD_EMAIL = "lahiru@anura-group.com"
 BANK_MANAGER_EMAIL = "ajith@anura-Group.com"
 CC_EMAIL="damayanthi@anuragroup.lk"
