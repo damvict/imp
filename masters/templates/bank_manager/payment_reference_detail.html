@@ -168,6 +168,11 @@ form {
       </div>
     </div>
 
+        <div class="info-row">
+      <span class="label">Clearing Agent</span>
+      <span class="value">{{ shipment.clearing_agent.username|default:"N/A" }}</span>
+    </div>
+
     <div class="info-row">
       <span class="label">Vessel</span>
       <span class="value">{{ shipment.vessel|default:"N/A" }}</span>
@@ -175,7 +180,7 @@ form {
 
     <div class="info-row">
       <span class="label">Supplier</span>
-      <span class="value">{{ shipment.supplier_name|default:"N/A" }}</span>
+      <span class="value">{{ shipment.supplier.supplier_name|default:"N/A" }}</span>
     </div>
 
     <div class="info-row">
