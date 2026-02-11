@@ -39,6 +39,12 @@ body{
     radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
     radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
+
+  /* ✅ responsive full-height layout */
+  height: 100vh;
+  overflow: hidden;           /* page won't scroll; panels will */
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===== TOP BAR ===== */
@@ -97,9 +103,27 @@ body{
 
 /* ===== MAIN GRID ===== */
 .page-grid{
+  flex: 1;                    /* ✅ take remaining height under topbar */
   display:grid;
   grid-template-columns: 3fr 1.2fr;
   gap: 18px;
+  min-height: 0;              /* ✅ important for inner scroll */
+}
+
+/* left column must stretch */
+.left-column{
+  display:flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+/* make the Active Shipments section grow */
+.left-column .section:last-child{
+  flex: 1;
+  min-height: 0;
+  display:flex;
+  flex-direction: column;
 }
 
 /* ===== SECTIONS ===== */
@@ -140,32 +164,13 @@ body{
   font-weight:800;
 }
 
-/* Logistics KPI colors (original recommendation) */
-
-.kpi-blue {
-  background: linear-gradient(135deg, #2563EB, #1E40AF);
-}
-
-.kpi-green {
-  background: linear-gradient(135deg, #16A34A, #14532D);
-}
-
-.kpi-orange {
-  background: linear-gradient(135deg, #F59E0B, #B45309);
-}
-
-.kpi-purple {
-  background: linear-gradient(135deg, #7C3AED, #5B21B6);
-}
-
-.kpi-red {
-  background: linear-gradient(135deg, #DC2626, #991B1B);
-}
-
-.kpi-teal {
-  background: linear-gradient(135deg, #2dbae4, #045e80);
-}
-
+/* Logistics KPI colors */
+.kpi-blue { background: linear-gradient(135deg, #2563EB, #1E40AF); }
+.kpi-green { background: linear-gradient(135deg, #16A34A, #14532D); }
+.kpi-orange { background: linear-gradient(135deg, #F59E0B, #B45309); }
+.kpi-purple { background: linear-gradient(135deg, #7C3AED, #5B21B6); }
+.kpi-red { background: linear-gradient(135deg, #DC2626, #991B1B); }
+.kpi-teal { background: linear-gradient(135deg, #2dbae4, #045e80); }
 
 /* ===== TABLE ===== */
 .table-wrapper{
@@ -177,8 +182,10 @@ body{
   overflow:hidden;
 }
 
+/* ✅ auto-fill height + internal scroll (no fixed max-height) */
 .shipment-table-wrapper{
-  max-height: 460px;
+  flex: 1;
+  min-height: 0;
   overflow:auto;
 }
 
@@ -224,13 +231,16 @@ tbody tr:hover{
   display:flex;
   flex-direction:column;
   gap: 12px;
+  min-height: 0;
 }
+
 .bank-list{
+  flex: 1;             /* ✅ fill right panel height */
   display:flex;
   flex-direction:column;
   gap: 12px;
-  max-height: 690px;
-  overflow:auto;
+  min-height: 0;
+  overflow:auto;       /* ✅ internal scroll */
 }
 
 .bank-card{
@@ -301,14 +311,13 @@ tbody tr:hover{
 .negative{ color: var(--red); font-weight:900; }
 
 @media (max-width:1100px){
-  .page-grid{ grid-template-columns: 1fr; }
+  .page-grid{ grid-template-columns: 1fr; min-height:0; }
   .shipment-overview{ grid-template-columns: repeat(2,1fr); }
 }
 @media (max-width:560px){
   body{ padding:12px; }
   .shipment-overview{ grid-template-columns: 1fr; }
 }
-
 
 /* ===== BANK PROGRESS BAR ===== */
 .bank-progress{
@@ -318,23 +327,18 @@ tbody tr:hover{
   overflow: hidden;
   margin: 6px 0 10px;
 }
-
 .bank-progress-fill{
   height: 100%;
 }
-
 .bank-progress-fill.ok{
   background: linear-gradient(90deg,#22c55e,#4ade80);
 }
-
 .bank-progress-fill.warn{
   background: linear-gradient(90deg,#f59e0b,#fbbf24);
 }
-
 .bank-progress-fill.danger{
   background: linear-gradient(90deg,#ef4444,#f87171);
 }
-
 </style>
 </head>
 
@@ -358,7 +362,6 @@ tbody tr:hover{
 
     <div class="section">
       <h2>Shipment Overview</h2>
-     
 
       <div class="shipment-overview">
         <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
@@ -406,14 +409,12 @@ const utilClass = (p) => {
   return "ok";                   // healthy available
 };
 
-
 const calcUtil = (bal, limit) => {
   bal = Number(bal || 0);
   limit = Number(limit || 0);
   if (limit <= 0) return 0;
   return Math.round((bal / limit) * 1000) / 10; // 1 decimal
 };
-
 </script>
 
 <script>
@@ -442,37 +443,33 @@ function refreshDashboard() {
       document.getElementById("kpi-completed").innerText = data.kpis?.completed ?? 0;
 
       // Shipments table (keep your original rendering fields)
-// Shipments table
-const tbody = document.getElementById("shipment-body");
-tbody.innerHTML = "";
+      const tbody = document.getElementById("shipment-body");
+      tbody.innerHTML = "";
 
-(data.shipments || []).forEach(s => {
+      (data.shipments || []).forEach(s => {
 
-  // ✅ USE BACKEND VALUE ONLY
-  const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
+        // ✅ USE BACKEND VALUE ONLY
+        const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
 
-
-
-  tbody.innerHTML += `
-    <tr>
-      <td>${s.shipment_code ?? ""}</td>
-      <td>${s.supplier ?? ""}</td>
-      <td>${s.arrival ?? ""}</td>
-      <td>${s.phase ?? ""}</td>
-      <td>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <div class="progress-bar" style="flex:1;">
-            <div class="progress-fill" style="width:${p}%"></div>
-          </div>
-          <span style="min-width:40px; font-weight:700;">
-            ${p}%
-          </span>
-        </div>
-      </td>
-    </tr>
-  `;
-});
-
+        tbody.innerHTML += `
+          <tr>
+            <td>${s.shipment_code ?? ""}</td>
+            <td>${s.supplier ?? ""}</td>
+            <td>${s.arrival ?? ""}</td>
+            <td>${s.phase ?? ""}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="progress-bar" style="flex:1;">
+                  <div class="progress-fill" style="width:${p}%"></div>
+                </div>
+                <span style="min-width:40px; font-weight:700;">
+                  ${p}%
+                </span>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
 
       // Banks (same output as your original code)
       const bankList = document.getElementById("bank-list");
@@ -482,7 +479,6 @@ tbody.innerHTML = "";
           <div class="bank-card ${Number(b.da_balance || 0) < 0 ? 'danger' : ''}">
             <div class="bank-header">
               <span class="bank-name">${b.bank ?? ""}</span>
-            
             </div>
 
             <div class="bank-col-labels">
@@ -493,39 +489,36 @@ tbody.innerHTML = "";
             </div>
 
             <div class="bank-line">
-  <span class="tag">IMP</span>
-  <span class="num">${money(b.imp_balance)}</span>
-  <span class="num muted">${money(b.imp_limit)}</span>
-  <span class="pct ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}">
-    ${calcUtil(b.imp_balance, b.imp_limit)}%
-  </span>
-</div>
+              <span class="tag">IMP</span>
+              <span class="num">${money(b.imp_balance)}</span>
+              <span class="num muted">${money(b.imp_limit)}</span>
+              <span class="pct ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}">
+                ${calcUtil(b.imp_balance, b.imp_limit)}%
+              </span>
+            </div>
 
-<div class="bank-progress">
-  <div class="bank-progress-fill ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}"
-       style="width:${Math.min(100, calcUtil(b.imp_balance, b.imp_limit))}%">
-  </div>
-</div>
-
+            <div class="bank-progress">
+              <div class="bank-progress-fill ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}"
+                   style="width:${Math.min(100, calcUtil(b.imp_balance, b.imp_limit))}%">
+              </div>
+            </div>
 
             <div class="bank-line">
-  <span class="tag">DA</span>
-  <span class="num ${Number(b.da_balance || 0) < 0 ? 'negative' : ''}">
-    ${money(b.da_balance)}
-  </span>
-  <span class="num muted">${money(b.da_limit)}</span>
-  <span class="pct ${utilClass(calcUtil(b.da_balance, b.da_limit))}">
-    ${calcUtil(b.da_balance, b.da_limit)}%
-  </span>
-</div>
+              <span class="tag">DA</span>
+              <span class="num ${Number(b.da_balance || 0) < 0 ? 'negative' : ''}">
+                ${money(b.da_balance)}
+              </span>
+              <span class="num muted">${money(b.da_limit)}</span>
+              <span class="pct ${utilClass(calcUtil(b.da_balance, b.da_limit))}">
+                ${calcUtil(b.da_balance, b.da_limit)}%
+              </span>
+            </div>
 
-<div class="bank-progress">
-  <div class="bank-progress-fill ${utilClass(calcUtil(b.da_balance, b.da_limit))}"
-       style="width:${Math.min(100, calcUtil(b.da_balance, b.da_limit))}%">
-  </div>
-</div>
-
-
+            <div class="bank-progress">
+              <div class="bank-progress-fill ${utilClass(calcUtil(b.da_balance, b.da_limit))}"
+                   style="width:${Math.min(100, calcUtil(b.da_balance, b.da_limit))}%">
+              </div>
+            </div>
 
           </div>
         `;
@@ -537,8 +530,6 @@ tbody.innerHTML = "";
       document.getElementById("last-refresh").innerText = "API error";
     });
 }
-
-
 
 refreshDashboard();
 setInterval(refreshDashboard, 30000);
