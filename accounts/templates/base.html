@@ -371,7 +371,9 @@
                 <img src="{% static 'assets/images/p.png' %}" alt="">{{ user.username }}
               </a>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="#">Profile</a>
+                <a class="dropdown-item" href="{% url 'change_password' %}">
+  <i class="fa fa-lock"></i> Change Password</a>
+
                 <a class="dropdown-item" href="{% url 'logout' %}"><i class="fa fa-sign-out"></i> Log Out</a>
               </div>
             </li>

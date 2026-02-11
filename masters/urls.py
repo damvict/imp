@@ -2,6 +2,8 @@ from django.urls import path
 #from .views import MyTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from django.contrib.auth import views as auth_views
+
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
@@ -571,15 +573,37 @@ path(
 ),
 
  path("bank-dashboard/", views.bank_dashboard_web, name="bank_dashboard_web"),
-
  path("bank-dashboard/data/", views.bank_dashboard_data, name="bank_dashboard_data"),
-
-
 path('clearing-agent/history/', views.ca_history, name='ca_history'),
 path("md-dashboard/", views.md_dashboard_web, name="md_dashboard_web"),
-
 # urls.py
 path("api/md-dashboard/", md_dashboard_data_api, name="md_dashboard_data_api"),
+
+
+
+
+
+    path(
+        'change-password/',
+        auth_views.PasswordChangeView.as_view(
+            template_name='accounts/change_password.html'
+        ),
+        name='change_password'
+    ),
+    path(
+        'change-password/done/',
+        auth_views.PasswordChangeDoneView.as_view(
+            template_name='accounts/change_password_done.html'
+        ),
+        name='password_change_done'
+    ),
+
+
+
+
+
+
+
 
 
 ]       
