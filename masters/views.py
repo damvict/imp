@@ -4188,7 +4188,8 @@ Reference Number  : {shipment.reference_number or 'N/A'}
 Total Duty Value  : LKR {shipment.total_duty_value or 'N/A'}
 
 Payment Method    : {shipment.get_payment_type_display()}
-Duty Paid Bank    : {shipment.duty_paid_bank}
+Duty Paid Bank    : {shipment.duty_paid_bank or 'N/A'}
+
 
 Notes:
 {shipment.pay_note or 'No notes provided'}
@@ -4202,15 +4203,17 @@ Regards,
 ISWM System
 """
 
+
+
         try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [settings.MD_EMAIL],
-                cc=["damayanthi@anuragroup.lk"],
-                fail_silently=False,
+            email = EmailMessage(
+                subject=subject,
+                body=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.MD_EMAIL],
+                cc=["damayanthi@anuragroup.lk"],  # optional
             )
+            email.send(fail_silently=False)   # ✅ THIS WAS MISSING
         except Exception as e:
             print("MD EMAIL ERROR:", e)
 
