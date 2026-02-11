@@ -5636,6 +5636,9 @@ def md_dashboard_web(request):
 
     # ================= SALES DATA (reuse existing service) =================
     sales_context = get_sales_dashboard_data()
+    active_shipments = sales_context["active_shipments"]
+
+    print("DEBUG SHIPMENTS:", list(active_shipments))  # 👈 ADD HERE
 
     # ================= MERGE =================
     context = {
@@ -5654,11 +5657,12 @@ from django.db.models import OuterRef, Subquery, IntegerField, Value, Case, When
 from django.utils import timezone
 from django.db.models import DateField
 
-TOTAL_PHASES = 7  # adjust if needed
+
 
 @login_required
 def md_dashboard_data_api(request):
 
+    TOTAL_PHASES = 13  # adjust if needed
     # ================= PHASE SUBQUERIES =================
     latest_phase_order = ShipmentPhase.objects.filter(
         shipment=OuterRef("pk")

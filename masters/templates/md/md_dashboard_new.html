@@ -358,6 +358,8 @@ tbody tr:hover{
 
     <div class="section">
       <h2>Shipment Overview</h2>
+      print("DEBUG SHIPMENTS:", list(active_shipments))
+
       <div class="shipment-overview">
         <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
         <div class="kpi-card kpi-teal"><span>NEW</span><h3 id="kpi-new">0</h3></div>
@@ -440,24 +442,37 @@ function refreshDashboard() {
       document.getElementById("kpi-completed").innerText = data.kpis?.completed ?? 0;
 
       // Shipments table (keep your original rendering fields)
-      const tbody = document.getElementById("shipment-body");
-      tbody.innerHTML = "";
-      (data.shipments || []).forEach(s => {
-        const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
-        tbody.innerHTML += `
-          <tr>
-            <td>${s.shipment_code ?? ""}</td>
-            <td>${s.supplier ?? ""}</td>
-            <td>${s.arrival ?? ""}</td>
-            <td>${s.phase ?? ""}</td>
-            <td>
-              <div class="progress-bar">
-                <div class="progress-fill" style="width:${p}%"></div>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
+// Shipments table
+const tbody = document.getElementById("shipment-body");
+tbody.innerHTML = "";
+
+(data.shipments || []).forEach(s => {
+
+  // ✅ USE BACKEND VALUE ONLY
+  const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
+
+
+
+  tbody.innerHTML += `
+    <tr>
+      <td>${s.shipment_code ?? ""}</td>
+      <td>${s.supplier ?? ""}</td>
+      <td>${s.arrival ?? ""}</td>
+      <td>${s.phase ?? ""}</td>
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="progress-bar" style="flex:1;">
+            <div class="progress-fill" style="width:${p}%"></div>
+          </div>
+          <span style="min-width:40px; font-weight:700;">
+            ${p}%
+          </span>
+        </div>
+      </td>
+    </tr>
+  `;
+});
+
 
       // Banks (same output as your original code)
       const bankList = document.getElementById("bank-list");

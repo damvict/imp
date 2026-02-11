@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from .models import Shipment, ShipmentPhase, ShipmentPhaseMaster, BankDocument
 from django.utils.dateparse import parse_date
 from django.db import transaction
-
+from django.db.models.functions import Round
 
 from datetime import date
 
@@ -135,48 +135,46 @@ def update_shipment_stage(data, user):
 ############################ sales dashboard services #############################
 
 from django.db.models import (
-    OuterRef, Subquery, IntegerField, Case, When, Value, F, Q
+    OuterRef, Subquery, IntegerField,
+    Value, Case, When, F, Q
 )
-from django.db.models.functions import Least
-from django.utils import timezone
-
-TOTAL_PHASES = 13  # FINAL phase = GRN Complete
+from django.db.models.functions import Round
 
 
 def get_sales_dashboard_data():
     today = timezone.now().date()
 
-    # 🔹 Subquery: latest phase ORDER per shipment
+    TOTAL_PHASES = 13
+
+    # 🔹 Subquery: latest phase order
     latest_phase_order = ShipmentPhase.objects.filter(
         shipment=OuterRef("pk")
     ).order_by("-order").values("order")[:1]
 
-    # 🔹 Subquery: latest phase NAME per shipment
+    # 🔹 Subquery: latest phase name
     latest_phase_name = ShipmentPhase.objects.filter(
         shipment=OuterRef("pk")
     ).order_by("-order").values("phase_name")[:1]
 
+    # 🔹 Annotate first, then filter by phase_order
+    shipments_qs = Shipment.objects.annotate(
+        phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
+        current_phase=Subquery(latest_phase_name),
+    )
+
+    # ✅ Active = phase_order != 13
     active_shipments = (
-        Shipment.objects
-        .filter(
-            Q(grn_complete_at_warehouse=False) |
-            Q(grn_complete_at_warehouse__isnull=True)
-        )
+        shipments_qs
+        .filter(Q(phase_order__lt=TOTAL_PHASES) | Q(phase_order__isnull=True))
         .select_related("supplier")
-        .annotate(
-            phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
-            current_phase=Subquery(latest_phase_name),
-        )
         .annotate(
             progress=Case(
                 When(phase_order__isnull=True, then=Value(0)),
-
-                # ONLY final phase = completed
-                When(phase_order=TOTAL_PHASES, then=Value(100)),
-
-                # all other phases scale naturally
-                default=(F("phase_order") * 100.0 / TOTAL_PHASES),
-
+                When(phase_order__gte=TOTAL_PHASES, then=Value(100)),
+                default=Round(
+                    F("phase_order") * 100.0 / Value(TOTAL_PHASES),
+                    0
+                ),
                 output_field=IntegerField(),
             )
         )
@@ -192,38 +190,7 @@ def get_sales_dashboard_data():
     )
 
     context = {
-        # ---------------- KPI CARDS ----------------
-        "total_active_shipments": Shipment.objects.filter(
-            Q(grn_complete_at_warehouse=False) |
-            Q(grn_complete_at_warehouse__isnull=True)
-        ).count(),
-
-        "new_shipment": Shipment.objects.filter(
-            ship_status=1
-        ).count(),
-
-        "goods_at_port": Shipment.objects.filter(
-            C_Process_Initiated=True,
-            C_Process_completed=False
-        ).count(),
-
-        "on_the_way_shipment": Shipment.objects.filter(
-            C_Process_completed=True,
-            arrival_at_warehouse=False
-        ).count(),
-
-        "grn": Shipment.objects.filter(
-            arrival_at_warehouse=True
-        ).filter(
-            Q(grn_complete_at_warehouse=False) |
-            Q(grn_complete_at_warehouse__isnull=True)
-        ).count(),
-
-        "completed_shipment": Shipment.objects.filter(
-            grn_complete_at_warehouse=True
-        ).count(),
-
-        # ---------------- ACTIVE TABLE ----------------
+        "total_active_shipments": active_shipments.count(),
         "active_shipments": active_shipments,
         "today": today,
     }
