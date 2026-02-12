@@ -127,7 +127,8 @@ def home(request):
          return redirect('warehouse_dashboard')  
     elif user.groups.filter(name="Md Dash").exists():
          return redirect('md_dashboard_web')   
-    
+    elif user.groups.filter(name="salesd").exists():
+         return redirect('sales_dashboard') 
     
     else:
  

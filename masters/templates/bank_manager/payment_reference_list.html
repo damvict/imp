@@ -2,6 +2,8 @@
 {% block title %}Upload Payment Reference{% endblock %}
 
 {% block content %}
+{% load humanize %}
+
 <style>
 .page-wrapper {
   background-color: #F9FAFB;
@@ -133,7 +135,7 @@
 
           <div class="info-row">
             <span>Duty Amount</span>
-            <span>Rs {{ s.total_duty_value|default:"0"|floatformat:2 }}</span>
+            <span>Rs {{ s.total_duty_value|default:"0"|floatformat:2|intcomma }}</span>
           </div>
 
           <div class="info-row">

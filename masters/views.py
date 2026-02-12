@@ -12,6 +12,7 @@ from .models import VehicleType
 from .forms import VehicleTypeForm  # Assuming you created this form
 
 from .models import StatusColor
+
 from .forms import StatusColorForm
 
 from .models import SalesDivision
@@ -2066,7 +2067,6 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 
-
 #####################
 from .services import get_sales_dashboard_data
 @login_required
@@ -2078,14 +2078,99 @@ def sales_dashboard(request):
 
 @login_required
 def sales_dashboard_api(request):
-    data = get_sales_dashboard_data()
+
+    TOTAL_PHASES = 13
+    today = timezone.now().date()
+
+    # ================= PHASE SUBQUERIES =================
+    latest_phase_order = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order").values("order")[:1]
+
+    latest_phase_name = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order").values("phase_name")[:1]
+
+    # ================= SHIPMENTS =================
+    shipments_qs = (
+        Shipment.objects
+        .filter(grn_complete_at_warehouse=False)
+        .select_related("supplier")
+        .annotate(
+            phase_order=Subquery(
+                latest_phase_order,
+                output_field=IntegerField()
+            ),
+            current_phase=Subquery(latest_phase_name),
+            arrival_date=Coalesce(
+                "ship_arival_date",
+                "expected_arrival_date",
+                output_field=DateField()
+            )
+        )
+        .annotate(
+            progress=Case(
+                When(phase_order__isnull=True, then=Value(0)),
+                default=(F("phase_order") * 100 / TOTAL_PHASES),
+                output_field=IntegerField(),
+            )
+        )
+        .order_by("arrival_date")
+    )
+
+    shipments = []
+
+    for s in shipments_qs:
+        shipments.append({
+            "shipment_code": s.shipment_code,
+
+            # ✅ Applied same formatting as MD dashboard
+            "arrival": (
+                s.arrival_date.strftime("%b %d, %Y")
+                if s.arrival_date
+                else "-"
+            ),
+
+            "current_phase": s.current_phase or "-",
+            "progress": min(s.progress or 0, 100),
+
+            # optional (if you want late highlighting)
+            "is_late": True if s.arrival_date and s.arrival_date < today else False,
+        })
+
+    # ================= KPIs =================
+    kpis = {
+        "total_active_shipments": Shipment.objects.filter(
+            grn_complete_at_warehouse=False
+        ).count(),
+
+        "new_shipment": Shipment.objects.filter(
+            ship_status=1
+        ).count(),
+
+        "goods_at_port": Shipment.objects.filter(
+            C_Process_Initiated=True,
+            C_Process_completed=False
+        ).count(),
+
+        "on_the_way_shipment": Shipment.objects.filter(
+            C_Process_completed=True,
+            arrival_at_warehouse=False
+        ).count(),
+
+        "grn": Shipment.objects.filter(
+            grn_upload_at_warehouse=True,
+            grn_complete_at_warehouse=False
+        ).count(),
+
+        "completed_shipment": Shipment.objects.filter(
+            grn_complete_at_warehouse=True
+        ).count(),
+    }
+
     return JsonResponse({
-        "total_active_shipments": data["total_active_shipments"],
-        "new_shipment": data["new_shipment"],
-        "goods_at_port": data["goods_at_port"],
-        "on_the_way_shipment": data["on_the_way_shipment"],
-        "grn": data["grn"],
-        "completed_shipment": data["completed_shipment"],
+        **kpis,
+        "shipments": shipments,
     })
 
 

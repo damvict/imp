@@ -1,259 +1,290 @@
-{% extends "base.html" %}
-{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Dashboard</title>
 
-{% block content %}
 <style>
-  body {
-    background: #f1f5f9;
-  }
+:root {
+  --bg0:#071c3d;
+  --bg1:#0a2b5e;
+  --card: rgba(255,255,255,0.08);
+  --card-border: rgba(255,255,255,0.15);
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --purple:#8b5cf6;
+  --shadow: 0 12px 30px rgba(0,0,0,.35);
+  --radius: 18px;
+}
 
-  .dashboard-container {
-    padding: 24px 32px;
-  }
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
 
-  .dashboard-title {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    color: #1e293b;
-  }
+body{
+  margin:0;
+  padding:18px 22px;
+  font-family: Inter,"Segoe UI",system-ui,sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
+    radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-  .last-updated {
-    font-size: 14px;
-    color: #64748b;
-    margin-bottom: 24px;
-  }
+/* ===== TOP BAR ===== */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+.title h1{
+  font-size:18px;
+  margin:0;
+  font-weight:800;
+  color:#fff;
+}
+.title small{
+  color: rgba(229,231,235,.75);
+  font-size:12px;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.pill{
+  background: rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:12px;
+}
+.btn{
+  cursor:pointer;
+  border:none;
+  background: linear-gradient(135deg, rgba(59,130,246,.95), rgba(34,197,94,.85));
+  color:#06162f;
+  padding:9px 12px;
+  border-radius:12px;
+  font-weight:900;
+  font-size:12px;
+}
 
-  /* ===== KPI CARDS ===== */
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 24px;
-    margin-bottom: 40px;
-  }
+/* ===== MAIN GRID (FULL WIDTH NOW) ===== */
+.page-grid{
+  flex: 1;
+  display:grid;
+  grid-template-columns: 1fr;   /* ✅ single column */
+  gap: 18px;
+  min-height: 0;
+}
 
-  @media (max-width: 1400px) {
-    .cards {
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    }
-  }
+/* ===== SECTIONS ===== */
+.section h2{
+  font-size:16px;
+  font-weight:800;
+  margin:0 0 10px;
+  color:#fff;
+}
 
-  .card {
-    border-radius: 18px;
-    padding: 26px;
-    color: #fff;
-    min-height: 140px;
-    box-shadow: 0 14px 35px rgba(0,0,0,.18);
-    transition: transform .2s ease;
-  }
+/* ===== KPI ===== */
+.shipment-overview{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
 
-  .card:hover {
-    transform: translateY(-6px);
-  }
+.kpi-card{
+  height: 96px;
+  padding: 18px;
+  border-radius: 16px;
+  color: #fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  box-shadow: var(--shadow);
+}
 
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-    opacity: .9;
-  }
+.kpi-card span{
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+.kpi-card h3{
+  margin:0;
+  font-size:30px;
+  font-weight:800;
+}
 
-  .card-value {
-    font-size: 48px;
-    font-weight: 800;
-    margin-top: 6px;
-  }
+.kpi-blue { background: linear-gradient(135deg, #2563EB, #1E40AF); }
+.kpi-green { background: linear-gradient(135deg, #16A34A, #14532D); }
+.kpi-orange { background: linear-gradient(135deg, #F59E0B, #B45309); }
+.kpi-purple { background: linear-gradient(135deg, #7C3AED, #5B21B6); }
+.kpi-red { background: linear-gradient(135deg, #DC2626, #991B1B); }
+.kpi-teal { background: linear-gradient(135deg, #2dbae4, #045e80); }
 
-  .blue   { background: linear-gradient(135deg,#2563eb,#60a5fa); }
-  .gray   { background: linear-gradient(135deg,#374151,#9ca3af); }
-  .orange { background: linear-gradient(135deg,#f97316,#fdba74); }
-  .yellow { background: linear-gradient(135deg,#eab308,#fde047); color:#1f2937; }
-  .green  { background: linear-gradient(135deg,#16a34a,#4ade80); }
-  .purple { background: linear-gradient(135deg,#7c3aed,#c4b5fd); }
+/* ===== TABLE ===== */
+.table-wrapper{
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  flex:1;
+  display:flex;
+  flex-direction: column;
+}
 
-  /* ===== TABLE ===== */
-  h3 {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: #334155;
-  }
+.shipment-table-wrapper{
+  flex:1;
+  overflow:auto;
+}
 
-  .shipment-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px;
-  }
+table{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead th{
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.08);
+  padding: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+tbody td{
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+tbody tr:hover{
+  background: rgba(255,255,255,0.05);
+}
 
-  .shipment-table thead th {
-    background: #f8fafc;
-    color: #334155;
-    font-weight: 700;
-    padding: 14px;
-  }
-
-  .shipment-table tbody tr {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 6px 16px rgba(0,0,0,.06);
-  }
-
-  .shipment-table td {
-    padding: 14px;
-    vertical-align: middle;
-  }
-
-  .shipment-link {
-    font-weight: 700;
-    color: #2563eb;
-    text-decoration: none;
-  }
-
-  .shipment-link:hover {
-    text-decoration: underline;
-  }
-
-  .late {
-    color: #dc2626;
-    font-weight: 700;
-  }
-
-  .status-pill {
-    background: #e0f2fe;
-    color: #0369a1;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-
-  /* ===== PROGRESS BAR (FIXED) ===== */
-  .progress-track {
-    width: 220px;
-    height: 14px;
-    background: #e5e7eb;     /* total lifecycle */
-    border-radius: 999px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg,#22c55e,#4ade80); /* completed */
-    border-radius: 999px;
-    transition: width .4s ease;
-  }
-
-  .empty {
-    text-align: center;
-    padding: 24px;
-    color: #94a3b8;
-  }
+.progress-bar{
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background: linear-gradient(90deg,#22c55e,#4ade80);
+}
 </style>
+</head>
 
-<div class="dashboard-container">
+<body>
 
-  <div class="dashboard-title">📊 Sales Dashboard</div>
-  <div class="last-updated" id="lastUpdated">
-    Last updated: {{ today|date:"d M Y" }}
+<div class="topbar">
+  <div class="title">
+    <h1>Sales Dashboard</h1>
+    <small>Shipment Overview • Active Shipments</small>
+  </div>
+  <div class="actions">
+    <div class="pill">Last refresh: <b id="last-refresh">—</b></div>
+    <button class="btn" id="btn-refresh">Refresh</button>
+  </div>
+</div>
+
+<div class="page-grid">
+
+  <div class="section">
+    <h2>Shipment Overview</h2>
+
+    <div class="shipment-overview">
+      <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
+      <div class="kpi-card kpi-teal"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+      <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
+      <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
+      <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
+      <div class="kpi-card kpi-green"><span>COMPLETED</span><h3 id="kpi-completed">0</h3></div>
+    </div>
   </div>
 
-  <!-- KPI CARDS -->
-  <div class="cards">
-
-    <div class="card gray">
-      <div class="card-title">Total Active Shipments</div>
-      <div class="card-value" id="total_active_shipments">{{ total_active_shipments }}</div>
+  <div class="section">
+    <h2>Active Shipments</h2>
+    <div class="table-wrapper shipment-table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Shipment</th>
+            <th>Supplier</th>
+            <th>Arrival</th>
+            <th>Phase</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody id="shipment-body"></tbody>
+      </table>
     </div>
-
-    <div class="card blue">
-      <div class="card-title">New Shipment</div>
-      <div class="card-value" id="new_shipment">{{ new_shipment }}</div>
-    </div>
-
-    <div class="card orange">
-      <div class="card-title">Goods at Port<br><small>(Clearance Initiated)</small></div>
-      <div class="card-value" id="goods_at_port">{{ goods_at_port }}</div>
-    </div>
-
-    <div class="card yellow">
-      <div class="card-title">On the Way Shipment<br><small>(Clearance Completed)</small></div>
-      <div class="card-value" id="on_the_way_shipment">{{ on_the_way_shipment }}</div>
-    </div>
-
-    <div class="card purple">
-      <div class="card-title">GRN</div>
-      <div class="card-value" id="grn">{{ grn }}</div>
-    </div>
-
-    <div class="card green">
-      <div class="card-title">Completed Shipment</div>
-      <div class="card-value" id="completed_shipment">{{ completed_shipment }}</div>
-    </div>
-
   </div>
-
-  <!-- ACTIVE SHIPMENTS -->
-  <h3>Active Shipments</h3>
-
-  <table class="shipment-table">
-    <thead>
-      <tr>
-        <th>Shipment</th>
-        <th>Expected Arrival</th>
-        <th>Status</th>
-        <th>Progress</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {% for s in active_shipments %}
-      <tr>
-        <td>
-          <a href="{% url 'shipment-timeline' s.shipment_code %}" class="shipment-link">
-            {{ s.shipment_code }}
-          </a>
-        </td>
-
-        <td class="{% if s.expected_arrival_date < today %}late{% endif %}">
-          {{ s.expected_arrival_date|date:"d M Y" }}
-        </td>
-
-        <td>
-          <span class="status-pill">{{ s.current_phase }}</span>
-        </td>
-
-        <td>
-          <div class="progress-track">
-            <div class="progress-fill" style="width: {{ s.progress }}%;"></div>
-          </div>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" class="empty">No active shipments</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
 
 </div>
 
 <script>
-  function refreshDashboard() {
-    fetch("{% url 'sales-dashboard-api' %}")
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("total_active_shipments").innerText = data.total_active_shipments;
-        document.getElementById("new_shipment").innerText = data.new_shipment;
-        document.getElementById("goods_at_port").innerText = data.goods_at_port;
-        document.getElementById("on_the_way_shipment").innerText = data.on_the_way_shipment;
-        document.getElementById("grn").innerText = data.grn;
-        document.getElementById("completed_shipment").innerText = data.completed_shipment;
-        document.getElementById("lastUpdated").innerText =
-          "Last updated: " + new Date().toLocaleTimeString();
-      });
-  }
+const fmtTime = () => {
+  const d = new Date();
+  return d.toLocaleTimeString();
+};
 
-  setInterval(refreshDashboard, 300000);
+function refreshDashboard() {
+  fetch("{% url 'md_dashboard_data_api' %}")
+    .then(res => res.json())
+    .then(data => {
+
+      document.getElementById("kpi-active").innerText = data.kpis?.total_active ?? 0;
+      document.getElementById("kpi-new").innerText = data.kpis?.new ?? 0;
+      document.getElementById("kpi-at-port").innerText = data.kpis?.at_port ?? 0;
+      document.getElementById("kpi-on-way").innerText = data.kpis?.on_the_way ?? 0;
+      document.getElementById("kpi-grn").innerText = data.kpis?.grn ?? 0;
+      document.getElementById("kpi-completed").innerText = data.kpis?.completed ?? 0;
+
+      const tbody = document.getElementById("shipment-body");
+      tbody.innerHTML = "";
+
+      (data.shipments || []).forEach(s => {
+        const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${s.shipment_code ?? ""}</td>
+            <td>${s.supplier ?? ""}</td>
+            <td>${s.arrival ?? ""}</td>
+            <td>${s.phase ?? ""}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="progress-bar" style="flex:1;">
+                  <div class="progress-fill" style="width:${p}%"></div>
+                </div>
+                <span style="min-width:40px; font-weight:700;">
+                  ${p}%
+                </span>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById("last-refresh").innerText = fmtTime();
+    });
+}
+
+refreshDashboard();
+setInterval(refreshDashboard, 30000);
+document.getElementById("btn-refresh").addEventListener("click", refreshDashboard);
 </script>
 
-{% endblock %}
+</body>
+</html>
