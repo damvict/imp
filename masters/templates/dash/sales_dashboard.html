@@ -35,8 +35,8 @@ body{
     radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
     radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;   /* ✅ instead of height */
+  overflow-y: auto; 
   display: flex;
   flex-direction: column;
 }
