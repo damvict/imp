@@ -35,8 +35,8 @@ body{
     radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
     radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
-  min-height: 100vh;   /* ✅ instead of height */
-  overflow-y: auto; 
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -85,7 +85,7 @@ body{
 .page-grid{
   flex: 1;
   display:grid;
-  grid-template-columns: 1fr;   /* ✅ single column */
+  grid-template-rows: auto 1fr;   /* ✅ single column */
   gap: 18px;
   min-height: 0;
 }
@@ -97,6 +97,13 @@ body{
   margin:0 0 10px;
   color:#fff;
 }
+
+.section:last-child{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 
 /* ===== KPI ===== */
 .shipment-overview{
@@ -144,11 +151,14 @@ body{
   flex:1;
   display:flex;
   flex-direction: column;
+  min-height: 0; 
 }
 
 .shipment-table-wrapper{
   flex:1;
-  overflow:auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  min-height:0;
 }
 
 table{
