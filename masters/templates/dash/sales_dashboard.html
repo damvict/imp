@@ -295,10 +295,37 @@ function refreshDashboard() {
     });
 }
 
-refreshDashboard();
-setInterval(refreshDashboard, 30000);
-document.getElementById("btn-refresh").addEventListener("click", refreshDashboard);
+// ===== AUTO FULLSCREEN =====
+function openFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.log("Fullscreen blocked:", err);
+    });
+  }
+}
+
+// Try fullscreen after user interaction fallback
+function enableAutoFullscreen() {
+  openFullscreen();
+  document.removeEventListener("click", enableAutoFullscreen);
+}
+
+// Try immediately on load
+window.addEventListener("load", () => {
+  refreshDashboard();
+  setInterval(refreshDashboard, 30000);
+
+  // Try direct fullscreen
+  openFullscreen();
+
+   document.getElementById("btn-refresh")
+    .addEventListener("click", refreshDashboard);
+
+  // Fallback: if browser blocks it, first click will trigger
+  document.addEventListener("click", enableAutoFullscreen);
+});
 </script>
+
 
 </body>
 </html>

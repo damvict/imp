@@ -4470,6 +4470,7 @@ Supplier Invoice     : {shipment.supplier_invoice or 'N/A'}
 Reference Number     : {shipment.reference_number or 'N/A'}
 Payment Reference    : {shipment.payref_document_ref}
 Payment Date         : {shipment.send_to_clearing_agent_payment_date.strftime('%Y-%m-%d')}
+Duty Value            : LKR {shipment.total_duty_value or 'N/A'}
 
 Please proceed with the clearing process using the above payment reference.
 
@@ -5467,6 +5468,7 @@ def payment_report_web(request):
                 "duty_paid_bank": ship.duty_paid_bank or "",
                 "total_duty_value": ship.total_duty_value or 0,
                 "duty_paid_date": ship.duty_paid_date,
+                "payref_document": ship.payref_document.url if ship.payref_document else "",
             })
 
     context = {

@@ -58,6 +58,7 @@
               <th>Duty Paid Bank</th>
               <th class="text-end">Total Duty Value (LKR)</th>
               <th>Duty Paid Date</th>
+              <th>PayRef Document</th>
             </tr>
           </thead>
           <tbody>
@@ -71,6 +72,16 @@
                 {{ row.total_duty_value|floatformat:2|intcomma }}
               </td>
               <td>{{ row.duty_paid_date|date:"Y-m-d" }}</td>
+              <td>
+                {% if row.payref_document %}
+                  <a href="{{ row.payref_document }}" target="_blank" class="btn btn-sm btn-success">
+                    View
+                  </a>
+                {% else %}
+                  <span class="text-muted">No File</span>
+                {% endif %}
+              </td>
+
             </tr>
             {% endfor %}
           </tbody>
@@ -78,7 +89,7 @@
           <!-- 🔢 Totals -->
           <tfoot class="table-light">
             <tr>
-              <th colspan="4" class="text-end">Total</th>
+              <th colspan="5" class="text-end">Total</th>
               <th class="text-end">
                 {{ total_duty_value|floatformat:2|intcomma }}
               </th>
