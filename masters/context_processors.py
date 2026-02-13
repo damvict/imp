@@ -15,3 +15,15 @@ def group_check(request):
     }
 
 
+def footer_role_access(request):
+    if request.user.is_authenticated:
+        return {
+            "show_shipments_footer": request.user.groups.filter(
+                name__in=[
+                    'Bank Controller',
+                    'Imports Department',
+                    'Managing Director'
+                ]
+            ).exists()
+        }
+    return {"show_shipments_footer": False}

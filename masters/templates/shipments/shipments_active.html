@@ -1,28 +1,181 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block title %}Active Shipments{% endblock %}
 
 {% block content %}
-<h2 class="mb-3">Active Shipments</h2>
+
+<style>
+.page-title {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 25px;
+}
+
+.shipment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.shipment-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: all 0.25s ease;
+    border-left: 5px solid #0d6efd;
+}
+
+.shipment-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.shipment-code {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* ===== Phase Badge Base ===== */
+.badge {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 500;
+    max-width: 60%;
+    line-height: 1.4;
+    white-space: normal;
+    text-align: right;
+}
+
+/* ===== Stage Colors ===== */
+/* ===== Stage Colors (Brighter Version) ===== */
+
+.badge-doc {
+    background: #bfdbfe;
+    color: #1d4ed8;
+}
+
+.badge-finance {
+    background: #ddd6fe;
+    color: #6d28d9;
+}
+
+.badge-clearance {
+    background: #fde68a;
+    color: #b45309;
+}
+
+.badge-complete {
+    background: #bbf7d0;
+    color: #166534;
+}
+
+
+.meta {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.meta strong {
+    color: #333;
+}
+
+.amount {
+    font-weight: 600;
+    font-size: 15px;
+    color: #111;
+}
+
+.view-btn {
+    width: 100%;
+    margin-top: 12px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.empty-box {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    color: #777;
+}
+</style>
+
+<h2 class="page-title">🚢 Active Shipments</h2>
 
 <div class="shipment-grid">
   {% for s in active_shipments %}
     <div class="shipment-card">
-      <div class="shipment-code">{{ s.shipment_code }}</div>
-      <div class="meta">{{ s.supplier.supplier_name }}</div>
+      
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="shipment-code">
+          {{ s.shipment_code }}
+        </div>
 
-      <span class="badge badge-active">Active</span>
+        <!-- Dynamic Phase Badge -->
+        {% if s.current_phase_order <= 3 %}
+            <span class="badge badge-doc">
+        {% elif s.current_phase_order <= 6 %}
+            <span class="badge badge-finance">
+        {% elif s.current_phase_order <= 11 %}
+            <span class="badge badge-clearance">
+        {% else %}
+            <span class="badge badge-complete">
+        {% endif %}
+            {{ s.current_phase_name|default:"Not Started" }}
+        </span>
+      </div>
 
-      <div class="meta mt-2">BL: {{ s.bl }}</div>
-      <div class="meta">Amount: {{ s.amount }}</div>
-      <div class="meta">Order Date: {{ s.order_date }}</div>
+      <!-- Supplier -->
+      <div class="meta">
+        <strong>Supplier:</strong> {{ s.supplier.supplier_name }}
+      </div>
 
+      <!-- BL -->
+      <div class="meta">
+        <strong>BL / AWB:</strong> {{ s.bl|default:"-" }}
+      </div>
+
+      <!-- Amount -->
+      <div class="meta amount">
+        <strong>Amount:</strong>
+        {% if s.currency %}
+            {{ s.currency.symbol }} {{ s.amount|floatformat:2|intcomma }}
+        {% else %}
+            Rs {{ s.amount|floatformat:2|intcomma }}
+        {% endif %}
+      </div>
+
+      <!-- Arrival Date -->
+      <div class="meta">
+        <strong>Arrival Date:</strong>
+        {{ s.arrival_date|date:"d M Y" }}
+      </div>
+
+      <!-- Order Date -->
+      <div class="meta">
+        <strong>Order Date:</strong>
+        {{ s.order_date|date:"d M Y" }}
+      </div>
+
+      <!-- Button -->
       <a href="{% url 'shipment-timeline' s.shipment_code %}"
-         class="btn btn-sm btn-primary mt-2">
-        View Details
+         class="btn btn-primary view-btn">
+        View Timeline
       </a>
+
     </div>
+
   {% empty %}
-    <p>No active shipments.</p>
+    <div class="empty-box">
+        No active shipments available.
+    </div>
   {% endfor %}
 </div>
+
 {% endblock %}

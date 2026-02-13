@@ -4896,6 +4896,16 @@ def imports_dashboard(request):
         duty_paid=True
     ).count()
    
+    doc_tobe_handover = Shipment.objects.filter(
+        ship_status=2, send_to_clearing_agent=False
+    ).count()
+
+    ship_tobe = Shipment.objects.filter(ship_status=1).count()
+
+    grn_tobe = Shipment.objects.filter(
+        grn_complete_at_warehouse=False,
+        grn_upload_at_warehouse=True
+    ).count()
     
     return render(request, "dash/imp_dashboard.html", {
         "pending_grn_count": pending_grn_count,
@@ -4905,6 +4915,9 @@ def imports_dashboard(request):
         "on_the_way_shipment": on_the_way_shipment,
         "approved_duty_payments": approved_duty_payments,
         "dispatch_count": dispatch_count,
+        "doc_tobe_handover": doc_tobe_handover,
+        "ship_tobe": ship_tobe,
+        "grn_tobe": grn_tobe
     })
 
 
@@ -5175,10 +5188,24 @@ from django.shortcuts import render
 from .models import Shipment
 
 def shipments_active(request):
+
+    latest_phase = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order")
+
     active_shipments = (
         Shipment.objects
-        .select_related("supplier")
+        .select_related("supplier","currency")
         .exclude(ship_status=13)
+        .annotate(
+            arrival_date=Coalesce("ship_arival_date", "expected_arrival_date"),
+            current_phase_name=Subquery(
+                latest_phase.values("phase_name")[:1]
+            ),
+            current_phase_order=Subquery(
+                latest_phase.values("order")[:1]
+            ),
+        )
         .order_by("-id")
     )
 
@@ -5193,11 +5220,8 @@ def shipments_active(request):
 
 ########### All shipments
 
-from django.core.paginator import Paginator
-from django.db.models import Q
-
 def shipments_list(request):
-    status = request.GET.get("status", "All")
+    status = request.GET.get("status", "")
     q = request.GET.get("q", "").strip()
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
@@ -5205,32 +5229,57 @@ def shipments_list(request):
 
     statuses = ["All", "Active", "Completed"]
 
-    queryset = (
-        Shipment.objects
-        .select_related("supplier")
-        .order_by("-id")
-    )
+    # 🔹 Detect if filters applied
+    filters_applied = any([
+        status,
+        q,
+        start_date,
+        end_date,
+    ])
 
-    # 🔹 STATUS FILTER
-    if status == "Active":
-        queryset = queryset.exclude(ship_status=13)
-    elif status == "Completed":
-        queryset = queryset.filter(ship_status=13)
-    # else: All → no filter
+    # 🔹 Subquery for latest phase
+    latest_phase = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order")
 
-    # 🔹 SEARCH
-    if q:
-        queryset = queryset.filter(
-            Q(bl__icontains=q) |
-            Q(supplier__supplier_name__icontains=q)
+    queryset = Shipment.objects.none()  # default empty
+
+    if filters_applied:
+
+        queryset = (
+            Shipment.objects
+            .select_related("supplier", "currency")
+            .annotate(
+                arrival_date=Coalesce("ship_arival_date", "expected_arrival_date"),
+                current_phase_name=Subquery(
+                    latest_phase.values("phase_name")[:1]
+                ),
+                current_phase_order=Subquery(
+                    latest_phase.values("order")[:1]
+                ),
+            )
+            .order_by("-id")
         )
 
-    # 🔹 DATE FILTERS
-    if start_date:
-        queryset = queryset.filter(order_date__gte=start_date)
+        # 🔹 STATUS FILTER (Phase based)
+        if status == "Active":
+            queryset = queryset.filter(current_phase_order__lt=13)
+        elif status == "Completed":
+            queryset = queryset.filter(current_phase_order=13)
 
-    if end_date:
-        queryset = queryset.filter(order_date__lte=end_date)
+        # 🔹 SEARCH
+        if q:
+            queryset = queryset.filter(
+                Q(bl__icontains=q) |
+                Q(supplier__supplier_name__icontains=q)
+            )
+
+        # 🔹 DATE FILTERS
+        if start_date:
+            queryset = queryset.filter(order_date__gte=start_date)
+
+        if end_date:
+            queryset = queryset.filter(order_date__lte=end_date)
 
     paginator = Paginator(queryset, 12)
     page_obj = paginator.get_page(page_number)
@@ -5246,8 +5295,10 @@ def shipments_list(request):
             "q": q,
             "start_date": start_date,
             "end_date": end_date,
+            "filters_applied": filters_applied,  # 🔥 IMPORTANT
         }
     )
+
 
 
     #################### bank settlemenet ###############

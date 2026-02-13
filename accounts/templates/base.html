@@ -228,13 +228,8 @@
                   {% elif request.user.groups.all.0.name == 'Security Guard' %}
                     <li><a href="{% url 'home' %}">Dashboard</a></li>
                       {% elif request.user.groups.all.0.name == 'Managing Director' %}
-                    <li><a href="{% url 'md_dashboard' %}">MD Dashboard</a></li>
-                  
-                
-
-                    
-               
-
+                    <li><a href="{% url 'md_dashboard' %}">MD Dashboard</a></li>   
+                     
                     {% elif request.user.groups.all.0.name == 'Clearing Agent' %}
                     <li><a href="{% url 'clearing_agent_dashboard' %}"> Dashboard</a></li>
 
@@ -244,7 +239,8 @@
                       {% elif request.user.groups.all.0.name == 'Bank Manager' %}
                     <li><a href="{% url 'bank_manager_dashboard' %}">Dashboard</a></li>
 
-                   
+                   {% elif request.user.groups.all.0.name == 'Imports Department' %}
+                    <li><a href="{% url 'imports_dashboard' %}">Dashboard</a></li>
                     
                    
 
@@ -434,17 +430,19 @@
   {# ---------------- SHIPMENTS ---------------- #}
 {# ---------------- SHIPMENTS ---------------- #}
   {# SHIPMENTS (COMMON) #}
- {% if request.user.groups.all.0.name != 'Clearing Agent' %}
-    <a href="{% url 'shipments_web' %}"
+{% if show_shipments_footer %}
+
+    <a href="{% url 'shipments_active' %}"
       class="footer-item {% if request.resolver_match.url_name == 'shipments_web' %}active{% endif %}">
       <i class="fas fa-truck"></i>
-      <span>Shipments</span>
+      <span>Active Shipments</span>
     </a>
 
-
-
-<a href="{% url 'shipments_active' %}">Active Shipments</a>
-<a href="{% url 'shipments_list' %}">All Shipments</a>
+<a href="{% url 'shipments_list' %}"
+   class="footer-item {% if request.resolver_match.url_name == 'shipments_list' %}active{% endif %}">
+    <i class="fas fa-list"></i>
+    <span>All Shipments</span>
+</a>
 
 
   {% endif %}

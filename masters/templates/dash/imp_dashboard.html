@@ -2,138 +2,194 @@
 {% block title %}Imports Dashboard{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid dashboard-wrapper">
 
-  <!-- HEADER BAR -->
-  <!-- KPI OVERVIEW -->
-<div class="kpi-grid">
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <h3 class="dashboard-title">Imports Dashboard</h3>
+  </div>
 
-  <!-- Pending GRN -->
-  <div class="kpi-card kpi-yellow">
-    <div class="kpi-title">On the Way Shipments</div>
-    <div class="kpi-row">
-      <div class="kpi-value">{{ on_the_way_shipment}}</div>
-      <div class="kpi-icon">
-        <i class="fa fa-clipboard-list"></i>
+  <!-- ================= KPI SECTION ================= -->
+  <div class="row kpi-row">
+
+    <div class="col-md-3">
+      <div class="kpi-card warning">
+        <span class="kpi-label">On the Way Shipments</span>
+        <h2 class="kpi-value">{{ on_the_way_shipment }}</h2>
       </div>
     </div>
-  </div>
 
-  <!-- Total Shipments -->
-  <div class="kpi-card kpi-purple">
-    <div class="kpi-title">Total Shipments (Month) </div>
-    <div class="kpi-row">
-      <div class="kpi-value">{{ total_shipments }}</div>
-      <div class="kpi-icon">
-        <i class="fa fa-ship"></i>
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <span class="kpi-label">Total Shipments (Month)</span>
+        <h2 class="kpi-value">{{ total_shipments }}</h2>
       </div>
     </div>
-  </div>
 
-  <!-- Arrivals Today -->
-  <div class="kpi-card kpi-green">
-    <div class="kpi-title">Dispatch Shipment</div>
-    <div class="kpi-row">
-      <div class="kpi-value">{{ dispatch_count }}</div>
-      <div class="kpi-icon">
-        <i class="fa fa-truck"></i>
+    <div class="col-md-3">
+      <div class="kpi-card success">
+        <span class="kpi-label">Dispatch Shipment</span>
+        <h2 class="kpi-value">{{ dispatch_count }}</h2>
       </div>
     </div>
-  </div>
 
-  <!-- Pending Documents -->
-  <div class="kpi-card kpi-red">
-    <div class="kpi-title">Active Shipments</div>
-    <div class="kpi-row">
-      <div class="kpi-value">{{ active_shipments }}</div>
-      <div class="kpi-icon">
-        <i class="fa fa-file-text"></i>
+    <div class="col-md-3">
+      <div class="kpi-card danger">
+        <span class="kpi-label">Active Shipments</span>
+        <h2 class="kpi-value">{{ active_shipments }}</h2>
       </div>
     </div>
+
   </div>
 
-</div>
+  <!-- ================= QUICK ACTIONS ================= -->
+  <div class="mt-4">
 
+    <h4 class="mb-3" style="font-weight:700;color:#0f172a;">Quick Actions</h4>
 
+    <div class="row ca-actions">
 
- <!-- QUICK ACTIONS -->
-<div class="row ca-actions">
-
-  <!-- New Arrival Notice -->
-  <div class="col-xl-4 col-lg-6">
-    <a href="{% url 'arrival-notice-create' %}" class="ca-card">
-      <div class="ca-icon info">
-        <i class="fa fa-truck"></i>
+      <!-- Arrival Notice -->
+      <div class="col-xl-3 col-lg-6">
+        <a href="{% url 'arrival-notice-create' %}" class="ca-card">
+          <div class="ca-icon success">
+            <i class="fa fa-truck"></i>
+          </div>
+          <div class="ca-content">
+            <h4>Arrival Notice</h4>
+            <p>Create new arrival</p>
+          </div>
+        </a>
       </div>
 
-      <div class="ca-content">
-        <h4>New Arrival Notice</h4>
-        <p>Create and register a new arrival</p>
+      <!-- Create Shipment -->
+      <div class="col-xl-3 col-lg-6">
+        <a href="{% url 'new-shipment' %}"
+           class="ca-card {% if ship_tobe > 0 %}alert{% endif %}">
+
+          {% if ship_tobe > 0 %}
+            <span class="badge">{{ ship_tobe }}</span>
+          {% endif %}
+
+          <div class="ca-icon primary">
+            <i class="fa fa-ship"></i>
+          </div>
+
+          <div class="ca-content">
+            <h4>Create Shipment</h4>
+            {% if ship_tobe > 0 %}
+              <p>{{ ship_tobe }} pending</p>
+            {% else %}
+              <p>No pending shipments</p>
+            {% endif %}
+          </div>
+        </a>
       </div>
-    </a>
+
+      <!-- Document Handover -->
+      <div class="col-xl-3 col-lg-6">
+        <a href="{% url 'document_handover_web' %}"
+           class="ca-card {% if doc_tobe_handover > 0 %}alert{% endif %}">
+
+          {% if doc_tobe_handover > 0 %}
+            <span class="badge">{{ doc_tobe_handover }}</span>
+          {% endif %}
+
+          <div class="ca-icon warning">
+            <i class="fa fa-send"></i>
+          </div>
+
+          <div class="ca-content">
+            <h4>Document Handover</h4>
+            {% if doc_tobe_handover > 0 %}
+              <p>{{ doc_tobe_handover }} pending</p>
+            {% else %}
+              <p>No pending documents</p>
+            {% endif %}
+          </div>
+        </a>
+      </div>
+
+      <!-- Confirm GRN -->
+      <div class="col-xl-3 col-lg-6">
+        <a href="{% url 'grn_confirm_list' %}"
+           class="ca-card {% if grn_tobe > 0 %}alert{% endif %}">
+
+          {% if grn_tobe > 0 %}
+            <span class="badge" style="background:#16a34a;">
+              {{ grn_tobe }}
+            </span>
+          {% endif %}
+
+          <div class="ca-icon success">
+            <i class="fa fa-file-circle-check"></i>
+          </div>
+
+          <div class="ca-content">
+            <h4>Confirm GRN</h4>
+            {% if grn_tobe > 0 %}
+              <p>{{ grn_tobe }} pending</p>
+            {% else %}
+              <p>No pending shipments</p>
+            {% endif %}
+          </div>
+        </a>
+      </div>
+
+    </div>
   </div>
-
-  <!-- Document Handover -->
-  <div class="col-xl-4 col-lg-6">
-    <a href="{% url 'document_handover_web' %}" class="ca-card">
-      <div class="ca-icon warning">
-        <i class="fa fa-file-text"></i>
-      </div>
-
-      <div class="ca-content">
-        <h4>Document Handover</h4>
-        <p>Submit shipping documents</p>
-      </div>
-    </a>
-  </div>
-
-    <!--New Shipment -->
-  <div class="col-xl-4 col-lg-6">
-    <a href="{% url 'new-shipment' %}" class="ca-card">
-      <div class="ca-icon primary">
-        <i class="fa fa-ship"></i>
-
-      </div>
-
-      <div class="ca-content">
-        <h4>Create Shipment</h4>
-    
-      </div>
-    </a>
-  </div>
-
-
-      <!--Confirm GRN -->
-  <div class="col-xl-4 col-lg-6">
-    <a href="{% url 'grn_confirm_list' %}" class="ca-card">
-      <div class="ca-icon primary grn-confirm">
-        <i class="fa fa-file-circle-check"></i>
-
-
-      </div>
-
-      <div class="ca-content">
-        <h4>Confirm GRN</h4>
-    
-      </div>
-    </a>
-  </div>
-
-
-
-
-
 
 </div>
 
 
 <style>
-/* ================= GRID ================= */
+.dashboard-wrapper {
+  padding-bottom: 30px;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.dashboard-title {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ===== KPI ===== */
+.kpi-row {
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.kpi-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kpi-value {
+  margin-top: 6px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.kpi-card.success { border-left: 5px solid #16a34a; }
+.kpi-card.warning { border-left: 5px solid #f59e0b; }
+.kpi-card.danger  { border-left: 5px solid #dc2626; }
+
+/* ===== QUICK ACTIONS ===== */
 .ca-actions {
   row-gap: 22px;
 }
 
-/* ================= CARD ================= */
 .ca-card {
   display: flex;
   align-items: center;
@@ -143,7 +199,7 @@
   border-radius: 14px;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 6px 16px rgba(15,23,42,0.08);
   transition: all 0.2s ease;
   position: relative;
   height: 100%;
@@ -151,10 +207,9 @@
 
 .ca-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 12px 24px rgba(15,23,42,0.12);
 }
 
-/* ================= ICON ================= */
 .ca-icon {
   width: 54px;
   height: 54px;
@@ -169,94 +224,46 @@
 
 .ca-icon.primary { background: #2563eb; }
 .ca-icon.warning { background: #f97316; }
-.ca-icon.danger  { background: #dc2626; }
-.ca-icon.info    { background: #0ea5e9; }
+.ca-icon.success { background: #16a34a; }
 
-/* ================= CONTENT ================= */
 .ca-content h4 {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
   margin: 0;
+  color: #0f172a;
 }
 
 .ca-content p {
   font-size: 14px;
   color: #64748b;
-  margin: 6px 0 0;
+  margin-top: 6px;
   font-weight: 500;
 }
 
-/* -------- KPI / OVERVIEW -------- */
-.kpi-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 0 16px;
-  margin-bottom: 10px;
-}
-
-.kpi-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  width: 47%;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-  border-left: 6px solid #3B82F6;
-}
-
-.kpi-title {
-  font-size: 14px;
-  color: #6B7280;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.kpi-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.kpi-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1F2937;
-}
-
-.kpi-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background-color: rgba(59,130,246,0.15);
+/* Badge */
+.ca-card .badge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  color: #3B82F6;
 }
 
-/* KPI color variants */
-.kpi-green { border-left-color: #10B981; }
-.kpi-green .kpi-icon { background-color: rgba(16,185,129,0.15); color:#10B981; }
-
-.kpi-yellow { border-left-color: #F59E0B; }
-.kpi-yellow .kpi-icon { background-color: rgba(245,158,11,0.15); color:#F59E0B; }
-
-.kpi-purple { border-left-color: #8B5CF6; }
-.kpi-purple .kpi-icon { background-color: rgba(139,92,246,0.15); color:#8B5CF6; }
-
-.kpi-red { border-left-color: #DC2626; }
-.kpi-red .kpi-icon { background-color: rgba(220,38,38,0.15); color:#DC2626; }
-
-
-.ca-icon.grn-confirm {
-  background: #16a34a;
-  color: #ffffff;
+.ca-card.alert {
+  background: #fff7f7;
+  border-left: 4px solid #dc2626;
 }
 
 </style>
+
 
 
 {% endblock %}

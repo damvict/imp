@@ -93,6 +93,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'masters.context_processors.group_check',
+                'masters.context_processors.footer_role_access',
+                
             ],
         },
     },

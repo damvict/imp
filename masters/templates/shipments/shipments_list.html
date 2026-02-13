@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block title %}Shipments{% endblock %}
 
 {% block content %}
@@ -49,16 +50,28 @@
   color: #fff;
 }
 
+/* ===== Phase Badge ===== */
 .badge {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  margin-top: 6px;
 }
 
-.badge-active { background: #DBEAFE; color: #1D4ED8; }
-.badge-completed { background: #DCFCE7; color: #166534; }
+.badge-doc { background:#bfdbfe; color:#1d4ed8; }
+.badge-finance { background:#ddd6fe; color:#6d28d9; }
+.badge-clearance { background:#fde68a; color:#b45309; }
+.badge-complete { background:#bbf7d0; color:#166534; }
+
+.empty-message {
+  padding: 40px;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 12px;
+  color: #64748b;
+}
 </style>
 
 <div class="page-wrapper">
@@ -79,18 +92,15 @@
     </div>
 
     <div class="col-md-4">
-      <input
-        type="text"
-        name="q"
-        value="{{ q }}"
-        class="form-control"
-        placeholder="Search by BL or Supplier">
+      <input type="text" name="q"
+             value="{{ q }}"
+             class="form-control"
+             placeholder="Search by BL or Supplier">
     </div>
 
     <div class="col-md-2">
       <button class="btn btn-primary w-100">Apply</button>
     </div>
-
   </form>
 
   <!-- STATUS FILTERS -->
@@ -104,91 +114,74 @@
   </div>
 
   <!-- ========================= -->
-  <!-- DASHBOARD MODE -->
+  <!-- DATA DISPLAY SECTION -->
   <!-- ========================= -->
-  {% if dashboard %}
 
-    <h4 class="mt-4">Active Shipments</h4>
-    <div class="shipment-grid">
-      {% for s in active_shipments %}
-        <div class="shipment-card">
-          <div class="shipment-code">{{ s.shipment_code }}</div>
-          <div class="meta">{{ s.supplier.supplier_name }}</div>
-          <span class="badge badge-active">Active</span>
-
-          <div class="meta mt-2">BL: {{ s.bl }}</div>
-          <div class="meta">Amount: {{ s.amount }}</div>
-          <div class="meta">Order Date: {{ s.order_date }}</div>
-
-          <a href="{% url 'shipment-timeline' s.shipment_code %}"
-             class="btn btn-sm btn-primary mt-2">
-            View Details
-          </a>
-        </div>
-      {% empty %}
-        <p>No active shipments.</p>
-      {% endfor %}
+  {% if not filters_applied %}
+    <div class="empty-message">
+      Please apply filters to view shipments.
     </div>
 
-    <hr class="my-4">
-
-    <h4>Last 10 Shipments</h4>
-    <div class="shipment-grid">
-      {% for s in last_shipments %}
-        <div class="shipment-card">
-          <div class="shipment-code">{{ s.shipment_code }}</div>
-          <div class="meta">{{ s.supplier.supplier_name }}</div>
-
-          {% if s.ship_status == 13 %}
-            <span class="badge badge-completed">Completed</span>
-          {% else %}
-            <span class="badge badge-active">Active</span>
-          {% endif %}
-
-          <div class="meta mt-2">BL: {{ s.bl }}</div>
-          <div class="meta">Amount: {{ s.amount }}</div>
-          <div class="meta">Order Date: {{ s.order_date }}</div>
-
-          <a href="{% url 'shipment-timeline' s.shipment_code %}"
-             class="btn btn-sm btn-primary mt-2">
-            View Details
-          </a>
-        </div>
-      {% empty %}
-        <p>No shipments found.</p>
-      {% endfor %}
-    </div>
-
-  <!-- ========================= -->
-  <!-- FULL LIST MODE -->
-  <!-- ========================= -->
   {% else %}
-
-    <h4 class="mt-4">Filtered Shipments</h4>
 
     <div class="shipment-grid">
       {% for s in shipments %}
         <div class="shipment-card">
-          <div class="shipment-code">{{ s.shipment_code }}</div>
-          <div class="meta">{{ s.supplier.supplier_name }}</div>
 
-          {% if s.ship_status == 13 %}
-            <span class="badge badge-completed">Completed</span>
+          <div class="shipment-code">
+            {{ s.shipment_code }}
+          </div>
+
+          <!-- Dynamic Phase Badge -->
+          {% if s.current_phase_order <= 3 %}
+              <span class="badge badge-doc">
+          {% elif s.current_phase_order <= 6 %}
+              <span class="badge badge-finance">
+          {% elif s.current_phase_order < 13 %}
+              <span class="badge badge-clearance">
           {% else %}
-            <span class="badge badge-active">Active</span>
+              <span class="badge badge-complete">
           {% endif %}
+              {{ s.current_phase_name|default:"Not Started" }}
+          </span>
 
-          <div class="meta mt-2">BL: {{ s.bl }}</div>
-          <div class="meta">Amount: {{ s.amount }}</div>
-          <div class="meta">Order Date: {{ s.order_date }}</div>
+          <div class="meta mt-2">
+            <strong>Supplier:</strong> {{ s.supplier.supplier_name }}
+          </div>
+
+          <div class="meta">
+            <strong>BL:</strong> {{ s.bl }}
+          </div>
+
+          <div class="meta">
+            <strong>Amount:</strong>
+            {% if s.currency %}
+                {{ s.currency.symbol }} {{ s.amount|floatformat:2|intcomma }}
+            {% else %}
+                Rs {{ s.amount|floatformat:2|intcomma }}
+            {% endif %}
+          </div>
+
+          <div class="meta">
+            <strong>Order Date:</strong>
+            {{ s.order_date|date:"d M Y" }}
+          </div>
+
+          <div class="meta">
+            <strong>Arrival Date:</strong>
+            {{ s.arrival_date|date:"d M Y" }}
+          </div>
 
           <a href="{% url 'shipment-timeline' s.shipment_code %}"
              class="btn btn-sm btn-primary mt-2">
             View Details
           </a>
+
         </div>
       {% empty %}
-        <p>No shipments found.</p>
+        <div class="empty-message">
+          No shipments found for selected filters.
+        </div>
       {% endfor %}
     </div>
 
