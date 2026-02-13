@@ -5360,6 +5360,18 @@ from django.db.models import Sum
 from django.utils.dateparse import parse_date
 from .models import BankDocument, Settlement, Company
 
+from datetime import date
+from django.db.models import Sum
+from django.utils.dateparse import parse_date
+
+
+from datetime import date
+from django.db.models import Sum
+from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+
 @login_required
 def outstanding_report_web(request):
     companies = Company.objects.all().order_by("name")
@@ -5375,9 +5387,20 @@ def outstanding_report_web(request):
         selected_doc_type = request.POST.get("doc_type") or "ALL"
         as_at = request.POST.get("date")
 
-        as_at_date = parse_date(as_at)
+        # ✅ Safe date
+        as_at_date = parse_date(as_at) if as_at else date.today()
 
-        documents = BankDocument.objects.select_related("company")
+        # ✅ Optimized Query
+        documents = (
+            BankDocument.objects
+            .select_related(
+                "company",
+                "bank",
+                "shipment",
+                "shipment__supplier",
+                "currency"
+            )
+        )
 
         if selected_company:
             documents = documents.filter(company_id=selected_company)
@@ -5386,6 +5409,9 @@ def outstanding_report_web(request):
             documents = documents.filter(doc_type=selected_doc_type)
 
         for doc in documents:
+
+            original_amount = doc.amount if doc.amount is not None else 0
+
             settled_amount = (
                 Settlement.objects
                 .filter(
@@ -5395,14 +5421,28 @@ def outstanding_report_web(request):
                 .aggregate(total=Sum("amount"))["total"] or 0
             )
 
-            balance = (doc.amount or 0) - settled_amount
+            balance = original_amount - settled_amount
 
             if balance > 0:
+
+                # ✅ Calculate Tenor
+                tenor = ""
+                if doc.issue_date and doc.due_date:
+                    tenor = (doc.due_date - doc.issue_date).days
+
                 results.append({
                     "company": doc.company.name if doc.company else "",
+                    "shipment_code": doc.shipment.shipment_code if doc.shipment else "",
+                    "supplier": doc.shipment.supplier.supplier_name if doc.shipment and doc.shipment.supplier else "",
+                    "bank": doc.bank.b_name if doc.bank else "",
                     "doc_type": doc.doc_type,
                     "reference_number": doc.reference_number,
-                    "amount": doc.amount or 0,
+                    "issue_date": doc.issue_date,
+                    "due_date": doc.due_date,
+                    "tenor": tenor,
+                    "currency": doc.currency.code if doc.currency else "",
+                    "amount": original_amount,
+                    "settled_amount": settled_amount,
                     "balance": balance,
                 })
 
@@ -5413,8 +5453,8 @@ def outstanding_report_web(request):
         "selected_company": selected_company,
         "selected_doc_type": selected_doc_type,
         "as_at": as_at,
-        "total_amount": sum([item["amount"] for item in results]),
-        "total_balance": sum([item["balance"] for item in results]),
+        "total_amount": sum(item["amount"] for item in results),
+        "total_balance": sum(item["balance"] for item in results),
     }
 
     return render(

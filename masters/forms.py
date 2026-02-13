@@ -501,6 +501,18 @@ class NewShipmentForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select select2'})
     )
 
+
+
+
+    due_date = forms.DateTimeField(
+    required=False,
+    widget=forms.DateTimeInput(attrs={
+        'class': 'form-control',
+        'type': 'date'
+    })
+)
+
+
     reference_number = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
@@ -508,13 +520,7 @@ class NewShipmentForm(forms.Form):
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
-    amount = forms.DecimalField(
-    label="Amount (Foreign Currency)",
-    widget=forms.NumberInput(attrs={
-        'class': 'form-control',
-        'step': '0.01'
-    })
-)
+   
 
 
      # ✅ NEW: Currency
@@ -540,6 +546,9 @@ class NewShipmentForm(forms.Form):
         })
     )
 
+
+
+
     packing_list_ref = forms.CharField(
         required=True,
         widget=forms.TextInput(attrs={'class': 'form-control'})
@@ -548,7 +557,7 @@ class NewShipmentForm(forms.Form):
     net_weight = forms.DecimalField(required=False)
     cbm = forms.DecimalField(required=False)
     origin_country = forms.CharField(required=False)
-    due_date = forms.DateField(required=False)
+    
     vehicle = forms.CharField(
                widget=forms.TextInput(attrs={'class': 'form-control'})
     )
