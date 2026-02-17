@@ -163,159 +163,186 @@
         <!-- ================= Content ================= -->
         <div class="x_content">
           <form method="post">
-            {% csrf_token %}
+{% csrf_token %}
 
-            <!-- ================= Errors ================= -->
-            {% if form.errors %}
-              <div class="alert alert-danger">
-                <strong>Please correct the errors below:</strong>
-                <ul class="mb-0 mt-2">
-                  {% for field in form %}
-                    {% for error in field.errors %}
-                      <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                    {% endfor %}
-                  {% endfor %}
-                </ul>
-              </div>
-            {% endif %}
+<!-- ================= Errors ================= -->
+{% if form.errors %}
+<div class="alert alert-danger">
+  <strong>Please correct the errors below:</strong>
+  <ul class="mb-0 mt-2">
+    {% for field in form %}
+      {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+      {% endfor %}
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
 
-            <!-- ================= Shipment ================= -->
-            <div class="card section-card shipment-section mb-4">
-              <div class="card-header section-header">
-                Shipment Information
-              </div>
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">BL / AWB *</label>
-                    {{ form.shipment|add_class:"form-select select2" }}
-                  </div>
-                </div>
-              </div>
-            </div>
+<!-- ================= Shipment ================= -->
+<div class="card section-card shipment-section mb-4">
+  <div class="card-header section-header">
+    Shipment Information
+  </div>
+  <div class="card-body">
+    <div class="row">
 
-            <!-- ================= Bank ================= -->
-            <div class="card section-card bank-section mb-4">
-              <div class="card-header section-header">
-                Bank & Document Details
-              </div>
-              <div class="card-body">
+      <!-- BL / AWB -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">BL / AWB *</label>
+        {{ form.shipment|add_class:"form-select select2" }}
+      </div>
 
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Bank *</label>
-                    {{ form.bank|add_class:"form-select select2" }}
-                  </div>
+      <!-- Shipment Description -->
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Shipment Description</label>
+        {{ form.shipment_description|add_class:"form-control" }}
+        <small class="text-muted">Maximum 50 characters</small>
+      </div>
 
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Bank Document Type *</label>
-                    {{ form.bank_doc_type|add_class:"form-select select2" }}
-                  </div>
-                </div>
+    </div>
+  </div>
+</div>
 
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Bank Document Reference *</label>
-                    {{ form.reference_number|add_class:"form-control" }}
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Due Date</label>
-                    {{ form.due_date|add_class:"form-control" }}
-                  </div>
+<!-- ================= Bank ================= -->
+<div class="card section-card bank-section mb-4">
+  <div class="card-header section-header">
+    Bank & Document Details
+  </div>
+  <div class="card-body">
 
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Invoice Number</label>
-                    {{ form.supplier_invoice|add_class:"form-control" }}
-                  </div>
-                </div>
-               
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Bank *</label>
+        {{ form.bank|add_class:"form-select select2" }}
+      </div>
 
-              </div>
-            </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Bank Document Type *</label>
+        {{ form.bank_doc_type|add_class:"form-select select2" }}
+      </div>
+    </div>
 
-            <!-- ================= Finance ================= -->
-            <div class="card section-card finance-section mb-4">
-              <div class="card-header section-header">
-                Financial Details
-              </div>
-              <div class="card-body">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Bank Document Reference *</label>
+        {{ form.reference_number|add_class:"form-control" }}
+      </div>
 
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Currency *</label>
-                    {{ form.currency|add_class:"form-select select2" }}
-                  </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Due Date</label>
+        {{ form.due_date|add_class:"form-control" }}
+      </div>
+    </div>
 
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Invoice Amount (Foreign) *</label>
-                    {{ form.amount|add_class:"form-control" }}
-                  </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Invoice Number</label>
+        {{ form.supplier_invoice|add_class:"form-control" }}
+      </div>
 
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Invoice Amount (LKR) *</label>
-                    {{ form.amount_lkr|add_class:"form-control" }}
-                  </div>
-                </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Tenor</label>
+        {{ form.tenor|add_class:"form-control" }}
+      </div>
+    </div>
 
-                <small class="text-muted">
-                  Enter the actual LKR value as per bank document.
-                </small>
+  </div>
+</div>
 
-              </div>
-            </div>
+<!-- ================= Finance ================= -->
+<div class="card section-card finance-section mb-4">
+  <div class="card-header section-header">
+    Financial Details
+  </div>
+  <div class="card-body">
 
-            <!-- ================= Packing ================= -->
-            <div class="card section-card packing-section mb-4">
-              <div class="card-header section-header">
-                Packing & Weight Details
-              </div>
-              <div class="card-body">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Currency *</label>
+        {{ form.currency|add_class:"form-select select2" }}
+      </div>
 
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Packing List Reference</label>
-                    {{ form.packing_list_ref|add_class:"form-control" }}
-                  </div>
-                </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Invoice Amount (Foreign) *</label>
+        {{ form.amount|add_class:"form-control" }}
+      </div>
 
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Gross Weight</label>
-                    {{ form.gross_weight|add_class:"form-control" }}
-                  </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Invoice Amount (LKR) *</label>
+        {{ form.amount_lkr|add_class:"form-control" }}
+      </div>
+    </div>
 
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">Net Weight</label>
-                    {{ form.net_weight|add_class:"form-control" }}
-                  </div>
+    <small class="text-muted">
+      Enter the actual LKR value as per bank document.
+    </small>
 
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">CBM</label>
-                    {{ form.cbm|add_class:"form-control" }}
-                  </div>
+  </div>
+</div>
 
-                  <div class="col-md-4 mb-3">
-                    <label class="form-label">vehicle</label>
-                    {{ form.vehicle|add_class:"form-control" }}
-                  </div>
-                  
-                </div>
+<!-- ================= Packing ================= -->
+<div class="card section-card packing-section mb-4">
+  <div class="card-header section-header">
+    Packing & Weight Details
+  </div>
+  <div class="card-body">
 
-              </div>
-            </div>
+    <!-- Departments -->
+    <div class="row">
+      <div class="col-md-12 mb-3">
+        <label class="form-label">Departments</label>
+        {{ form.departments|add_class:"form-select select2" }}
+      </div>
+    </div>
 
-            <!-- ================= Actions ================= -->
-            <div class="d-flex justify-content-end gap-2 mt-4">
-              <button type="submit" class="btn btn-success px-4">
-                ✅ Save Shipment
-              </button>
+    <!-- Packing Reference -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Packing List Reference</label>
+        {{ form.packing_list_ref|add_class:"form-control" }}
+      </div>
+    </div>
 
-              <a href="{% url 'sales_dashboard' %}" class="btn btn-outline-secondary px-4">
-                ❌ Cancel
-              </a>
-            </div>
+    <!-- Weight Section -->
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Gross Weight</label>
+        {{ form.gross_weight|add_class:"form-control" }}
+      </div>
 
-          </form>
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Net Weight</label>
+        {{ form.net_weight|add_class:"form-control" }}
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label">CBM</label>
+        {{ form.cbm|add_class:"form-control" }}
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Vehicle</label>
+        {{ form.vehicle|add_class:"form-control" }}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= Actions ================= -->
+<div class="d-flex justify-content-end gap-2 mt-4">
+  <button type="submit" class="btn btn-success px-4">
+    ✅ Save Shipment
+  </button>
+
+  <a href="{% url 'sales_dashboard' %}" class="btn btn-outline-secondary px-4">
+    ❌ Cancel
+  </a>
+</div>
+
+</form>
+
         </div>
 
       </div>

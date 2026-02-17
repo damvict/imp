@@ -62,8 +62,14 @@
 
 .grn-close:hover {
   opacity: 1;
-  color: #d9534f;
+  color: #f38fe4;
 }
+
+.grn-desc {
+  color: #ba0eb1;   /* choose your color */
+  font-weight: 600; /* optional */
+}
+
 </style>
 
 <div class="grn-page">
@@ -79,10 +85,31 @@
       <div class="grn-card">
 
         <!-- Shipment Info -->
-        <div class="grn-code">{{ s.shipment_code }}</div>
+       <div class="grn-code">
+    {{ s.shipment_code }} ~ 
+    <span class="grn-desc">
+        {{ s.shipment_description|default:"-" }}
+    </span>
+</div>
+
+        <div></div>
+       
+
+
+<div class="mb-2">
+  {% for item in s.items.all %}
+      <span class="badge bg-info text-dark me-1">
+          {{ item.department.name }}
+      </span>
+  {% empty %}
+      <span class="text-muted">No Department</span>
+  {% endfor %}
+</div>
+
 
         <div class="grn-supplier">
-          {{ s.supplier.supplier_name|default:"-" }}
+          <strong>Truck:</strong>
+          {{ s.dispatch.truck_no|default:"-" }}
         </div>
 
         <div class="grn-row">

@@ -92,7 +92,7 @@ def shipment_timeline(request, shipment_code):
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Shipment
+from .models import Shipment,ShipmentItem
 from .forms import NewShipmentForm
 from .services import update_shipment_stage
 
@@ -111,6 +111,16 @@ def new_shipment_view(request):
         if form.is_valid():
             #shipment_id = form.cleaned_data["shipment"]
             shipment = form.cleaned_data["shipment"]
+            shipment.shipment_description = form.cleaned_data.get("shipment_description")
+            shipment.save()
+
+            selected_departments = form.cleaned_data.get("departments")
+            if selected_departments:
+                for dept in selected_departments:
+                    ShipmentItem.objects.create(
+                        shipment=shipment,
+                        department=dept
+                    )
 
             update_shipment_stage(
                 {

@@ -220,9 +220,9 @@
             <ul class="nav side-menu">
               <li><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
                 <ul class="nav child_menu">
-                  {% if request.user.groups.all.0.name == 'Admin' %}
-                    <li><a href="{% url 'admin_dashboard' %}">Admin Dashboard</a></li>
+                  {% if request.user.groups.all.0.name == 'Admin' %}                    
                      <li><a href="{% url 'sales_dashboard' %}">Sales Dashboard</a></li>
+                      <li><a href="{% url 'warehouse_dashboard' %}">Warehouse Dashboard</a></li>
                   {% elif request.user.groups.all.0.name == 'Warehouse Staff' %}
                     <li><a href="{% url 'warehouse_dashboard' %}">Warehouse Dashboard</a></li>
                   {% elif request.user.groups.all.0.name == 'Security Guard' %}

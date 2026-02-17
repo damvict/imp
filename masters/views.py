@@ -4770,10 +4770,16 @@ def grn_record_web(request):
     if not request.user.groups.filter(name="Warehouse Staff").exists():
         return render(request, "dashboard/access_denied.html")
 
-    shipments = Shipment.objects.filter(
+    shipments = (
+    Shipment.objects
+    .filter(
         arrival_at_warehouse=True,
         grn_upload_at_warehouse=False
-    ).select_related("dispatch")
+    )
+    .select_related("dispatch")  # only if exists
+    .prefetch_related("items__department")
+    )
+
 
     context = {
         "shipments": shipments
@@ -5346,6 +5352,7 @@ def add_settlement_web(request, doc_id):
         reference_number = request.POST.get("reference_number")
         remarks = request.POST.get("remarks")
         due_date = request.POST.get("due_date") or None
+        tenor = request.POST.get("tenor")or None
 
         # ---------- Validation ----------
         if not amount or float(amount) <= 0:
@@ -5384,6 +5391,7 @@ def add_settlement_web(request, doc_id):
                 due_date=due_date,
                 settlement_date=settlement_date,
                 created_by=request.user,
+                tenor=tenor,  # or calculate based on due_date and issue_date
             )
 
         return redirect("bank_document_settlement_web")
@@ -5477,9 +5485,9 @@ def outstanding_report_web(request):
             if balance > 0:
 
                 # ✅ Calculate Tenor
-                tenor = ""
-                if doc.issue_date and doc.due_date:
-                    tenor = (doc.due_date - doc.issue_date).days
+                #tenor = ""
+                #if doc.issue_date and doc.due_date:
+                    #tenor = (doc.due_date - doc.issue_date).days
 
                 results.append({
                     "company": doc.company.name if doc.company else "",
@@ -5490,11 +5498,13 @@ def outstanding_report_web(request):
                     "reference_number": doc.reference_number,
                     "issue_date": doc.issue_date,
                     "due_date": doc.due_date,
-                    "tenor": tenor,
+                    "tenor": doc.tenor,
                     "currency": doc.currency.code if doc.currency else "",
                     "amount": original_amount,
                     "settled_amount": settled_amount,
                     "balance": balance,
+                    "currency": doc.currency.code if doc.currency else "",
+                    "foreign_amount": doc.foreign_amount if doc.foreign_amount is not None else 0,
                 })
 
     context = {

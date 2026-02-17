@@ -102,22 +102,40 @@
 
         <div class="ds-row">
           <i class="fa fa-truck text-success"></i>
-          {{ s.truck_no }}
+        <strong>Truck :&nbsp;&nbsp;</strong>
+
+          {{ s.truck_no |default:"-"}}
         </div>
 
         <div class="ds-row">
           <i class="fa fa-phone text-success"></i>
+           <strong>Driver Phone :&nbsp;&nbsp;</strong>
           {{ s.driver_phone|default:"-" }}
+        </div>
+
+          <div class="ds-row">
+          <i class="fa fa-sticky-note text-warning"></i>
+
+           <strong>Special Instuction :&nbsp;&nbsp;</strong>
+          {{ s.special_instructions|default:"-" }}
         </div>
 
         <div class="ds-row">
           <i class="fa fa-map-marker text-danger"></i>
+           <strong>Address :&nbsp;&nbsp;</strong>
           {{ s.delivery_address|default:"-" }}
         </div>
 
         <div class="ds-row">
+         <i class="fa fa-building text-secondary me-2"></i>
+
+           <strong>Transport Company :&nbsp;&nbsp;</strong>
+          {{ s.transport_company|default:"-" }}
+        </div>
+
+        <div class="ds-row">
           <i class="fa fa-calendar text-primary"></i>
-          Est. Delivery:
+          <strong>Est. Delivery :&nbsp;&nbsp;</strong>
           {{ s.estimated_delivery|date:"Y-m-d"|default:"-" }}
         </div>
 

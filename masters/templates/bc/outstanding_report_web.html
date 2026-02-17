@@ -92,16 +92,16 @@
           <thead class="table-primary text-center">
             <tr>
               <th>#</th>
-              <th>Company</th>
-              <th>Shipment</th>
+              <th>Company</th>             
               <th>Supplier</th>
               <th>Bank</th>
               <th>Doc Type</th>
               <th>Reference No</th>
               <th>Due Date</th>
               <th>Tenor</th>
-              <th>Currency</th>
-              <th class="text-end">Amount</th>
+               <th>Currency</th>
+              <th>Amount Foreign</th>             
+              <th class="text-end">Amount-RS</th>
               <th class="text-end">Outstanding</th>
             </tr>
           </thead>
@@ -110,15 +110,16 @@
             {% for item in results %}
               <tr {% if item.due_date and item.due_date < as_at %}class="table-danger"{% endif %}>
                 <td class="text-center">{{ forloop.counter }}</td>
-                <td>{{ item.company }}</td>
-                <td>{{ item.shipment_code }}</td>
+                <td>{{ item.company }}</td>                
                 <td>{{ item.supplier }}</td>
                 <td>{{ item.bank }}</td>
                 <td class="text-center">{{ item.doc_type }}</td>
                 <td>{{ item.reference_number }}</td>
                 <td>{{ item.due_date|date:"Y-m-d" }}</td>
                 <td class="text-center">{{ item.tenor }}</td>
-                <td class="text-center">{{ item.currency }}</td>
+                 <td class="text-center">{{ item.currency }}</td>
+                <td>{{ item.foreign_amount|floatformat:2|intcomma }}</td>
+               
                 <td class="text-end">
                   {{ item.amount|floatformat:2|intcomma }}
                 </td>

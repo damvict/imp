@@ -1,7 +1,7 @@
 from django import forms
 from .models import (
     ItemCategory, VehicleType, StatusColor, SalesDivision,
-    Shipment, ShipmentDetail, Warehouse, Supplier, ClearingAgent, User,Currency
+    Shipment, ShipmentDetail, Warehouse, Supplier, ClearingAgent, User,Currency,Department
 )
 
 # Ã°Å¸â€œÂ¦ Item Category Form
@@ -512,6 +512,14 @@ class NewShipmentForm(forms.Form):
     })
 )
 
+    tenor = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'min': '0',
+            'placeholder': 'Enter tenor in days'
+        })
+    )
 
     reference_number = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control'})
@@ -561,6 +569,26 @@ class NewShipmentForm(forms.Form):
     vehicle = forms.CharField(
                widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+
+    shipment_description = forms.CharField(
+    required=False,
+    max_length=50,
+    widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'maxlength': '15',
+        'placeholder': 'Max 50 characters'
+    })
+)
+
+    departments = forms.ModelMultipleChoiceField(
+        queryset=Department.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select select2'
+        }),
+        label="Departments"
+    )
+
     #expected_arrival_date = forms.DateField(required=True)
 
     def clean(self):

@@ -110,6 +110,7 @@ def update_shipment_stage(data, user):
             bank_id = bank.b_id if hasattr(bank, 'b_id') else bank
             currency_id = currency.id if hasattr(currency, 'id') else currency
             due_date_input = data.get('due_date')
+            tenor = data.get('tenor')
             due_date = _to_date(due_date_input) if due_date_input else timezone.now().date()
             BankDocument.objects.update_or_create(
                 shipment=shipment,
@@ -126,9 +127,10 @@ def update_shipment_stage(data, user):
                     'amount': shipment.amount_lkr, 
                     'issue_date': _to_date(data.get('c_date')) or timezone.now().date(),
                     #'due_date': _to_date(data.get('due_date')) or timezone.now().date(),
-                     "due_date": due_date,  # ✅ Safe logic
+                    "due_date": due_date,  # ✅ Safe logic
                     'company_id': shipment.company_id, 
                     'created_by': user,
+                    'tenor':tenor,
                 }
             )
 

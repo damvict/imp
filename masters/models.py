@@ -178,7 +178,12 @@ def shipment_payref_upload_path(instance, filename):
         filename
     )
 
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=10, unique=True)
 
+    def __str__(self):
+        return f"{self.name}"
 #  Shipment
 class Shipment(models.Model):
 
@@ -237,10 +242,12 @@ class Shipment(models.Model):
         null=True,
         blank=True
     )
+
+    
     reference_number = models.CharField(max_length=100, null=True, blank=True)
     gross_weight = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     net_weight = models.DecimalField(max_digits=15, decimal_places=2, null=True,blank=True)
-
+    shipment_description = models.CharField(max_length=50, null=True, blank=True)
 
    #################   clearing Agent
     send_to_clearing_agent = models.BooleanField(default=False)
@@ -405,6 +412,21 @@ class Shipment(models.Model):
             self.shipment_sequence = seq
         super().save(*args, **kwargs)
 
+#### shipmen items
+
+class ShipmentItem(models.Model):
+    shipment = models.ForeignKey(
+        Shipment,
+        related_name="items",   # 🔥 change related_name also (important)
+        on_delete=models.CASCADE
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.PROTECT
+    )
+
+
+
 # Shipment Detail (line items / consignments)
 class ShipmentDetail(models.Model):
     shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE, related_name='details')
@@ -508,6 +530,12 @@ class BankDocument(models.Model):
     due_date = models.DateField(blank=True, null=True)
     settled = models.BooleanField(default=False)
     settlement_date = models.DateField(null=True, blank=True)
+    tenor = models.PositiveIntegerField(
+    blank=True,
+    null=True,
+    help_text="Tenor in days"
+)
+
 
     # For LC → Import Loan conversion
     converted_to_imp = models.BooleanField(default=False)
