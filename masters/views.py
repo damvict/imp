@@ -5850,6 +5850,7 @@ from django.db.models import DateField
 
 
 
+
 @login_required
 def md_dashboard_data_api(request):
 
@@ -5858,6 +5859,7 @@ def md_dashboard_data_api(request):
     latest_phase_order = ShipmentPhase.objects.filter(
         shipment=OuterRef("pk")
     ).order_by("-order").values("order")[:1]
+    
 
     latest_phase_name = ShipmentPhase.objects.filter(
         shipment=OuterRef("pk")
@@ -5871,6 +5873,14 @@ def md_dashboard_data_api(request):
         .annotate(
             phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
             current_phase=Subquery(latest_phase_name),
+            next_phase_order=ExpressionWrapper(
+                Coalesce(F("phase_order"), Value(0)) + 1,
+                output_field=IntegerField()
+            ),
+
+            next_phase=Subquery(ShipmentPhase.objects.filter(order=OuterRef("next_phase_order") ).values("phase_name")[:1]
+            ),
+
             arrival_date=Coalesce(
             "ship_arival_date",
             "expected_arrival_date",
@@ -5898,7 +5908,7 @@ def md_dashboard_data_api(request):
     else "-"
 ),
 
-            "phase": s.current_phase or "-",
+            "phase": s.next_phase  or "-",
             "progress": min(s.progress, 100),
         })
 
