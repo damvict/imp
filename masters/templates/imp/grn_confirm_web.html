@@ -109,27 +109,15 @@
             {{ s.grn_number|default:"-" }}
           </div>
 
-          <div class="grn-row">
-            <i class="fa fa-user"></i>
-            {{ s.dispatch.driver_name|default:"-" }}
+           <div class="grn-row">
+            <strong>Note:</strong>
+            {{ s.receiving_notes|default:"-" }}
           </div>
 
-          <div class="grn-row">
-            <i class="fa fa-phone"></i>
-            {{ s.dispatch.driver_phone|default:"-" }}
-          </div>
+              
 
           <div class="grn-row">
-            <i class="fa fa-calendar"></i>
-            {{ s.grn_complete_at_warehouse_date|date:"Y-m-d"|default:"-" }}
-          </div>
-
-          <div class="grn-row">
-            <strong>Amount:</strong>
-            Rs. {{ s.amount|default:"-" }}
-          </div>
-
-          <div class="grn-row">
+             <strong>Vessel:</strong>
             <i class="fa fa-ship"></i>
             {{ s.vessel|default:"-" }}
           </div>

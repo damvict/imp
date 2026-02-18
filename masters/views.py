@@ -4932,7 +4932,7 @@ def grn_confirm_web(request):
     shipments = Shipment.objects.filter(
         grn_complete_at_warehouse=False,
         grn_upload_at_warehouse=True
-    ).select_related("dispatch", "supplier")
+    ).select_related("dispatch", "supplier","currency")
 
     return render(request, "imp/grn_confirm_web.html", {
         "shipments": shipments
