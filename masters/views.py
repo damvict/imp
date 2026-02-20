@@ -5327,6 +5327,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Sum
+from decimal import Decimal
 from .models import BankDocument, Settlement
 
 @login_required
@@ -5356,12 +5357,18 @@ def add_settlement_web(request, doc_id):
         tenor = request.POST.get("tenor")or None
 
         # ---------- Validation ----------
-        if not amount or float(amount) <= 0:
+        
+        if not amount:
             context["error"] = "Settlement amount must be greater than 0"
             return render(request, "bc/add_settlement_web.html", context)
-
-        if float(amount) > outstanding_amount:
+        
+        amount = Decimal(amount)
+        if amount > outstanding_amount:
             context["error"] = "Settlement amount cannot exceed outstanding balance"
+            return render(request, "bc/add_settlement_web.html", context)
+        
+        if amount <= 0:
+            context["error"] = "Settlement amount must be greater than 0"
             return render(request, "bc/add_settlement_web.html", context)
 
         if settlement_type == "IMP" and not due_date:
