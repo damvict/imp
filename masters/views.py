@@ -5952,7 +5952,7 @@ def md_dashboard_data_api(request):
         ).count(),
 
         "grn": Shipment.objects.filter(
-            grn_upload_at_warehouse=True,
+            arrival_at_warehouse=True,
             grn_complete_at_warehouse=False
         ).count(),
 
