@@ -4603,6 +4603,7 @@ def clearing_agent_dispatch_detail_web(request, shipment_id):
         shipment.ship_dispatch = True
         shipment.ship_dispatch_date = timezone.now()
         shipment.save(update_fields=["ship_dispatch", "ship_dispatch_date"])
+        
 
         # Create shipment phase (same as API)
         try:
@@ -5868,7 +5869,7 @@ def md_dashboard_data_api(request):
     # ================= SHIPMENTS =================
     shipments_qs = (
         Shipment.objects
-        .filter(grn_complete_at_warehouse=False)
+        .filter(arrival_at_warehouse=False)
         .select_related("supplier")
         .annotate(
             phase_order=Subquery(latest_phase_order, output_field=IntegerField()),
@@ -5914,7 +5915,7 @@ def md_dashboard_data_api(request):
 
     # ================= KPIs =================
     kpis = {
-        "total_active": Shipment.objects.filter(grn_complete_at_warehouse=False).count(),
+        "total_active": Shipment.objects.filter(arrival_at_warehouse=False).count(),
         "new": Shipment.objects.filter(ship_status=1).count(),
         "at_port": Shipment.objects.filter(
             C_Process_Initiated=True,
@@ -5925,8 +5926,7 @@ def md_dashboard_data_api(request):
             arrival_at_warehouse=False
         ).count(),
         "grn": Shipment.objects.filter(
-            grn_upload_at_warehouse=True,
-            grn_complete_at_warehouse=False
+            arrival_at_warehouse=True
         ).count(),
         "completed": Shipment.objects.filter(grn_complete_at_warehouse=True).count(),
     }
