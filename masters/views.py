@@ -5915,7 +5915,7 @@ def md_dashboard_data_api(request):
 
     # ================= KPIs =================
     kpis = {
-        "total_active": Shipment.objects.filter(arrival_at_warehouse=False).count(),
+        "total_active": shipments_qs.count(),
         "new": Shipment.objects.filter(ship_status=1).count(),
         "at_port": Shipment.objects.filter(
             C_Process_Initiated=True,
