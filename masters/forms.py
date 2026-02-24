@@ -604,3 +604,40 @@ class NewShipmentForm(forms.Form):
             )
 
         return cleaned_data
+
+
+
+
+from django import forms
+from .models import Shipment
+
+
+class EditShipmentForm(forms.ModelForm):
+
+    class Meta:
+        model = Shipment
+        fields = [
+            "shipment_description",
+            "supplier_invoice",        # invoice number
+            "reference_number",       # bank document reference        
+            "currency",         
+            "packing_list_ref",
+            "gross_weight",
+            "net_weight",
+            "cbm",
+            "vehicle",
+        ]
+
+        widgets = {
+            "shipment_description": forms.TextInput(attrs={"class": "form-control"}),
+            "supplier_invoice": forms.TextInput(attrs={"class": "form-control"}),
+           
+           
+            "currency": forms.Select(attrs={"class": "form-select select2"}),
+           
+            "packing_list_ref": forms.TextInput(attrs={"class": "form-control"}),
+            "gross_weight": forms.NumberInput(attrs={"class": "form-control"}),
+            "net_weight": forms.NumberInput(attrs={"class": "form-control"}),
+            "cbm": forms.NumberInput(attrs={"class": "form-control"}),
+            "vehicle": forms.TextInput(attrs={"class": "form-control"}),
+        }

@@ -70,7 +70,7 @@ from .views import verify_physical_stock_web
 from .views import md_dashboard_data_api
 from . import web_views
 from .views import payment_report_web
-
+from .views import edit_shipment_view
 
 urlpatterns = [
     # Item Category URLs
@@ -587,7 +587,11 @@ path("api/md-dashboard/", md_dashboard_data_api, name="md_dashboard_data_api"),
 
 
 
-
+path(
+    "shipment/modify/<int:shipment_id>/",
+    edit_shipment_view,
+    name="modify_shipment"
+),
 
 
 

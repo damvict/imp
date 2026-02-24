@@ -177,6 +177,12 @@
             View Details
           </a>
 
+
+          <a href="{% url 'modify_shipment' s.id %}"
+          class="btn btn-sm btn-warning mt-2 ms-2">
+          Edit
+        </a>
+
         </div>
       {% empty %}
         <div class="empty-message">

@@ -4308,6 +4308,30 @@ ISWM System
 
 
 
+################# Edit Shipment ###############
+from .forms import EditShipmentForm
+@login_required
+def edit_shipment_view(request, shipment_id):
+
+    shipment = get_object_or_404(Shipment, id=shipment_id)
+
+    if request.method == "POST":
+        form = EditShipmentForm(request.POST, instance=shipment)
+        if form.is_valid():
+            form.save()
+            return redirect("shipments_list")  # or timeline
+    else:
+        form = EditShipmentForm(instance=shipment)
+
+    return render(
+        request,
+        "shipments/edit_shipment.html",
+        {
+            "form": form,
+            "shipment": shipment,
+        }
+    )
+
 
 ####################### MD Web    ######################################
 

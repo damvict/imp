@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="arrival-bg">
+  <div class="row justify-content-center">
+    <div class="col-xl-10 col-lg-11 col-md-12">
+
+      <div class="x_panel shadow-sm">
+
+       <h2 class="mb-1">
+  Modify Shipment 
+</h2>
+        </div>
+
+        <div class="x_content">
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- ================= Shipment Info ================= -->
+            <div class="card section-card shipment-section mb-4">
+              <div class="card-header section-header">
+                Shipment Information - {{ shipment.shipment_code }}
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label>Shipment Description</label>
+                    {{ form.shipment_description|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-6 mb-3">
+                    <label>Invoice Number</label>
+                    {{ form.supplier_invoice|add_class:"form-control" }}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ================= Bank Section ================= -->
+            <div class="card section-card bank-section mb-4">
+              <div class="card-header section-header">
+                Bank & Document
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label>Bank Document Reference</label>
+                    {{ form.reference_number|add_class:"form-control" }}
+                  </div>
+
+                
+
+                 
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ================= Finance ================= -->
+            <div class="card section-card finance-section mb-4">
+              <div class="card-header section-header">
+                Finance
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label>Currency</label>
+                    {{ form.currency|add_class:"form-select select2" }}
+                  </div>
+
+       
+                 
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ================= Packing ================= -->
+            <div class="card section-card packing-section mb-4">
+              <div class="card-header section-header">
+                Packing & Weight
+              </div>
+              <div class="card-body">
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label>Packing List Reference</label>
+                    {{ form.packing_list_ref|add_class:"form-control" }}
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-3 mb-3">
+                    <label>Gross Weight</label>
+                    {{ form.gross_weight|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-3 mb-3">
+                    <label>Net Weight</label>
+                    {{ form.net_weight|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-3 mb-3">
+                    <label>CBM</label>
+                    {{ form.cbm|add_class:"form-control" }}
+                  </div>
+
+                  <div class="col-md-3 mb-3">
+                    <label>Vehicle</label>
+                    {{ form.vehicle|add_class:"form-control" }}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button type="submit" class="btn btn-success px-4">
+                ✅ Update Shipment
+              </button>
+
+              <a href="{% url 'sales_dashboard' %}"
+                 class="btn btn-outline-secondary px-4">
+                Cancel
+              </a>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
