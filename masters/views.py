@@ -6009,3 +6009,212 @@ def md_dashboard_data_api(request):
         "shipments": shipments,
         "banks": banks_data,
     })
+
+
+
+
+#########========================== Sales Dashboard =================================================================
+
+
+from django.http import JsonResponse
+from django.db.models import (
+    OuterRef, Subquery, IntegerField, ExpressionWrapper,
+    F, Value, Case, When, DateField, Sum
+)
+from django.db.models.functions import Coalesce
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def common_dashboard_data_api(request):
+
+    TOTAL_PHASES = 13
+    status = request.GET.get("status")
+
+    # ==============================
+    # 🔹 BASE QUERY
+    # ==============================
+    base_qs = Shipment.objects.all()
+
+    # ==============================
+    # 🔹 APPLY KPI FILTER
+    # ==============================
+    if status == "active":
+        base_qs = base_qs.filter(arrival_at_warehouse=False)
+
+    elif status == "new":
+        base_qs = base_qs.filter(ship_status=1)
+
+    elif status == "at_port":
+        base_qs = base_qs.filter(
+            C_Process_Initiated=True,
+            C_Process_completed=False
+        )
+
+    elif status == "on_the_way":
+        base_qs = base_qs.filter(
+            C_Process_completed=True,
+            arrival_at_warehouse=False
+        )
+
+    elif status == "grn":
+        base_qs = base_qs.filter(
+            arrival_at_warehouse=True,
+            grn_complete_at_warehouse=False
+        )
+
+    elif status == "completed":
+        base_qs = base_qs.filter(
+            grn_complete_at_warehouse=True
+        )
+
+    # ==============================
+    # 🔹 PHASE SUBQUERIES
+    # ==============================
+    latest_phase_order = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order").values("order")[:1]
+
+    latest_phase_name = ShipmentPhase.objects.filter(
+        shipment=OuterRef("pk")
+    ).order_by("-order").values("phase_name")[:1]
+
+    # ==============================
+    # 🔹 SHIPMENT QUERY
+    # ==============================
+    shipments_qs = (
+        base_qs
+        .select_related("supplier")
+        .annotate(
+            phase_order=Subquery(
+                latest_phase_order,
+                output_field=IntegerField()
+            ),
+            current_phase=Subquery(latest_phase_name),
+
+            next_phase_order=ExpressionWrapper(
+                Coalesce(F("phase_order"), Value(0)) + 1,
+                output_field=IntegerField()
+            ),
+
+            next_phase=Subquery(
+                ShipmentPhase.objects.filter(
+                    shipment=OuterRef("pk"),
+                    order=OuterRef("next_phase_order")
+                ).values("phase_name")[:1]
+            ),
+
+            arrival_date=Coalesce(
+                "ship_arival_date",
+                "expected_arrival_date",
+                output_field=DateField()
+            )
+        )
+        .annotate(
+            progress=Case(
+                When(phase_order__isnull=True, then=Value(0)),
+                When(phase_order__gte=TOTAL_PHASES, then=Value(100)),
+                default=ExpressionWrapper(
+                    F("phase_order") * 100 / TOTAL_PHASES,
+                    output_field=IntegerField()
+                ),
+            )
+        )
+        .order_by("arrival_date")
+    )
+
+    # ==============================
+    # 🔹 TABLE DATA
+    # ==============================
+    shipments = []
+
+    for s in shipments_qs:
+        shipments.append({
+            "shipment_code": s.shipment_code,
+            "shipment_description": s.shipment_description or "-",
+            "supplier": s.supplier.supplier_name if s.supplier else "-",
+            "arrival": (
+                s.arrival_date.strftime("%b %d, %Y")
+                if s.arrival_date else "-"
+            ),
+            # 🔹 choose which you prefer:
+            "phase": s.current_phase or "-",   # recommended
+            # "phase": s.next_phase or "-",    # if you want next phase
+            "progress": min(s.progress or 0, 100),
+        })
+
+    # ==============================
+    # 🔹 KPI COUNTS (UNFILTERED)
+    # ==============================
+    kpis = {
+        "total_active": Shipment.objects.filter(
+            arrival_at_warehouse=False
+        ).count(),
+
+        "new": Shipment.objects.filter(
+            ship_status=1
+        ).count(),
+
+        "at_port": Shipment.objects.filter(
+            C_Process_Initiated=True,
+            C_Process_completed=False
+        ).count(),
+
+        "on_the_way": Shipment.objects.filter(
+            C_Process_completed=True,
+            arrival_at_warehouse=False
+        ).count(),
+
+        "grn": Shipment.objects.filter(
+            arrival_at_warehouse=True,
+            grn_complete_at_warehouse=False
+        ).count(),
+
+        "completed": Shipment.objects.filter(
+            grn_complete_at_warehouse=True
+        ).count(),
+    }
+
+    # ==============================
+    # 🔹 BANK UTILIZATION
+    # ==============================
+    banks_data = []
+
+    for bank in Bank.objects.all():
+
+        imp_used = BankDocument.objects.filter(
+            bank=bank,
+            doc_type="IMP"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        da_used = BankDocument.objects.filter(
+            bank=bank,
+            doc_type="DA"
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        imp_limit = bank.imp or 0
+        da_limit = bank.da or 0
+
+        banks_data.append({
+            "bank": bank.b_name,
+            "accno": bank.accno,
+            "imp_balance": imp_limit - imp_used,
+            "imp_limit": imp_limit,
+            "imp_utilization": round(
+                ((imp_limit - imp_used) / imp_limit * 100), 1
+            ) if imp_limit else 0,
+            "da_balance": da_limit - da_used,
+            "da_limit": da_limit,
+            "da_utilization": round(
+                ((da_limit - da_used) / da_limit * 100), 1
+            ) if da_limit else 0,
+        })
+
+    # ==============================
+    # 🔹 RESPONSE
+    # ==============================
+    return JsonResponse({
+        "kpis": kpis,
+        "shipments": shipments,
+        "banks": banks_data,
+    })

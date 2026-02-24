@@ -185,6 +185,7 @@ def get_sales_dashboard_data():
         )
         .values(
             "shipment_code",
+            "shipment_description",
             "ship_arival_date",
             "current_phase",
             "phase_order",

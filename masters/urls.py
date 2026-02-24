@@ -9,7 +9,7 @@ from django.conf.urls.static import static
 from . import views
 from .views import (
     WarehouseListView, WarehouseCreateView,
-    WarehouseUpdateView, WarehouseDeleteView
+    WarehouseUpdateView, WarehouseDeleteView, common_dashboard_data_api
 )
 
 from .views import (
@@ -579,24 +579,14 @@ path("md-dashboard/", views.md_dashboard_web, name="md_dashboard_web"),
 # urls.py
 path("api/md-dashboard/", md_dashboard_data_api, name="md_dashboard_data_api"),
 
-
-
-
-
-    path(
-        'change-password/',
-        auth_views.PasswordChangeView.as_view(
-            template_name='accounts/change_password.html'
-        ),
-        name='change_password'
+ path(
+        "api/common-dashboard/",
+        common_dashboard_data_api,
+        name="common_dashboard_data_api"
     ),
-    path(
-        'change-password/done/',
-        auth_views.PasswordChangeDoneView.as_view(
-            template_name='accounts/change_password_done.html'
-        ),
-        name='password_change_done'
-    ),
+
+
+
 
 
 
