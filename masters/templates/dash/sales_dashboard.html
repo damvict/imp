@@ -177,7 +177,7 @@ tbody td{
 </div>
 
 <script>
-function refreshDashboard(){
+function refreshDashboard(status=""){
   fetch("{% url 'common_dashboard_data_api' %}")
   .then(res=>res.json())
   .then(data=>{
