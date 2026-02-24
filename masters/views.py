@@ -6034,7 +6034,8 @@ def common_dashboard_data_api(request):
     # ==============================
     # 🔹 BASE QUERY
     # ==============================
-    base_qs = Shipment.objects.all()
+    base_qs = Shipment.objects.filter(grn_complete_at_warehouse=False)
+    
 
     # ==============================
     # 🔹 APPLY KPI FILTER
