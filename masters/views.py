@@ -5973,7 +5973,7 @@ def md_dashboard_data_api(request):
         "new": Shipment.objects.filter(ship_status=1).count(),
 
         "at_port": Shipment.objects.filter(
-            ship_status=1,
+            
             C_Process_completed=False
         ).count(),
 
@@ -6072,7 +6072,7 @@ def common_dashboard_data_api(request):
 
     elif status == "at_port":
         base_qs = base_qs.filter(
-           ship_status=1,
+          
             C_Process_completed=False
         )
 
@@ -6181,7 +6181,7 @@ def common_dashboard_data_api(request):
         ).count(),
 
         "at_port": Shipment.objects.filter(
-            ship_status=1,
+           
             C_Process_completed=False
         ).count(),
 
