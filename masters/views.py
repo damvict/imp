@@ -6177,9 +6177,9 @@ def common_dashboard_data_api(request):
     # ==============================
     from django.utils import timezone
 
-    today = timezone.now().date()
-    first_day_of_month = today.replace(day=1)
-
+    today = timezone.now()
+    start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
     kpis = {
         "total_active": Shipment.objects.filter(
             arrival_at_warehouse=False
@@ -6206,8 +6206,8 @@ def common_dashboard_data_api(request):
 
         "completed": Shipment.objects.filter(
         grn_complete_at_warehouse=True ,
-        grn_complete_at_warehouse_date__year=today.year,
-        grn_complete_at_warehouse_date__month=today.month       
+        grn_complete_at_warehouse_date__gte=start_of_month,
+        grn_complete_at_warehouse_date__lte=today      
     ).count(),
     }
 
