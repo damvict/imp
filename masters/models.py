@@ -603,7 +603,7 @@ class ShipmentDispatch(models.Model):
     truck_no = models.CharField(max_length=100)
     driver_name = models.CharField(max_length=100)
     driver_license = models.CharField(max_length=100)
-    driver_phone = models.CharField(max_length=20)
+    driver_phone = models.CharField(max_length=100)
     transport_company = models.CharField(max_length=150)
     estimated_delivery = models.DateTimeField()
     delivery_address = models.TextField()
