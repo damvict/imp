@@ -5965,25 +5965,12 @@ def md_dashboard_data_api(request):
         }
 
         # ===== MD =====
-        if is_md:
-            shipment_row["supplier"] = (
+    
+        shipment_row["supplier"] = (
                 s.supplier.supplier_name if s.supplier else "-"
-            )
+       )
 
-        # ===== IMPORT =====
-        if is_import:
-            shipment_row["supplier"] = (
-                s.supplier.supplier_name if s.supplier else "-"
-            )
-            shipment_row["shipment_description"] = (
-                s.shipment_description or "-"
-            )
 
-        # ===== SALES =====
-        if is_sales:
-            shipment_row["shipment_description"] = (
-                s.shipment_description or "-"
-            )
 
         shipments.append(shipment_row)
 
@@ -6218,8 +6205,9 @@ def common_dashboard_data_api(request):
         ).count(),
 
         "completed": Shipment.objects.filter(
-        grn_complete_at_warehouse=True,
-        grn_complete_at_warehouse_date__date__gte=first_day_of_month
+        grn_complete_at_warehouse=True ,
+        grn_complete_at_warehouse_date__year=today.year,
+        grn_complete_at_warehouse_date__month=today.month       
     ).count(),
     }
 
