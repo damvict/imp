@@ -5975,6 +5975,9 @@ def md_dashboard_data_api(request):
         shipments.append(shipment_row)
 
     # ================= KPIs =================
+    today = timezone.now()
+    start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
     kpis = {
         "total_active": active_kpi_qs.count(),
         "new": Shipment.objects.filter(ship_status=1).count(),
@@ -5990,7 +5993,9 @@ def md_dashboard_data_api(request):
             grn_complete_at_warehouse=False
         ).count(),
         "completed": Shipment.objects.filter(
-            grn_complete_at_warehouse=True
+            grn_complete_at_warehouse=True,
+            grn_complete_at_warehouse_date__gte=start_of_month,
+            grn_complete_at_warehouse_date__lte=today  
         ).count(),
     }
 
