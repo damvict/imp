@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sales Dashboard</title>
+<title>Shipment overview </title>
 
 <style>
 :root {
@@ -187,15 +187,41 @@ tbody tr:hover{
   padding:20px;
   border-radius:16px;
 }
+
+.back-inline{
+  text-decoration:none;
+  color:#ffffff;
+  margin-right:14px;
+  font-size:22px;          /* Bigger arrow */
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.15);
+  transition:.2s ease;
+}
+
+.back-inline:hover{
+  background:rgba(255,255,255,0.30);
+  transform:translateX(-4px);
+}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="title">
-    <h1>Sales Dashboard</h1>
-    <small>Shipment Overview • Active Shipments</small>
-  </div>
+<div class="title">
+  <h1>
+    <a href="{% url 'imports_dashboard' %}" class="back-inline">
+      ←
+    </a>
+    Shipment Overview | Dashboard
+  </h1>
+  <small>Shipment Overview • Active Shipments</small>
+</div>
   <div class="actions">
     <div class="pill">
       Last refresh: <b id="last-refresh">—</b>
@@ -218,6 +244,7 @@ tbody tr:hover{
 <tr>
 <th>Shipment</th>
 <th>Brand</th>
+<th>Supplier</th>
 <th>Arrival</th>
 <th>Next Phase</th>
 <th>Progress</th>
@@ -265,6 +292,7 @@ function refreshDashboard(status=""){
       <tr>
         <td>${s.shipment_code}</td>
         <td>${s.shipment_description}</td>
+        <td>${s.supplier ?? ""}</td>
         <td>${s.arrival}</td>
         <td>${s.phase}</td>
         <td>

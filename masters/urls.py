@@ -169,11 +169,17 @@ urlpatterns = [
     path("md/reject-duty/<int:shipment_id>/",views.reject_duty_paid_web, name="md-reject-web"),
 
     path("shipments/sales-dashboard/", views.sales_dashboard, name="sales_dashboard"),
+    
     path(
         "sales-dashboard/api/",
         views.sales_dashboard_api,
         name="sales-dashboard-api"
     ),
+
+
+    path("shipments/impsales-dashboard/", views.impsales_dashboard, name="impsales_dashboard"),
+
+
 
     ###path("dashboard/warehouse/", views.warehouse_dashboard, name="warehouse_dashboard"),
      path(
@@ -497,6 +503,8 @@ path(
         views.imports_dashboard,
         name="imports_dashboard"
     ),
+
+
 
 
 path(

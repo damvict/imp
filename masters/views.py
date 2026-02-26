@@ -5875,18 +5875,26 @@ def md_dashboard_web(request):
 
 
 ############# asynchrinize web page
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import (
     OuterRef, Subquery, IntegerField, ExpressionWrapper,
     F, Value, Case, When, DateField, Sum
 )
 from django.db.models.functions import Coalesce
-from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def md_dashboard_data_api(request):
 
-    TOTAL_PHASES = 13  # adjust if needed
+    user = request.user
+
+    # ===== Detect User Group =====
+    is_md = user.groups.filter(name__in=["Managing Director", "Md Dash"]).exists()
+    is_sales = user.groups.filter(name="salesd").exists()
+    is_import = user.groups.filter(name="Imports Department").exists()
+
+    TOTAL_PHASES = 13
 
     # ================= PHASE SUBQUERIES =================
     latest_phase_order = ShipmentPhase.objects.filter(
@@ -5897,18 +5905,12 @@ def md_dashboard_data_api(request):
         shipment=OuterRef("pk")
     ).order_by("-order").values("phase_name")[:1]
 
-
-    # =====================================================
-    # 🔵 KPI ACTIVE → arrival_at_warehouse = False
-    # =====================================================
+    # ================= KPI ACTIVE =================
     active_kpi_qs = Shipment.objects.filter(
         arrival_at_warehouse=False
     )
 
-
-    # =====================================================
-    # 🟢 TABLE SHIPMENTS → grn_complete_at_warehouse = False
-    # =====================================================
+    # ================= SHIPMENT QUERY =================
     shipments_qs = (
         Shipment.objects
         .filter(grn_complete_at_warehouse=False)
@@ -5947,93 +5949,108 @@ def md_dashboard_data_api(request):
         .order_by("arrival_date")
     )
 
-
-    # ================= TABLE DATA =================
+    # ================= TABLE DATA (GROUP BASED) =================
     shipments = []
 
     for s in shipments_qs:
-        shipments.append({
+
+        shipment_row = {
             "shipment_code": s.shipment_code,
-            "supplier": s.supplier.supplier_name if s.supplier else "-",
             "arrival": (
                 s.arrival_date.strftime("%b %d, %Y")
-                if s.arrival_date
-                else "-"
+                if s.arrival_date else "-"
             ),
             "phase": s.next_phase or "-",
             "progress": min(s.progress, 100),
-        })
+        }
 
+        # ===== MD =====
+        if is_md:
+            shipment_row["supplier"] = (
+                s.supplier.supplier_name if s.supplier else "-"
+            )
+
+        # ===== IMPORT =====
+        if is_import:
+            shipment_row["supplier"] = (
+                s.supplier.supplier_name if s.supplier else "-"
+            )
+            shipment_row["shipment_description"] = (
+                s.shipment_description or "-"
+            )
+
+        # ===== SALES =====
+        if is_sales:
+            shipment_row["shipment_description"] = (
+                s.shipment_description or "-"
+            )
+
+        shipments.append(shipment_row)
 
     # ================= KPIs =================
     kpis = {
-        # 🔵 ACTIVE → Not arrived at warehouse
         "total_active": active_kpi_qs.count(),
-
         "new": Shipment.objects.filter(ship_status=1).count(),
-
         "at_port": Shipment.objects.filter(
-            
             C_Process_completed=False
         ).count(),
-
         "on_the_way": Shipment.objects.filter(
             C_Process_completed=True,
             arrival_at_warehouse=False
         ).count(),
-
         "grn": Shipment.objects.filter(
             arrival_at_warehouse=True,
             grn_complete_at_warehouse=False
         ).count(),
-
         "completed": Shipment.objects.filter(
             grn_complete_at_warehouse=True
         ).count(),
     }
 
-
-    # ================= BANKS =================
+    # ================= BANKS (MD ONLY) =================
     banks_data = []
 
-    for bank in Bank.objects.all():
+    if is_md:
+        for bank in Bank.objects.all():
 
-        imp_used = BankDocument.objects.filter(
-            bank=bank,
-            doc_type="IMP"
-        ).aggregate(total=Sum("amount"))["total"] or 0
+            imp_used = BankDocument.objects.filter(
+                bank=bank,
+                doc_type="IMP"
+            ).aggregate(total=Sum("amount"))["total"] or 0
 
-        da_used = BankDocument.objects.filter(
-            bank=bank,
-            doc_type="DA"
-        ).aggregate(total=Sum("amount"))["total"] or 0
+            da_used = BankDocument.objects.filter(
+                bank=bank,
+                doc_type="DA"
+            ).aggregate(total=Sum("amount"))["total"] or 0
 
-        imp_limit = bank.imp or 0
-        da_limit = bank.da or 0
+            imp_limit = bank.imp or 0
+            da_limit = bank.da or 0
 
-        banks_data.append({
-            "bank": bank.b_name,
-            "accno": bank.accno,
-            "imp_balance": imp_limit - imp_used,
-            "imp_limit": imp_limit,
-            "imp_utilization": round(
-                ((imp_limit - imp_used) / imp_limit * 100), 1
-            ) if imp_limit else 0,
-            "da_balance": da_limit - da_used,
-            "da_limit": da_limit,
-            "da_utilization": round(
-                ((da_limit - da_used) / da_limit * 100), 1
-            ) if da_limit else 0,
-        })
-
+            banks_data.append({
+                "bank": bank.b_name,
+                "accno": bank.accno,
+                "imp_balance": imp_limit - imp_used,
+                "imp_limit": imp_limit,
+                "imp_utilization": round(
+                    ((imp_limit - imp_used) / imp_limit * 100), 1
+                ) if imp_limit else 0,
+                "da_balance": da_limit - da_used,
+                "da_limit": da_limit,
+                "da_utilization": round(
+                    ((da_limit - da_used) / da_limit * 100), 1
+                ) if da_limit else 0,
+            })
 
     # ================= RESPONSE =================
-    return JsonResponse({
+    response_data = {
         "kpis": kpis,
         "shipments": shipments,
-        "banks": banks_data,
-    })
+    }
 
+    if is_md:
+        response_data["banks"] = banks_data
+
+    return JsonResponse(response_data)
 
 
 
@@ -6047,6 +6064,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 
 
 @login_required
@@ -6054,6 +6072,7 @@ def common_dashboard_data_api(request):
 
     TOTAL_PHASES = 13
     status = request.GET.get("status")
+    
 
     # ==============================
     # 🔹 BASE QUERY
@@ -6124,7 +6143,6 @@ def common_dashboard_data_api(request):
 
             next_phase=Subquery(
                 ShipmentPhase.objects.filter(
-                    shipment=OuterRef("pk"),
                     order=OuterRef("next_phase_order")
                 ).values("phase_name")[:1]
             ),
@@ -6163,14 +6181,18 @@ def common_dashboard_data_api(request):
                 if s.arrival_date else "-"
             ),
             # 🔹 choose which you prefer:
-            "phase": s.current_phase or "-",   # recommended
-            # "phase": s.next_phase or "-",    # if you want next phase
+            "phase": s.next_phase or "-",
             "progress": min(s.progress or 0, 100),
         })
 
     # ==============================
     # 🔹 KPI COUNTS (UNFILTERED)
     # ==============================
+    from django.utils import timezone
+
+    today = timezone.now().date()
+    first_day_of_month = today.replace(day=1)
+
     kpis = {
         "total_active": Shipment.objects.filter(
             arrival_at_warehouse=False
@@ -6196,8 +6218,9 @@ def common_dashboard_data_api(request):
         ).count(),
 
         "completed": Shipment.objects.filter(
-            grn_complete_at_warehouse=True
-        ).count(),
+        grn_complete_at_warehouse=True,
+        grn_complete_at_warehouse_date__date__gte=first_day_of_month
+    ).count(),
     }
 
     # ==============================
@@ -6243,3 +6266,10 @@ def common_dashboard_data_api(request):
         "shipments": shipments,
         "banks": banks_data,
     })
+
+
+from .services import get_sales_dashboard_data
+@login_required
+def impsales_dashboard(request):
+    context = get_sales_dashboard_data()
+    return render(request, "dash/import_salesdashboard.html", context)
