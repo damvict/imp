@@ -5462,11 +5462,16 @@ from django.utils.dateparse import parse_date
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
+from django.db.models import Sum, F, Value, DecimalField
+from django.db.models.functions import Coalesce
+from django.db.models import Q
+
 
 @login_required
 def outstanding_report_web(request):
+
     companies = Company.objects.all().order_by("name")
-    doc_types = ["ALL", "DA", "DP", "TT", "IMP"]
+    doc_types = ["ALL", "DA", "DP", "TT", "IMP", "SLC", "ULC"]
 
     results = []
     selected_company = ""
@@ -5474,23 +5479,22 @@ def outstanding_report_web(request):
     as_at = ""
 
     if request.method == "POST":
+
         selected_company = request.POST.get("company_id") or ""
         selected_doc_type = request.POST.get("doc_type") or "ALL"
         as_at = request.POST.get("date")
 
-        # ✅ Safe date
         as_at_date = parse_date(as_at) if as_at else date.today()
 
-        # ✅ Optimized Query
-        documents = (
-            BankDocument.objects
-            .select_related(
-                "company",
-                "bank",
-                "shipment",
-                "shipment__supplier",
-                "currency"
-            )
+        # 🔹 Base Query
+        documents = BankDocument.objects.select_related(
+            "company",
+            "bank",
+            "shipment",
+            "shipment__supplier",
+            "currency"
+        ).filter(
+            issue_date__lte=as_at_date   # ✅ IMPORTANT
         )
 
         if selected_company:
@@ -5499,45 +5503,39 @@ def outstanding_report_web(request):
         if selected_doc_type != "ALL":
             documents = documents.filter(doc_type=selected_doc_type)
 
-        for doc in documents:
-
-            original_amount = doc.amount if doc.amount is not None else 0
-
-            settled_amount = (
-                Settlement.objects
-                .filter(
-                    document=doc,
-                    settlement_date__lte=as_at_date
-                )
-                .aggregate(total=Sum("amount"))["total"] or 0
+        # 🔹 Annotate Settled Amount (Only up to As At Date)
+        documents = documents.annotate(
+            settled_amount=Coalesce(
+                Sum(
+                    "settlements__amount",
+                    filter=Q(settlements__settlement_date__lte=as_at_date)
+                ),
+                Value(0),
+                output_field=DecimalField()
             )
+        ).annotate(
+            balance=F("amount") - F("settled_amount")
+        ).filter(
+            balance__gt=0
+        )
 
-            balance = original_amount - settled_amount
-
-            if balance > 0:
-
-                # ✅ Calculate Tenor
-                #tenor = ""
-                #if doc.issue_date and doc.due_date:
-                    #tenor = (doc.due_date - doc.issue_date).days
-
-                results.append({
-                    "company": doc.company.name if doc.company else "",
-                    "shipment_code": doc.shipment.shipment_code if doc.shipment else "",
-                    "supplier": doc.shipment.supplier.supplier_name if doc.shipment and doc.shipment.supplier else "",
-                    "bank": doc.bank.b_name if doc.bank else "",
-                    "doc_type": doc.doc_type,
-                    "reference_number": doc.reference_number,
-                    "issue_date": doc.issue_date,
-                    "due_date": doc.due_date,
-                    "tenor": doc.tenor,
-                    "currency": doc.currency.code if doc.currency else "",
-                    "amount": original_amount,
-                    "settled_amount": settled_amount,
-                    "balance": balance,
-                    "currency": doc.currency.code if doc.currency else "",
-                    "foreign_amount": doc.foreign_amount if doc.foreign_amount is not None else 0,
-                })
+        for doc in documents:
+            results.append({
+                "company": doc.company.name if doc.company else "",
+                "shipment_code": doc.shipment.shipment_code if doc.shipment else "",
+                "supplier": doc.shipment.supplier.supplier_name if doc.shipment and doc.shipment.supplier else "",
+                "bank": doc.bank.b_name if doc.bank else "",
+                "doc_type": doc.doc_type,
+                "reference_number": doc.reference_number,
+                "issue_date": doc.issue_date,
+                "due_date": doc.due_date,
+                "tenor": doc.tenor,
+                "currency": doc.currency.code if doc.currency else "",
+                "amount": doc.amount or 0,
+                "settled_amount": doc.settled_amount or 0,
+                "balance": doc.balance or 0,
+                "foreign_amount": doc.foreign_amount or 0,
+            })
 
     context = {
         "companies": companies,
@@ -5550,11 +5548,7 @@ def outstanding_report_web(request):
         "total_balance": sum(item["balance"] for item in results),
     }
 
-    return render(
-        request,
-        "bc/outstanding_report_web.html",
-        context
-    )
+    return render(request, "bc/outstanding_report_web.html", context)
 
   ######################## payment report
 
@@ -5977,7 +5971,7 @@ def md_dashboard_data_api(request):
     # ================= KPIs =================
     today = timezone.now()
     start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
+
     kpis = {
         "total_active": active_kpi_qs.count(),
         "new": Shipment.objects.filter(ship_status=1).count(),
