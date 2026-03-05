@@ -6168,7 +6168,8 @@ def common_dashboard_data_api(request):
                 if s.arrival_date else "-"
             ),
             # 🔹 choose which you prefer:
-            "phase": s.next_phase or "-",
+            #"phase": s.next_phase or "-",
+            "phase": s.current_phase or "Not Started",
             "progress": min(s.progress or 0, 100),
         })
 

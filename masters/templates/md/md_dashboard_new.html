@@ -366,14 +366,15 @@ tbody tr:hover{
       <h2>Shipment Overview</h2>
 
       <div class="shipment-overview">
-        <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
-        <div class="kpi-card kpi-teal"><span>NEW</span><h3 id="kpi-new">0</h3></div>
-        <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
-        <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
-        <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
-        <div class="kpi-card kpi-green"><span>THIS MONTH COMPLETED </span><h3 id="kpi-completed">0</h3></div>
-      </div>
+      <div class="kpi-card kpi-blue" data-status="active"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
+      <div class="kpi-card kpi-teal" data-status="new"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+      <div class="kpi-card kpi-orange" data-status="at_port"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
+      <div class="kpi-card kpi-purple" data-status="on_the_way"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
+      <div class="kpi-card kpi-red" data-status="grn"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
+      <div class="kpi-card kpi-green" data-status="completed"><span>THIS MONTH COMPLETED</span><h3 id="kpi-completed">0</h3></div>
     </div>
+      </div>
+  
 
     <div class="section">
       <h2>Shipments In Progress</h2>
@@ -399,6 +400,33 @@ tbody tr:hover{
   <div class="right-column section">
     <h2>Bank Facilities</h2>
     <div class="bank-list" id="bank-list"></div>
+  </div>
+
+</div>
+
+<!-------- model -->
+<div id="shipment-modal" style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.75);
+backdrop-filter:blur(6px);
+padding:40px;
+overflow:auto;
+z-index:9999;
+">
+
+  <div style="max-width:1000px;margin:auto;">
+
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+      <h2 id="modal-title" style="color:white;"></h2>
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>
+
+    <div id="modal-body"
+         style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+    </div>
+
   </div>
 
 </div>
@@ -456,7 +484,7 @@ function refreshDashboard() {
         tbody.innerHTML += `
           <tr>
             <td>${s.shipment_code ?? ""}</td>
-            <td>${s.supplier ?? ""}</td>
+            <td>${s.supplier ?? ""}</td>            
             <td>${s.arrival ?? ""}</td>
             <td>${s.phase ?? ""}</td>
             <td>
@@ -545,7 +573,66 @@ document.addEventListener("click", (e) => {
     document.documentElement.requestFullscreen().catch(()=>{});
   }
 });
+
+
+/* ===== KPI CARD CLICK ===== */
+
+function openModal(status){
+
+  fetch("{% url 'common_dashboard_data_api' %}?status=" + status)
+
+  .then(res => res.json())
+
+  .then(data => {
+
+    document.getElementById("modal-title").innerText =
+      status.replace("_"," ").toUpperCase() + " SHIPMENTS";
+
+    const body = document.getElementById("modal-body");
+    body.innerHTML = "";
+
+    (data.shipments || []).forEach(s => {
+
+      body.innerHTML += `
+      <div style="
+        background:white;
+        color:#111827;
+        padding:18px;
+        border-radius:14px;
+      ">
+        <h3>${s.shipment_code}</h3>
+        <p><b>Supplier:</b> ${s.supplier}</p>
+        <p><b>Brand:</b> ${s.shipment_description}</p>
+        <p><b>Arrival:</b> ${s.arrival}</p>
+        <p><b>Phase:</b> ${s.phase}</p>
+        <p><b>Progress:</b> ${s.progress}%</p>
+      </div>
+      `;
+    });
+
+    document.getElementById("shipment-modal").style.display = "block";
+
+  });
+
+}
+
+function closeModal(){
+  document.getElementById("shipment-modal").style.display = "none";
+}
+
+document.querySelectorAll(".kpi-card").forEach(card => {
+
+  card.addEventListener("click", () => {
+
+    openModal(card.dataset.status);
+
+  });
+
+});
 </script>
+
+
+
 
 </body>
 </html>
