@@ -5954,7 +5954,8 @@ def md_dashboard_data_api(request):
                 s.arrival_date.strftime("%b %d, %Y")
                 if s.arrival_date else "-"
             ),
-            "phase": s.next_phase or "-",
+            "phase": s.current_phase or "Not Started",   # ✅ current phase
+            #"phase": s.next_phase or "-",
             "progress": min(s.progress, 100),
         }
 
