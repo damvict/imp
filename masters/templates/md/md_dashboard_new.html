@@ -7,473 +7,544 @@
 <title>Managing Director Dashboard</title>
 
 <style>
-:root{
---bg0:#071c3d;
---bg1:#0a2b5e;
---card:rgba(255,255,255,0.08);
---card-border:rgba(255,255,255,0.15);
---text:#e5e7eb;
---muted:#9ca3af;
---blue:#3b82f6;
---green:#22c55e;
---orange:#f59e0b;
---red:#ef4444;
---purple:#8b5cf6;
---teal:#2dbae4;
---shadow:0 12px 30px rgba(0,0,0,.35);
---radius:18px;
+:root {
+  --bg0:#071c3d;
+  --bg1:#0a2b5e;
+
+  --card: rgba(255,255,255,0.08);
+  --card-border: rgba(255,255,255,0.15);
+
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --purple:#8b5cf6;
+
+  --shadow: 0 12px 30px rgba(0,0,0,.35);
+  --radius: 18px;
 }
 
-*{box-sizing:border-box}
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
 
 body{
-margin:0;
-padding:20px;
-font-family:Inter,"Segoe UI",system-ui,sans-serif;
-color:var(--text);
-background:
-radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
-radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
-linear-gradient(180deg,var(--bg0),var(--bg1));
+  margin:0;
+  padding:18px 22px;
+  font-family: Inter,"Segoe UI",system-ui,sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
+    radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+
+  /* ✅ responsive full-height layout */
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+             /* page won't scroll; panels will */
+  display: flex;
+  flex-direction: column;
 }
 
-/* TOP BAR */
-
+/* ===== TOP BAR ===== */
 .topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:14px;
 }
-
+.title{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
 .title h1{
-margin:0;
-font-size:18px;
-font-weight:800;
+  font-size:18px;
+  margin:0;
+  font-weight:800;
+  letter-spacing:.2px;
+  color:#fff;
 }
-
 .title small{
-font-size:12px;
-opacity:.8;
+  color: rgba(229,231,235,.75);
+  font-size:12px;
 }
-
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
 .pill{
-background:rgba(255,255,255,.1);
-border:1px solid rgba(255,255,255,.15);
-padding:8px 12px;
-border-radius:999px;
-font-size:12px;
+  background: rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  color: #fff;
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  backdrop-filter: blur(10px);
 }
-
 .btn{
-background:linear-gradient(135deg,#3b82f6,#22c55e);
-border:none;
-padding:9px 14px;
-border-radius:12px;
-font-weight:800;
-cursor:pointer;
+  cursor:pointer;
+  border:none;
+  background: linear-gradient(135deg, rgba(59,130,246,.95), rgba(34,197,94,.85));
+  color:#06162f;
+  padding:9px 12px;
+  border-radius:12px;
+  font-weight:900;
+  font-size:12px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
 }
+.btn:active{ transform: translateY(1px); }
 
-/* GRID */
-
+/* ===== MAIN GRID ===== */
 .page-grid{
-display:grid;
-grid-template-columns:3fr 1.2fr;
-gap:20px;
+  flex: 1;                    /* ✅ take remaining height under topbar */
+  display:grid;
+  grid-template-columns: 3fr 1.2fr;
+  gap: 18px;
+  min-height: 0;              /* ✅ important for inner scroll */
 }
 
-/* KPI */
+/* left column must stretch */
+.left-column{
+  display:flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
 
+/* make the Active Shipments section grow */
+.left-column .section:last-child{
+  flex: 1;
+  min-height: 0;
+  display:flex;
+  flex-direction: column;
+}
+
+/* ===== SECTIONS ===== */
+.section h2{
+  font-size:16px;
+  font-weight:800;
+  margin:0 0 10px;
+  color:#fff;
+}
+
+/* ===== KPI ===== */
 .shipment-overview{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:15px;
-margin-bottom:20px;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 }
 
 .kpi-card{
-padding:18px;
-border-radius:16px;
-cursor:pointer;
-transition:.3s;
-box-shadow:var(--shadow);
+  height: 96px;
+  padding: 18px;
+  border-radius: 16px;
+  color: #fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  box-shadow: var(--shadow);
 }
-
-.kpi-card:hover{transform:scale(1.05)}
 
 .kpi-card span{
-font-size:14px;
-opacity:.9;
+  font-size: 20px;
+  letter-spacing: .08em;
+  opacity: .9;
+  margin-bottom: 6px;
 }
-
 .kpi-card h3{
-margin:0;
-font-size:28px;
-font-weight:800;
+  margin:0;
+  font-size:30px;
+  font-weight:800;
 }
 
-.kpi-blue{background:linear-gradient(135deg,#2563EB,#1E40AF);}
-.kpi-green{background:linear-gradient(135deg,#16A34A,#14532D);}
-.kpi-orange{background:linear-gradient(135deg,#F59E0B,#B45309);}
-.kpi-purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);}
-.kpi-red{background:linear-gradient(135deg,#DC2626,#991B1B);}
-.kpi-teal{background:linear-gradient(135deg,#2dbae4,#045e80);}
+/* Logistics KPI colors */
+.kpi-blue { background: linear-gradient(135deg, #2563EB, #1E40AF); }
+.kpi-green { background: linear-gradient(135deg, #16A34A, #14532D); }
+.kpi-orange { background: linear-gradient(135deg, #F59E0B, #B45309); }
+.kpi-purple { background: linear-gradient(135deg, #7C3AED, #5B21B6); }
+.kpi-red { background: linear-gradient(135deg, #DC2626, #991B1B); }
+.kpi-teal { background: linear-gradient(135deg, #2dbae4, #045e80); }
 
-/* TABLE */
+/* ===== TABLE ===== */
+.table-wrapper{
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+
+/* ✅ auto-fill height + internal scroll (no fixed max-height) */
+.shipment-table-wrapper{
+  flex: 1;
+  min-height: 0;
+  overflow:auto;
+}
 
 table{
-width:100%;
-border-collapse:collapse;
-background:var(--card);
-border-radius:var(--radius);
-overflow:hidden;
+  width:100%;
+  border-collapse: collapse;
+  font-size: 13px;
 }
-
 thead th{
-padding:12px;
-font-size:11px;
-text-transform:uppercase;
-background:rgba(255,255,255,.08);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(255,255,255,0.08);
+  color: #c7d2fe;
+  padding: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing:.08em;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
 }
-
 tbody td{
-padding:11px;
-border-bottom:1px solid rgba(255,255,255,.08);
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
-
 tbody tr:hover{
-background:rgba(255,255,255,.05);
+  background: rgba(255,255,255,0.05);
 }
 
 .progress-bar{
-height:8px;
-background:rgba(255,255,255,.15);
-border-radius:8px;
-overflow:hidden;
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 8px;
+  overflow:hidden;
 }
-
 .progress-fill{
-height:100%;
-background:linear-gradient(90deg,#22c55e,#4ade80);
+  height:100%;
+  background: linear-gradient(90deg,#22c55e,#4ade80);
+  box-shadow: 0 0 10px rgba(34,197,94,.6);
 }
 
-/* BANK */
+/* ===== RIGHT BANKS ===== */
+.right-column{
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.bank-list{
+  flex: 1;             /* ✅ fill right panel height */
+  display:flex;
+  flex-direction:column;
+  gap: 12px;
+  min-height: 0;
+  overflow:auto;       /* ✅ internal scroll */
+}
 
 .bank-card{
-background:var(--card);
-border:1px solid var(--card-border);
-border-radius:14px;
-padding:12px;
-margin-bottom:10px;
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  position:relative;
+}
+.bank-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:14px;
+  border-left:4px solid var(--green);
+  pointer-events:none;
+}
+.bank-card.danger::before{ border-left-color: var(--red); }
+
+.bank-header{
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.bank-name{
+  font-weight: 900;
+  color:#a7f3d0;
+}
+.bank-acc{
+  font-size: 12px;
+  color:#93c5fd;
+}
+.bank-sep{
+  margin:0 6px;
+  color: var(--muted);
 }
 
-.bank-name{
-font-weight:800;
-color:#a7f3d0;
+.bank-col-labels{
+  display:grid;
+  grid-template-columns: 40px 1fr 1fr 50px;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 2px;
 }
+.bank-col-labels span{ text-align:right; }
+.bank-col-labels span:first-child{ text-align:left; }
 
 .bank-line{
-display:flex;
-justify-content:space-between;
-font-size:13px;
-margin-top:5px;
+  display:grid;
+  grid-template-columns: 40px 1fr 1fr 50px;
+  gap:6px;
+  align-items:center;
+  font-size: 12.5px;
+  margin-bottom: 4px;
 }
 
-/* MODAL */
+.tag{ font-size:11px; font-weight:800; color:#60a5fa; }
+.num{ text-align:right; font-weight:700; }
+.muted{ color: var(--muted); }
 
-#shipment-modal{
-display:none;
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.75);
-backdrop-filter:blur(6px);
-padding:40px;
-overflow:auto;
+.pct{ text-align:right; font-weight:900; }
+.pct.ok{ color: var(--green); }
+.pct.warn{ color: var(--orange); }
+.pct.danger{ color: var(--red); }
+
+.negative{ color: var(--red); font-weight:900; }
+
+@media (max-width:1100px){
+  .page-grid{ grid-template-columns: 1fr; min-height:0; }
+  .shipment-overview{ grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width:560px){
+  body{ padding:12px; }
+  .shipment-overview{ grid-template-columns: 1fr; }
 }
 
-.modal-body{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-gap:20px;
+/* ===== BANK PROGRESS BAR ===== */
+.bank-progress{
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 6px 0 10px;
 }
-
-.card{
-background:white;
-color:#111;
-padding:18px;
-border-radius:12px;
+.bank-progress-fill{
+  height: 100%;
 }
-
+.bank-progress-fill.ok{
+  background: linear-gradient(90deg,#22c55e,#4ade80);
+}
+.bank-progress-fill.warn{
+  background: linear-gradient(90deg,#f59e0b,#fbbf24);
+}
+.bank-progress-fill.danger{
+  background: linear-gradient(90deg,#ef4444,#f87171);
+}
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-
-<div class="title">
-<h1>Management Dashboard</h1>
-<small>Shipment Overview • Active Shipments • Bank Facilities</small>
+  <div class="title">
+    <h1>Management Dashboard</h1>
+    <small>Shipment Overview • Active Shipments • Bank Facilities</small>
+  </div>
+  <div class="actions">
+    <div class="pill">Last refresh: <b id="last-refresh">—</b></div>
+    <button class="btn" id="btn-refresh" type="button">Refresh</button>
+  </div>
 </div>
-
-<div style="display:flex;gap:10px">
-<div class="pill">Last refresh: <b id="last-refresh">—</b></div>
-<button class="btn" id="btn-refresh">Refresh</button>
-</div>
-
-</div>
-
 
 <div class="page-grid">
 
-<div>
+  <!-- LEFT -->
+  <div class="left-column">
 
-<h2>Shipment Overview</h2>
+    <div class="section">
+      <h2>Shipment Overview</h2>
 
-<div class="shipment-overview">
+      <div class="shipment-overview">
+        <div class="kpi-card kpi-blue"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
+        <div class="kpi-card kpi-teal"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+        <div class="kpi-card kpi-orange"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
+        <div class="kpi-card kpi-purple"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
+        <div class="kpi-card kpi-red"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
+        <div class="kpi-card kpi-green"><span>THIS MONTH COMPLETED </span><h3 id="kpi-completed">0</h3></div>
+      </div>
+    </div>
 
-<div class="kpi-card kpi-blue" data-status="active">
-<span>ACTIVE</span>
-<h3 id="kpi-active">0</h3>
-</div>
+    <div class="section">
+      <h2>Shipments In Progress</h2>
+      <div class="table-wrapper shipment-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment</th>
+              <th>Supplier</th>
+              <th>Arrival</th>
+              <th>Phase Completed</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="shipment-body"></tbody>
+        </table>
+      </div>
+    </div>
 
-<div class="kpi-card kpi-teal" data-status="new">
-<span>NEW</span>
-<h3 id="kpi-new">0</h3>
-</div>
+  </div>
 
-<div class="kpi-card kpi-orange" data-status="at_port">
-<span>AT PORT</span>
-<h3 id="kpi-at-port">0</h3>
-</div>
-
-<div class="kpi-card kpi-purple" data-status="on_the_way">
-<span>ON THE WAY</span>
-<h3 id="kpi-on-way">0</h3>
-</div>
-
-<div class="kpi-card kpi-red" data-status="grn">
-<span>GRN PENDING</span>
-<h3 id="kpi-grn">0</h3>
-</div>
-
-<div class="kpi-card kpi-green" data-status="completed">
-<span>THIS MONTH COMPLETED</span>
-<h3 id="kpi-completed">0</h3>
-</div>
-
-</div>
-
-<h2>Shipments In Progress</h2>
-
-<table>
-
-<thead>
-<tr>
-<th>Shipment</th>
-<th>Supplier</th>
-<th>Arrival</th>
-<th>Phase Completed</th>
-<th>Progress</th>
-</tr>
-</thead>
-
-<tbody id="shipment-body"></tbody>
-
-</table>
+  <!-- RIGHT -->
+  <div class="right-column section">
+    <h2>Bank Facilities</h2>
+    <div class="bank-list" id="bank-list"></div>
+  </div>
 
 </div>
-
-
-<div>
-
-<h2>Bank Facilities</h2>
-
-<div id="bank-list"></div>
-
-</div>
-
-</div>
-
-
-<!-- MODAL -->
-
-<div id="shipment-modal">
-
-<div style="max-width:1000px;margin:auto">
-
-<div style="display:flex;justify-content:space-between;margin-bottom:20px">
-
-<h2 id="modal-title"></h2>
-
-<button class="btn" onclick="closeModal()">Close</button>
-
-</div>
-
-<div class="modal-body" id="modal-body"></div>
-
-</div>
-
-</div>
-
 
 <script>
+const utilClass = (p) => {
+  p = Number(p || 0);
+  if (p < 10) return "danger";   // almost exhausted
+  if (p < 25) return "warn";     // low buffer
+  return "ok";                   // healthy available
+};
 
-const money = (v)=>
-Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const calcUtil = (bal, limit) => {
+  bal = Number(bal || 0);
+  limit = Number(limit || 0);
+  if (limit <= 0) return 0;
+  return Math.round((bal / limit) * 1000) / 10; // 1 decimal
+};
+</script>
 
-function updateTime(){
-const d=new Date();
-document.getElementById("last-refresh").innerText=d.toLocaleTimeString("en-GB");
+<script>
+const money = (val) =>
+  Number(val || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+const fmtTime = () => {
+  const d = new Date();
+  return d.toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+};
+
+function refreshDashboard() {
+  fetch("{% url 'md_dashboard_data_api' %}")
+    .then(res => res.json())
+    .then(data => {
+
+      // KPIs (same backend keys)
+      document.getElementById("kpi-active").innerText = data.kpis?.total_active ?? 0;
+      document.getElementById("kpi-new").innerText = data.kpis?.new ?? 0;
+      document.getElementById("kpi-at-port").innerText = data.kpis?.at_port ?? 0;
+      document.getElementById("kpi-on-way").innerText = data.kpis?.on_the_way ?? 0;
+      document.getElementById("kpi-grn").innerText = data.kpis?.grn ?? 0;
+      document.getElementById("kpi-completed").innerText = data.kpis?.completed ?? 0;
+
+      // Shipments table (keep your original rendering fields)
+      const tbody = document.getElementById("shipment-body");
+      tbody.innerHTML = "";
+
+      (data.shipments || []).forEach(s => {
+
+        // ✅ USE BACKEND VALUE ONLY
+        const p = Math.max(0, Math.min(100, Number(s.progress || 0)));
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${s.shipment_code ?? ""}</td>
+            <td>${s.supplier ?? ""}</td>
+            <td>${s.arrival ?? ""}</td>
+            <td>${s.phase ?? ""}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="progress-bar" style="flex:1;">
+                  <div class="progress-fill" style="width:${p}%"></div>
+                </div>
+                <span style="min-width:40px; font-weight:700;">
+                  ${p}%
+                </span>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      // Banks (same output as your original code)
+      const bankList = document.getElementById("bank-list");
+      bankList.innerHTML = "";
+      (data.banks || []).forEach(b => {
+        bankList.innerHTML += `
+          <div class="bank-card ${Number(b.da_balance || 0) < 0 ? 'danger' : ''}">
+            <div class="bank-header">
+              <span class="bank-name">${b.bank ?? ""}</span>
+            </div>
+
+            <div class="bank-col-labels">
+              <span></span>
+              <span>Bal</span>
+              <span>Limit</span>
+              <span>avai.%</span>
+            </div>
+
+            <div class="bank-line">
+              <span class="tag">IMP</span>
+              <span class="num">${money(b.imp_balance)}</span>
+              <span class="num muted">${money(b.imp_limit)}</span>
+              <span class="pct ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}">
+                ${calcUtil(b.imp_balance, b.imp_limit)}%
+              </span>
+            </div>
+
+            <div class="bank-progress">
+              <div class="bank-progress-fill ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}"
+                   style="width:${Math.min(100, calcUtil(b.imp_balance, b.imp_limit))}%">
+              </div>
+            </div>
+
+            <div class="bank-line">
+              <span class="tag">DA</span>
+              <span class="num ${Number(b.da_balance || 0) < 0 ? 'negative' : ''}">
+                ${money(b.da_balance)}
+              </span>
+              <span class="num muted">${money(b.da_limit)}</span>
+              <span class="pct ${utilClass(calcUtil(b.da_balance, b.da_limit))}">
+                ${calcUtil(b.da_balance, b.da_limit)}%
+              </span>
+            </div>
+
+            <div class="bank-progress">
+              <div class="bank-progress-fill ${utilClass(calcUtil(b.da_balance, b.da_limit))}"
+                   style="width:${Math.min(100, calcUtil(b.da_balance, b.da_limit))}%">
+              </div>
+            </div>
+
+          </div>
+        `;
+      });
+
+      document.getElementById("last-refresh").innerText = fmtTime();
+    })
+    .catch(() => {
+      document.getElementById("last-refresh").innerText = "API error";
+    });
 }
-
-function refreshDashboard(){
-
-fetch("{% url 'md_dashboard_data_api' %}")
-
-.then(res=>res.json())
-
-.then(data=>{
-
-document.getElementById("kpi-active").innerText=data.kpis.total_active;
-document.getElementById("kpi-new").innerText=data.kpis.new;
-document.getElementById("kpi-at-port").innerText=data.kpis.at_port;
-document.getElementById("kpi-on-way").innerText=data.kpis.on_the_way;
-document.getElementById("kpi-grn").innerText=data.kpis.grn;
-document.getElementById("kpi-completed").innerText=data.kpis.completed;
-
-const tbody=document.getElementById("shipment-body");
-
-tbody.innerHTML="";
-
-(data.shipments||[]).forEach(s=>{
-
-const p=Math.min(s.progress||0,100);
-
-tbody.innerHTML+=`
-<tr>
-<td>${s.shipment_code}</td>
-<td>${s.supplier}</td>
-<td>${s.arrival}</td>
-<td>${s.phase}</td>
-<td>
-<div style="display:flex;gap:8px;align-items:center">
-<div class="progress-bar" style="flex:1">
-<div class="progress-fill" style="width:${p}%"></div>
-</div>
-<span>${p}%</span>
-</div>
-</td>
-</tr>`;
-
-});
-
-const bankList=document.getElementById("bank-list");
-
-bankList.innerHTML="";
-
-(data.banks||[]).forEach(b=>{
-
-bankList.innerHTML+=`
-
-<div class="bank-card">
-
-<div class="bank-name">${b.bank}</div>
-
-<div class="bank-line">
-<span>IMP</span>
-<span>${money(b.imp_balance)} / ${money(b.imp_limit)}</span>
-</div>
-
-<div class="bank-line">
-<span>DA</span>
-<span>${money(b.da_balance)} / ${money(b.da_limit)}</span>
-</div>
-
-</div>
-
-`;
-
-});
-
-updateTime();
-
-});
-
-}
-
-/* MODAL */
-
-function openModal(status){
-
-fetch("{% url 'common_dashboard_data_api' %}?status="+status)
-
-.then(res=>res.json())
-
-.then(data=>{
-
-document.getElementById("modal-title").innerText=
-status.replace("_"," ").toUpperCase()+" SHIPMENTS";
-
-const body=document.getElementById("modal-body");
-
-body.innerHTML="";
-
-data.shipments.forEach(s=>{
-
-body.innerHTML+=`
-
-<div class="card">
-
-<h3>${s.shipment_code}</h3>
-
-<p><b>Supplier:</b> ${s.supplier}</p>
-<p><b>Brand:</b> ${s.shipment_description}</p>
-
-<p><b>Arrival:</b> ${s.arrival}</p>
-
-<p><b>Phase:</b> ${s.phase}</p>
-
-<p><b>Progress:</b> ${s.progress}%</p>
-
-</div>
-
-`;
-
-});
-
-document.getElementById("shipment-modal").style.display="block";
-
-});
-
-}
-
-function closeModal(){
-
-document.getElementById("shipment-modal").style.display="none";
-
-}
-
-/* KPI CLICK */
-
-document.querySelectorAll(".kpi-card").forEach(card=>{
-
-card.addEventListener("click",()=>{
-
-openModal(card.dataset.status);
-
-});
-
-});
-
-/* REFRESH */
-
-document.getElementById("btn-refresh").addEventListener("click",refreshDashboard);
 
 refreshDashboard();
+setInterval(refreshDashboard, 30000);
 
-setInterval(refreshDashboard,30000);
+document.getElementById("btn-refresh").addEventListener("click", refreshDashboard);
 
+/* Fullscreen on click (your old behavior) */
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "btn-refresh") return;
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  }
+});
 </script>
 
 </body>
