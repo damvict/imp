@@ -41,50 +41,114 @@ def create_arrival_notice_view(request):
 
 
 ############ Shipment TimeLine View ###################
-
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-
 from .models import Shipment, ShipmentPhase,ShipmentPhaseMaster
-
 
 @login_required
 def shipment_timeline(request, shipment_code):
     shipment = get_object_or_404(Shipment, shipment_code=shipment_code)
 
-    # 1️⃣ Get ALL master phases (13 phases)
     master_phases = ShipmentPhaseMaster.objects.all().order_by("order")
 
-    # 2️⃣ Get completed phases for this shipment
     completed_phases = {
         p.phase_code: p
         for p in ShipmentPhase.objects.filter(shipment=shipment)
     }
 
-    # 3️⃣ Merge them
+    dispatch = getattr(shipment, "dispatch", None)
+
     phases = []
+
     for mp in master_phases:
         sp = completed_phases.get(mp.phase_code)
+
+        extra = {}
+
+        # -------- Phase Mapping -------- #
+
+        if mp.order == 1:
+            extra = {
+                "company": shipment.company,
+                "supplier": shipment.supplier,
+            }
+
+        elif mp.order == 2:
+            extra = {
+                "packing_list": shipment.packing_list_ref,
+            }
+
+        elif mp.order == 3:
+            extra = {
+                "handover_date": shipment.c_date,
+            }
+
+        elif mp.order == 4:
+            extra = {
+                "assessment": shipment.assessment_document,
+                "duty": shipment.total_duty_value,
+            }
+
+        elif mp.order == 5:
+            extra = {
+                "payment_status": shipment.payment_marked,
+            }
+
+        elif mp.order == 6:
+            extra = {
+                "md_approved": shipment.duty_paid,
+            }
+
+        elif mp.order == 7:
+            extra = {
+                "pay_ref": shipment.payref_document_ref,
+            }
+
+        elif mp.order == 8:
+            extra = {
+                "clearing_started": shipment.C_Process_Initiated,
+            }
+
+        elif mp.order == 9:
+            extra = {
+                "clearing_done": shipment.C_Process_completed,
+            }
+
+        elif mp.order == 10:
+            extra = {
+                "arrival": shipment.arrival_at_warehouse_date,
+            }
+
+        elif mp.order == 11 and dispatch:
+            extra = {
+                "truck_no": dispatch.truck_no,
+                "driver": dispatch.driver_name,
+            }
+
+        elif mp.order == 12:
+            extra = {
+                "grn_uploaded": shipment.grn_upload_at_warehouse,
+                "date": shipment.grn_upload_at_warehouse_date,
+            }
+
+        elif mp.order == 13:
+            extra = {
+                "grn_complete": shipment.grn_complete_at_warehouse,
+            }
 
         phases.append({
             "phase_name": mp.phase_name,
             "order": mp.order,
             "completed": sp.completed if sp else False,
             "completed_at": sp.completed_at if sp else None,
+            "extra": extra,
         })
 
-
-
-    
-    return render(
-        request,
-        "shipments/shipment_timeline.html",
-        {
-            "shipment": shipment,
-            "phases": phases,
-        }
-    )
-
+    return render(request, "shipments/shipment_timeline.html", {
+        "shipment": shipment,
+        "phases": phases,
+        "dispatch": dispatch,
+    })
 
 
 
