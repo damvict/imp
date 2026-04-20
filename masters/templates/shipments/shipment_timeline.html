@@ -125,22 +125,17 @@
 
 <div class="timeline-page">
 
-  <!-- Back Button -->
+  <!-- Back -->
   <a href="{% url 'shipments_active' %}" class="btn btn-secondary mb-3">
     ← Back to Shipments
   </a>
 
-  <!-- Header -->
   <h2>{{ shipment.shipment_code }}</h2>
 
-  <!-- Shipment Details -->
+  <!-- Shipment Info -->
   <div class="details-card">
-    <div class="detail-text">
-      <span class="label">BL:</span> {{ shipment.bl }}
-    </div>
-    <div class="detail-text">
-      <span class="label">Vessel:</span> {{ shipment.vessel }}
-    </div>
+    <div class="detail-text"><span class="label">BL:</span> {{ shipment.bl }}</div>
+    <div class="detail-text"><span class="label">Vessel:</span> {{ shipment.vessel }}</div>
     <div class="detail-text">
       <span class="label">Expected Arrival:</span>
       {{ shipment.expected_arrival_date|date:"d M Y" }}
@@ -153,7 +148,6 @@
   <div class="timeline">
     {% for p in phases %}
     <div class="step">
-
       <div class="timeline-left">
         <div class="circle {% if p.completed %}active{% endif %}">
           {% if p.completed %}✔{% endif %}
@@ -173,12 +167,11 @@
         </div>
         {% endif %}
       </div>
-
     </div>
     {% endfor %}
   </div>
 
-  <!-- Detailed Phase Cards -->
+  <!-- Detailed Phases -->
   <div class="section-title mt-4">Detailed Phases</div>
 
   {% for p in phases %}
@@ -209,13 +202,48 @@
     </div>
     {% endif %}
 
-    <!-- 🔥 Dynamic Extra Data -->
+    <!-- 🔥 Extra Fields -->
     {% for key, value in p.extra.items %}
       {% if value %}
-      <div class="summary-row">
-        <span>{{ key|title|cut:"_" }}</span>
-        <span>{{ value }}</span>
-      </div>
+
+        <!-- ✅ Payment Reference -->
+        {% if key == "pay_ref" %}
+        <div class="summary-row">
+          <span>PayRef</span>
+          <span>{{ value }}</span>
+        </div>
+
+        <!-- ✅ Payment Reference Document -->
+        {% elif key == "payref_file" %}
+        <div class="summary-row">
+          <span>Document</span>
+          <span>
+            <a href="{{ value.url }}" target="_blank" style="color:#2563EB; font-weight:600;">
+              📄 View Document
+            </a>
+          </span>
+        </div>
+
+        <!-- ✅ Assessment PDF -->
+        {% elif key == "assessment" %}
+        <div class="summary-row">
+          <span>Assessment</span>
+          <span>
+            <a href="{{ value.url }}" target="_blank" style="color:#2563EB;">
+              📄 View PDF
+            </a>
+          </span>
+        </div>
+
+        <!-- ✅ Default -->
+        {% else %}
+        <div class="summary-row">
+          <span>{{ key|title|cut:"_" }}</span>
+          <span>{{ value }}</span>
+        </div>
+
+        {% endif %}
+
       {% endif %}
     {% endfor %}
 

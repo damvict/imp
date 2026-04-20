@@ -102,6 +102,7 @@ def shipment_timeline(request, shipment_code):
         elif mp.order == 7:
             extra = {
                 "pay_ref": shipment.payref_document_ref,
+                "payref_file": shipment.payref_document,
             }
 
         elif mp.order == 8:
