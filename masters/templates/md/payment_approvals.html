@@ -2,6 +2,7 @@
 {% block title %}Payment Approvals{% endblock %}
 
 {% block content %}
+{% load humanize %}
 <style>
 /* Page */
 .page-wrapper {
@@ -190,7 +191,7 @@
 
         <div class="info-row">
           <span>Duty Amount</span>
-          <span>Rs {{ s.total_duty_value|floatformat:2 }}</span>
+          <span>Rs {{ s.total_duty_value|floatformat:2|intcomma }}</span>
         </div>
 
         <div class="info-row">
