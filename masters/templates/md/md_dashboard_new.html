@@ -409,58 +409,7 @@ function refreshDashboard() {
         `;
       });
 
-      // Banks (same output as your original code)
-      const bankList = document.getElementById("bank-list");
-      bankList.innerHTML = "";
-      (data.banks || []).forEach(b => {
-        bankList.innerHTML += `
-          <div class="bank-card ${Number(b.da_balance || 0) < 0 ? 'danger' : ''}">
-            <div class="bank-header">
-              <span class="bank-name">${b.bank ?? ""}</span>
-            </div>
-
-            <div class="bank-col-labels">
-              <span></span>
-              <span>Bal</span>
-              <span>Limit</span>
-              <span>avai.%</span>
-            </div>
-
-            <div class="bank-line">
-              <span class="tag">IMP</span>
-              <span class="num">${money(b.imp_balance)}</span>
-              <span class="num muted">${money(b.imp_limit)}</span>
-              <span class="pct ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}">
-                ${calcUtil(b.imp_balance, b.imp_limit)}%
-              </span>
-            </div>
-
-            <div class="bank-progress">
-              <div class="bank-progress-fill ${utilClass(calcUtil(b.imp_balance, b.imp_limit))}"
-                   style="width:${Math.min(100, calcUtil(b.imp_balance, b.imp_limit))}%">
-              </div>
-            </div>
-
-            <div class="bank-line">
-              <span class="tag">DA</span>
-              <span class="num ${Number(b.da_balance || 0) < 0 ? 'negative' : ''}">
-                ${money(b.da_balance)}
-              </span>
-              <span class="num muted">${money(b.da_limit)}</span>
-              <span class="pct ${utilClass(calcUtil(b.da_balance, b.da_limit))}">
-                ${calcUtil(b.da_balance, b.da_limit)}%
-              </span>
-            </div>
-
-            <div class="bank-progress">
-              <div class="bank-progress-fill ${utilClass(calcUtil(b.da_balance, b.da_limit))}"
-                   style="width:${Math.min(100, calcUtil(b.da_balance, b.da_limit))}%">
-              </div>
-            </div>
-
-          </div>
-        `;
-      });
+     
 
       document.getElementById("last-refresh").innerText = fmtTime();
     })
