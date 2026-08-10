@@ -400,7 +400,6 @@
 
       <div class="ca-content">
         <h4>Payment Approvals</h4>
-
         {% if md.payment_app > 0 %}
           <p>{{ md.payment_app }} approval(s) pending</p>
         {% else %}
@@ -428,6 +427,26 @@
 
     </a>
   </div>
+
+
+  <!-- Phase Range Report -->
+<div class="col-xl-6 col-lg-6">
+
+    <a href="{% url 'phase_range_report' %}"
+       class="ca-card">
+
+      <div class="ca-icon primary">
+        <i class="fa fa-chart-line"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Phase Range Report</h4>
+        <p>View shipments by phase range</p>
+      </div>
+
+    </a>
+
+</div>
 
 </div>
 

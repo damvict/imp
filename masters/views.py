@@ -62,6 +62,7 @@ from django.db import models
 
 from .models import Currency
 from .serializers import CurrencySerializer
+from .models import Shipment, ShipmentPhaseMaster
 
 from django.http import JsonResponse
 import json
@@ -4484,17 +4485,26 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
             # ✅ EMAIL (outside transaction)
             if shipment.clearing_agent and shipment.clearing_agent.email:
                 subject = f"Payment Reference Issued – Shipment {shipment.shipment_code}"
+                duty_value = (
+                    f"LKR {shipment.total_duty_value:,.2f}"
+                    if shipment.total_duty_value is not None
+                    else "N/A"
+                )
 
                 message = f"""Dear {shipment.clearing_agent.get_full_name() or shipment.clearing_agent.username},
+
+            
 
 The payment reference for the following shipment has been issued by the Bank Manager.
 
 Shipment Code        : {shipment.shipment_code}
 Supplier Invoice     : {shipment.supplier_invoice or 'N/A'}
+Invoice Value        : {shipment.amount or 'N/A'}
+Supplier Name        : {shipment.supplier.name if shipment.supplier else 'N/A'}
 Reference Number     : {shipment.reference_number or 'N/A'}
 Payment Reference    : {shipment.payref_document_ref}
 Payment Date         : {shipment.send_to_clearing_agent_payment_date.strftime('%Y-%m-%d')}
-Duty Value            : LKR {shipment.total_duty_value or 'N/A'}
+Duty Value           : {duty_value}
 
 Please proceed with the clearing process using the above payment reference.
 
@@ -5950,6 +5960,7 @@ def md_dashboard_data_api(request):
 
         shipment_row = {
             "shipment_code": s.shipment_code,
+            "shipment_description": s.shipment_description or "-",
             "arrival": (
                 s.arrival_date.strftime("%b %d, %Y")
                 if s.arrival_date else "-"
@@ -6262,3 +6273,45 @@ from .services import get_sales_dashboard_data
 def impsales_dashboard(request):
     context = get_sales_dashboard_data()
     return render(request, "dash/import_salesdashboard.html", context)
+
+
+
+############## phase reports
+
+def phase_range_report(request):
+
+    phases = ShipmentPhaseMaster.objects.all().order_by('order')
+
+    from_order = request.GET.get('from_order')
+    to_order = request.GET.get('to_order')
+
+    shipments = Shipment.objects.none()
+
+    if from_order and to_order:
+
+        shipments = Shipment.objects.annotate(
+            current_phase_order=Max('phases__order')
+        ).filter(
+            current_phase_order__gte=from_order,
+            current_phase_order__lte=to_order
+        )
+
+        # ADD CURRENT PHASE NAME
+        for s in shipments:
+
+            latest_phase = s.phases.order_by('-order').first()
+
+            if latest_phase:
+                s.current_phase_name = latest_phase.phase_name
+            else:
+                s.current_phase_name = "No Phase"
+
+
+    context = {
+        'phases': phases,
+        'shipments': shipments,
+        'from_order': from_order,
+        'to_order': to_order,
+    }
+
+    return render(request, 'reports/phase_range_report.html', context)

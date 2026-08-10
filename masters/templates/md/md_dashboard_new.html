@@ -105,11 +105,11 @@ body{
 
 /* ===== MAIN GRID ===== */
 .page-grid{
-  flex: 1;                    /* ✅ take remaining height under topbar */
+  flex: 1;
   display:grid;
-  grid-template-columns: 3fr 1.2fr;
+  grid-template-columns: 1fr;
   gap: 18px;
-  min-height: 0;              /* ✅ important for inner scroll */
+  min-height: 0;
 }
 
 /* left column must stretch */
@@ -228,78 +228,6 @@ tbody tr:hover{
   box-shadow: 0 0 10px rgba(34,197,94,.6);
 }
 
-/* ===== RIGHT BANKS ===== */
-.right-column{
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
-  min-height: 0;
-}
-
-.bank-list{
-  flex: 1;             /* ✅ fill right panel height */
-  display:flex;
-  flex-direction:column;
-  gap: 12px;
-  min-height: 0;
-  overflow:auto;       /* ✅ internal scroll */
-}
-
-.bank-card{
-  background: var(--card);
-  backdrop-filter: blur(14px);
-  border-radius: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow);
-  position:relative;
-}
-.bank-card::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:14px;
-  border-left:4px solid var(--green);
-  pointer-events:none;
-}
-.bank-card.danger::before{ border-left-color: var(--red); }
-
-.bank-header{
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-.bank-name{
-  font-weight: 900;
-  color:#a7f3d0;
-}
-.bank-acc{
-  font-size: 12px;
-  color:#93c5fd;
-}
-.bank-sep{
-  margin:0 6px;
-  color: var(--muted);
-}
-
-.bank-col-labels{
-  display:grid;
-  grid-template-columns: 40px 1fr 1fr 50px;
-  gap: 6px;
-  font-size: 10px;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-.bank-col-labels span{ text-align:right; }
-.bank-col-labels span:first-child{ text-align:left; }
-
-.bank-line{
-  display:grid;
-  grid-template-columns: 40px 1fr 1fr 50px;
-  gap:6px;
-  align-items:center;
-  font-size: 12.5px;
-  margin-bottom: 4px;
-}
 
 .tag{ font-size:11px; font-weight:800; color:#60a5fa; }
 .num{ text-align:right; font-weight:700; }
@@ -321,26 +249,7 @@ tbody tr:hover{
   .shipment-overview{ grid-template-columns: 1fr; }
 }
 
-/* ===== BANK PROGRESS BAR ===== */
-.bank-progress{
-  height: 6px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 6px;
-  overflow: hidden;
-  margin: 6px 0 10px;
-}
-.bank-progress-fill{
-  height: 100%;
-}
-.bank-progress-fill.ok{
-  background: linear-gradient(90deg,#22c55e,#4ade80);
-}
-.bank-progress-fill.warn{
-  background: linear-gradient(90deg,#f59e0b,#fbbf24);
-}
-.bank-progress-fill.danger{
-  background: linear-gradient(90deg,#ef4444,#f87171);
-}
+
 </style>
 </head>
 
@@ -383,6 +292,7 @@ tbody tr:hover{
           <thead>
             <tr>
               <th>Shipment</th>
+              <th>Brand</th>
               <th>Supplier</th>
               <th>Arrival</th>
               <th>Phase Completed</th>
@@ -397,10 +307,7 @@ tbody tr:hover{
   </div>
 
   <!-- RIGHT -->
-  <div class="right-column section">
-    <h2>Bank Facilities</h2>
-    <div class="bank-list" id="bank-list"></div>
-  </div>
+  
 
 </div>
 
@@ -484,6 +391,7 @@ function refreshDashboard() {
         tbody.innerHTML += `
           <tr>
             <td>${s.shipment_code ?? ""}</td>
+            <td>${s.shipment_description}</td>
             <td>${s.supplier ?? ""}</td>            
             <td>${s.arrival ?? ""}</td>
             <td>${s.phase ?? ""}</td>
