@@ -4015,6 +4015,7 @@ def ca_pending_assessment_web(request):
     # POST → upload assessment
     shipment_id = request.POST.get("shipment_id")
     total_duty = request.POST.get("total_duty_value")
+    customs_declaration_number = request.POST.get("customs_declaration_number"  )
     file = request.FILES.get("assessment_document")
 
     shipment = get_object_or_404(
@@ -4054,6 +4055,7 @@ def ca_pending_assessment_web(request):
     # ✅ Save assessment (same as API)
     shipment.assessment_document = file
     shipment.total_duty_value = total_duty
+    shipment.customs_declaration_number = customs_declaration_number
     shipment.assessment_uploaded_date = timezone.now()
     shipment.c_ass_send = True
     shipment.save()
@@ -4073,6 +4075,8 @@ def ca_pending_assessment_web(request):
     Shipment Code     : {shipment.shipment_code}
     Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
     Reference Number  : {shipment.reference_number or 'N/A'}
+    Custom Declaration Number  : {shipment.customs_declaration_number or 'N/A'}
+    Clearing Agent    : {shipment.clearing_agent.get_full_name()}
     Total Duty Value  : LKR {shipment.total_duty_value}
     Assessment Date   : {shipment.assessment_uploaded_date.strftime('%Y-%m-%d')}
 
@@ -4088,8 +4092,9 @@ def ca_pending_assessment_web(request):
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[settings.BANK_MANAGER_EMAIL],
         cc=["damayanthi@anuragroup.lk"],  # optional
+        ###cc=["damayanthi@anuragroup.lk","amila@anuragroup.lk","ajith@anura-group.com"],  # optional
     )
-    email.send(fail_silently=False)
+    email.send(fail_silently=False);
 
 
 
@@ -4269,9 +4274,14 @@ Dear Sir,
 The Bank Manager has submitted payment details for MD approval.
 
 Shipment Code     : {shipment.shipment_code}
+Supplier Name     : {shipment.supplier.supplier_name or 'N/A'}
 Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
+Invoice Value     : {f"LKR {shipment.amount:,.2f}" if shipment.amount is not None else 'N/A'}
+Brand               : {shipment.shipment_description or 'N/A'}
+Clearing Agent Name : {shipment.clearing_agent.get_full_name()}
+
 Reference Number  : {shipment.reference_number or 'N/A'}
-Total Duty Value  : LKR {shipment.total_duty_value or 'N/A'}
+Total Duty Value     : {f"LKR {shipment.total_duty_value:,.2f}" if shipment.total_duty_value is not None else 'N/A'}
 
 Payment Method    : {shipment.get_payment_type_display()}
 Duty Paid Bank    : {shipment.duty_paid_bank or 'N/A'}
@@ -4484,7 +4494,7 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
 
             # ✅ EMAIL (outside transaction)
             if shipment.clearing_agent and shipment.clearing_agent.email:
-                subject = f"Payment Reference Issued – Shipment {shipment.shipment_code}"
+                subject = f"Custom Duty Paid – Shipment {shipment.shipment_code}"
                 duty_value = (
                     f"LKR {shipment.total_duty_value:,.2f}"
                     if shipment.total_duty_value is not None
@@ -4499,8 +4509,6 @@ The payment reference for the following shipment has been issued by the Bank Man
 
 Shipment Code        : {shipment.shipment_code}
 Supplier Invoice     : {shipment.supplier_invoice or 'N/A'}
-Invoice Value        : {shipment.amount or 'N/A'}
-Supplier Name        : {shipment.supplier.name if shipment.supplier else 'N/A'}
 Reference Number     : {shipment.reference_number or 'N/A'}
 Payment Reference    : {shipment.payref_document_ref}
 Payment Date         : {shipment.send_to_clearing_agent_payment_date.strftime('%Y-%m-%d')}
@@ -4517,7 +4525,7 @@ ISWM System
                     body=message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[shipment.clearing_agent.email],
-                   cc=["damayanthi@anuragroup.lk","chathura@anuragroup.lk"],  # optional
+                   cc=["damayanthi@anuragroup.lk","chathura@anuragroup.lk","lahiru@anura-group.com","amila@anuragroup.lk","madusha@anuragroup.lk"],  # optional
                 )
                 email.send(fail_silently=False)
 

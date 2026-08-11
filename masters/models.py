@@ -293,6 +293,11 @@ class Shipment(models.Model):
     )
     assessment_uploaded_date = models.DateTimeField(null=True, blank=True)
     total_duty_value = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)  # NEW
+    customs_declaration_number = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
 
     # Bank manager stage
     payment_marked = models.BooleanField(default=False)
