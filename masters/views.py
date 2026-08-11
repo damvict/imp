@@ -4091,8 +4091,8 @@ def ca_pending_assessment_web(request):
         body=message,
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[settings.BANK_MANAGER_EMAIL],
-        cc=["damayanthi@anuragroup.lk"],  # optional
-        ###cc=["damayanthi@anuragroup.lk","amila@anuragroup.lk","ajith@anura-group.com"],  # optional
+        #####cc=["damayanthi@anuragroup.lk"],  # optional
+        cc=["damayanthi@anuragroup.lk","amila@anuragroup.lk","ajith@anura-group.com"],  # optional
     )
     email.send(fail_silently=False);
 
