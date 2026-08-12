@@ -35,7 +35,21 @@
                     <label>Invoice Number</label>
                     {{ form.supplier_invoice|add_class:"form-control" }}
                   </div>
+                  
                 </div>
+                <div class="row">
+
+    <div class="col-md-6 mb-3">
+        <label>Expected Arrival Date</label>
+        {{ form.expected_arrival_date|add_class:"form-control" }}
+    </div>
+
+     <div class="col-md-6 mb-3">
+        <label>Shipment Arrival Date</label>
+        {{ form.ship_arival_date|add_class:"form-control" }}
+    </div>
+
+</div>
 
               </div>
             </div>

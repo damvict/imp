@@ -626,6 +626,8 @@ class EditShipmentForm(forms.ModelForm):
             "net_weight",
             "cbm",
             "vehicle",
+            "expected_arrival_date",
+            "ship_arival_date", #### updated on 12 aug 2026 - chamod 
         ]
 
         widgets = {
@@ -640,4 +642,18 @@ class EditShipmentForm(forms.ModelForm):
             "net_weight": forms.NumberInput(attrs={"class": "form-control"}),
             "cbm": forms.NumberInput(attrs={"class": "form-control"}),
             "vehicle": forms.TextInput(attrs={"class": "form-control"}),
+            "expected_arrival_date": forms.DateInput(
+            attrs={
+                "type": "date",
+                "class": "form-control",
+            },   ),
+
+             "ship_arival_date": forms.DateInput(
+                        attrs={
+                            "type": "date",
+                            "class": "form-control",
+                        },   ),
+
+
+
         }

@@ -192,7 +192,7 @@ def get_sales_dashboard_data():
             "progress",
             "supplier__supplier_name",
         )
-        .order_by("expected_arrival_date")
+        .order_by("-phase_order", "ship_arival_date")
     )
 
     context = {
