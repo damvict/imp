@@ -38,6 +38,7 @@ from .models import Shipment, ShipmentDetail
 from django.core.mail import send_mail
 from openpyxl import Workbook
 from django.http import HttpResponse
+import mimetypes
 
 from .forms import (
     ShipmentForm,
@@ -4438,34 +4439,49 @@ def bank_manager_payment_references_web(request):
     )
 
 
+########################################  Bank Manager payment reference ##############################
 @login_required
 def bank_manager_payment_reference_detail_web(request, shipment_id):
+
     shipment = get_object_or_404(Shipment, id=shipment_id)
 
     if request.method == "POST":
+
         payref_document_ref = request.POST.get("payref_document_ref")
         file = request.FILES.get("payref_document")
 
-        # 🔴 Validation
+        # ============================================================
+        # VALIDATION
+        # ============================================================
+
         if not payref_document_ref:
             messages.error(request, "Payment reference is required.")
             return redirect(request.path)
 
-        # 🔴 File size validation (10MB)
+        # File size validation - 10MB
         if file and file.size > 10 * 1024 * 1024:
             messages.error(request, "File too large (max 10MB).")
             return redirect(request.path)
 
-        # 🔴 Delete old file if exists
+        # ============================================================
+        # DELETE OLD FILE
+        # ============================================================
+
         if (
             file
             and shipment.payref_document
             and hasattr(shipment.payref_document, "path")
             and os.path.isfile(shipment.payref_document.path)
         ):
-            os.remove(shipment.payref_document.path)
+            try:
+                os.remove(shipment.payref_document.path)
+            except OSError:
+                pass
 
-        # 🔴 Assign values
+        # ============================================================
+        # ASSIGN VALUES
+        # ============================================================
+
         if file:
             shipment.payref_document = file
 
@@ -4474,12 +4490,19 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
         shipment.send_to_clearing_agent_payment_date = timezone.now()
 
         try:
-            # 🔒 DATABASE OPERATIONS ONLY
+
+            # ========================================================
+            # DATABASE OPERATIONS
+            # ========================================================
+
             with transaction.atomic():
+
                 shipment.save()
 
+                # Create shipment phase
                 try:
                     phase_master = ShipmentPhaseMaster.objects.get(id=7)
+
                     ShipmentPhase.objects.create(
                         shipment=shipment,
                         phase_code=phase_master.phase_code,
@@ -4489,21 +4512,41 @@ def bank_manager_payment_reference_detail_web(request, shipment_id):
                         updated_by=request.user,
                         order=phase_master.order,
                     )
+
                 except ShipmentPhaseMaster.DoesNotExist:
                     pass
 
-            # ✅ EMAIL (outside transaction)
+            # ========================================================
+            # SEND EMAIL
+            # ========================================================
+
             if shipment.clearing_agent and shipment.clearing_agent.email:
-                subject = f"Custom Duty Paid – Shipment {shipment.shipment_code}"
+
+                subject = (
+                    f"Custom Duty Paid – Shipment "
+                    f"{shipment.shipment_code}"
+                )
+
                 duty_value = (
                     f"LKR {shipment.total_duty_value:,.2f}"
                     if shipment.total_duty_value is not None
                     else "N/A"
                 )
 
-                message = f"""Dear {shipment.clearing_agent.get_full_name() or shipment.clearing_agent.username},
+                clearing_agent_name = (
+                    shipment.clearing_agent.get_full_name()
+                    or shipment.clearing_agent.username
+                )
 
-            
+                payment_date = (
+                    shipment.send_to_clearing_agent_payment_date.strftime(
+                        "%Y-%m-%d"
+                    )
+                    if shipment.send_to_clearing_agent_payment_date
+                    else "N/A"
+                )
+
+                message = f"""Dear {clearing_agent_name},
 
 The payment reference for the following shipment has been issued by the Bank Manager.
 
@@ -4511,7 +4554,7 @@ Shipment Code        : {shipment.shipment_code}
 Supplier Invoice     : {shipment.supplier_invoice or 'N/A'}
 Reference Number     : {shipment.reference_number or 'N/A'}
 Payment Reference    : {shipment.payref_document_ref}
-Payment Date         : {shipment.send_to_clearing_agent_payment_date.strftime('%Y-%m-%d')}
+Payment Date         : {payment_date}
 Duty Value           : {duty_value}
 
 Please proceed with the clearing process using the above payment reference.
@@ -4525,22 +4568,203 @@ ISWM System
                     body=message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     to=[shipment.clearing_agent.email],
-                   cc=["damayanthi@anuragroup.lk","chathura@anuragroup.lk","lahiru@anura-group.com","amila@anuragroup.lk","madusha@anuragroup.lk"],  # optional
+                    cc=["damayanthi@anuragroup.lk","chathura@anuragroup.lk","lahiru@anura-group.com","amila@anuragroup.lk","madusha@anuragroup.lk"]
                 )
+
+                # ====================================================
+                # ATTACH PAYMENT REFERENCE DOCUMENT
+                # ====================================================
+
+                if shipment.payref_document:
+
+                    file_name = os.path.basename(
+                        shipment.payref_document.name
+                    )
+
+                    mime_type, _ = mimetypes.guess_type(file_name)
+
+                    if not mime_type:
+                        mime_type = "application/octet-stream"
+
+                    try:
+                        shipment.payref_document.open("rb")
+
+                        file_content = shipment.payref_document.read()
+
+                        email.attach(
+                            file_name,
+                            file_content,
+                            mime_type
+                        )
+
+                    finally:
+                        shipment.payref_document.close()
+
+                # ====================================================
+                # SEND EMAIL
+                # ====================================================
+
                 email.send(fail_silently=False)
 
-            messages.success(request, "✅ Payment marked successfully.")
+            # ========================================================
+            # SUCCESS
+            # ========================================================
+
+            messages.success(
+                request,
+                "✅ Payment marked successfully and email sent."
+            )
+
             return redirect("bank-manager-payment-references")
 
         except Exception as e:
-            messages.error(request, f"Error: {str(e)}")
+
+            messages.error(
+                request,
+                f"Error: {str(e)}"
+            )
+
             return redirect(request.path)
+
+    # ================================================================
+    # GET REQUEST
+    # ================================================================
 
     return render(
         request,
         "bank_manager/payment_reference_detail.html",
-        {"shipment": shipment}
+        {
+            "shipment": shipment
+        }
     )
+
+
+
+
+#######################################################################
+# def bank_manager_payment_reference_detail_web(request, shipment_id):
+#     shipment = get_object_or_404(Shipment, id=shipment_id)
+
+#     if request.method == "POST":
+#         payref_document_ref = request.POST.get("payref_document_ref")
+#         file = request.FILES.get("payref_document")
+
+#         # 🔴 Validation
+#         if not payref_document_ref:
+#             messages.error(request, "Payment reference is required.")
+#             return redirect(request.path)
+
+#         # 🔴 File size validation (10MB)
+#         if file and file.size > 10 * 1024 * 1024:
+#             messages.error(request, "File too large (max 10MB).")
+#             return redirect(request.path)
+
+#         # 🔴 Delete old file if exists
+#         if (
+#             file
+#             and shipment.payref_document
+#             and hasattr(shipment.payref_document, "path")
+#             and os.path.isfile(shipment.payref_document.path)
+#         ):
+#             os.remove(shipment.payref_document.path)
+
+#         # 🔴 Assign values
+#         if file:
+#             shipment.payref_document = file
+
+#         shipment.payref_document_ref = payref_document_ref
+#         shipment.send_to_clearing_agent_payment = True
+#         shipment.send_to_clearing_agent_payment_date = timezone.now()
+
+#         try:
+#             # 🔒 DATABASE OPERATIONS ONLY
+#             with transaction.atomic():
+#                 shipment.save()
+
+#                 try:
+#                     phase_master = ShipmentPhaseMaster.objects.get(id=7)
+#                     ShipmentPhase.objects.create(
+#                         shipment=shipment,
+#                         phase_code=phase_master.phase_code,
+#                         phase_name=phase_master.phase_name,
+#                         completed=True,
+#                         completed_at=timezone.now(),
+#                         updated_by=request.user,
+#                         order=phase_master.order,
+#                     )
+#                 except ShipmentPhaseMaster.DoesNotExist:
+#                     pass
+
+#             # ✅ EMAIL (outside transaction)
+#             if shipment.clearing_agent and shipment.clearing_agent.email:
+#                 subject = f"Custom Duty Paid – Shipment {shipment.shipment_code}"
+#                 duty_value = (
+#                     f"LKR {shipment.total_duty_value:,.2f}"
+#                     if shipment.total_duty_value is not None
+#                     else "N/A"
+#                 )
+
+#                 message = f"""Dear {shipment.clearing_agent.get_full_name() or shipment.clearing_agent.username},
+
+            
+
+# The payment reference for the following shipment has been issued by the Bank Manager.
+
+# Shipment Code        : {shipment.shipment_code}
+# Supplier Invoice     : {shipment.supplier_invoice or 'N/A'}
+# Reference Number     : {shipment.reference_number or 'N/A'}
+# Payment Reference    : {shipment.payref_document_ref}
+# Payment Date         : {shipment.send_to_clearing_agent_payment_date.strftime('%Y-%m-%d')}
+# Duty Value           : {duty_value}
+
+# Please proceed with the clearing process using the above payment reference.
+
+# Regards,
+# ISWM System
+# """
+
+#                 email = EmailMessage(
+#                     subject=subject,
+#                     body=message,
+#                     from_email=settings.DEFAULT_FROM_EMAIL,
+#                     to=[shipment.clearing_agent.email],
+#                     cc=["damayanthi@anuragroup.lk"],  # optional
+#                    ####cc=["damayanthi@anuragroup.lk","chathura@anuragroup.lk","lahiru@anura-group.com","amila@anuragroup.lk","madusha@anuragroup.lk"],  # optional
+#                 )
+
+#                 # 📎 Attach Payment Reference Document
+#                # 📎 Attach Payment Reference Document
+#                 if shipment.payref_document:
+#                     file_name = shipment.payref_document.name.split("/")[-1]
+
+#                     mime_type, _ = mimetypes.guess_type(file_name)
+#                     mime_type = mime_type or "application/octet-stream"
+
+#                     shipment.payref_document.open("rb")
+
+#                     email.attach(
+#                         file_name,
+#                         shipment.payref_document.read(),
+#                         mime_type
+#                     )
+
+#                     shipment.payref_document.close()
+
+
+#                 email.send(fail_silently=False)
+
+#             messages.success(request, "✅ Payment marked successfully.")
+#             return redirect("bank-manager-payment-references")
+
+#         except Exception as e:
+#             messages.error(request, f"Error: {str(e)}")
+#             return redirect(request.path)
+
+#     return render(
+#         request,
+#         "bank_manager/payment_reference_detail.html",
+#         {"shipment": shipment}
+#     )
 
 
 
