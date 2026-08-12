@@ -6182,7 +6182,7 @@ def md_dashboard_data_api(request):
                 output_field=IntegerField(),
             )
         )
-        .order_by("arrival_date")
+        .order_by("-phase_order", "ship_arival_date")
     )
 
     # ================= TABLE DATA (GROUP BASED) =================
@@ -6393,7 +6393,7 @@ def common_dashboard_data_api(request):
                 ),
             )
         )
-        .order_by("arrival_date")
+        .order_by("-phase_order", "ship_arival_date")
     )
 
     # ==============================
