@@ -4277,7 +4277,7 @@ The Bank Manager has submitted payment details for MD approval.
 Shipment Code     : {shipment.shipment_code}
 Supplier Name     : {shipment.supplier.supplier_name or 'N/A'}
 Supplier Invoice  : {shipment.supplier_invoice or 'N/A'}
-Invoice Value     : {f"LKR {shipment.amount:,.2f}" if shipment.amount is not None else 'N/A'}
+Invoice Value     : {f"{shipment.amount:,.2f}" if shipment.amount is not None else 'N/A'}
 Brand               : {shipment.shipment_description or 'N/A'}
 Clearing Agent Name : {shipment.clearing_agent.get_full_name()}
 
@@ -5838,6 +5838,7 @@ def payment_report_web(request):
                 "total_duty_value": ship.total_duty_value or 0,
                 "duty_paid_date": ship.duty_paid_date,
                 "payref_document": ship.payref_document.url if ship.payref_document else "",
+                "customs_declaration_number": ship.customs_declaration_number or "",
             })
 
     context = {

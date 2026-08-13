@@ -58,6 +58,7 @@
               <th>Duty Paid Bank</th>
               <th class="text-end">Total Duty Value (LKR)</th>
               <th>Duty Paid Date</th>
+               <th>Customs Clearance Document</th>
               <th>PayRef Document</th>
             </tr>
           </thead>
@@ -72,6 +73,7 @@
                 {{ row.total_duty_value|floatformat:2|intcomma }}
               </td>
               <td>{{ row.duty_paid_date|date:"Y-m-d" }}</td>
+              <td>{{ row.customs_declaration_number }}</td>
               <td>
                 {% if row.payref_document %}
                   <a href="{{ row.payref_document }}" target="_blank" class="btn btn-sm btn-success">
