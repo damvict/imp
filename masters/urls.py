@@ -560,6 +560,13 @@ path(
     name="bank_document_report_web",
 ),
 
+path(
+    "shipment-documents/reports/",
+    views.shipment_document_report_web,
+    name="shipment_document_report_web",
+),
+
+
 ###path("reports/outstanding/pdf/", outstanding_report_pdf),
 #path(
   #"bank-documents/reports/outstanding/pdf/",

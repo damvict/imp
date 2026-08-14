@@ -5685,7 +5685,406 @@ def bank_document_report_web(request):
     )
 
 
+from datetime import datetime, time, timedelta
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.utils import timezone
+
+from .models import Shipment
+
+
+@login_required
+def shipment_document_report_web(request):
+
+    # ---------------------------------------
+    # Get dates from form
+    # ---------------------------------------
+
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    today = timezone.localdate()
+
+    if not from_date:
+        from_date = today.replace(day=1).strftime("%Y-%m-%d")
+
+    if not to_date:
+        to_date = today.strftime("%Y-%m-%d")
+
+
+    # ---------------------------------------
+    # Convert strings to dates
+    # ---------------------------------------
+
+    try:
+        from_date_obj = datetime.strptime(
+            from_date,
+            "%Y-%m-%d"
+        ).date()
+
+    except (ValueError, TypeError):
+
+        from_date_obj = today.replace(day=1)
+        from_date = from_date_obj.strftime("%Y-%m-%d")
+
+
+    try:
+        to_date_obj = datetime.strptime(
+            to_date,
+            "%Y-%m-%d"
+        ).date()
+
+    except (ValueError, TypeError):
+
+        to_date_obj = today
+        to_date = to_date_obj.strftime("%Y-%m-%d")
+
+
+    # ---------------------------------------
+    # Create datetime range
+    # ---------------------------------------
+
+    start_datetime = timezone.make_aware(
+        datetime.combine(
+            from_date_obj,
+            time.min
+        )
+    )
+
+    end_datetime = timezone.make_aware(
+        datetime.combine(
+            to_date_obj + timedelta(days=1),
+            time.min
+        )
+    )
+
+
+    # ---------------------------------------
+    # Get shipments
+    # ---------------------------------------
+
+    shipments = (
+        Shipment.objects
+        .select_related(
+            "supplier",
+            "company",
+            "created_by",
+            "clearing_agent",
+        )
+        .filter(
+            created_at__gte=start_datetime,
+            created_at__lt=end_datetime,
+        )
+        .order_by("-created_at")
+    )
+
+
+    # ---------------------------------------
+    # Helper function
+    # ---------------------------------------
+
+    def format_duration(delta):
+
+        if not delta:
+            return "-"
+
+        total_seconds = int(delta.total_seconds())
+
+        if total_seconds < 0:
+            return "0d 0h 0m"
+
+        days = total_seconds // 86400
+
+        remaining = total_seconds % 86400
+
+        hours = remaining // 3600
+
+        remaining %= 3600
+
+        minutes = remaining // 60
+
+        return f"{days}d {hours}h {minutes}m"
+
+
+    # ---------------------------------------
+    # KPI counters
+    # ---------------------------------------
+
+    total_shipments = shipments.count()
+
+    completed_shipments = 0
+    pending_shipments = 0
+
+
+    # ---------------------------------------
+    # Total seconds for averages
+    # ---------------------------------------
+
+    total_eta_to_warehouse_seconds = 0
+    eta_to_warehouse_count = 0
+
+    total_warehouse_to_grn_seconds = 0
+    warehouse_to_grn_count = 0
+
+    total_upload_to_grn_seconds = 0
+    upload_to_grn_count = 0
+
+
+    # ---------------------------------------
+    # Report data
+    # ---------------------------------------
+
+    report_data = []
+
+
+    # ---------------------------------------
+    # Calculate performance
+    # ---------------------------------------
+
+    for shipment in shipments:
+
+        # =====================================
+        # 1. ETA → Arrival in Warehouse
+        # =====================================
+
+        eta_to_warehouse = None
+        eta_to_warehouse_text = "-"
+
+        if (
+            shipment.expected_arrival_date
+            and shipment.arrival_at_warehouse_date
+        ):
+
+            eta_datetime = timezone.make_aware(
+                datetime.combine(
+                    shipment.expected_arrival_date,
+                    time.min
+                )
+            )
+
+            arrival_datetime = (
+                shipment.arrival_at_warehouse_date
+            )
+
+            eta_to_warehouse = (
+                arrival_datetime - eta_datetime
+            )
+
+            eta_to_warehouse_text = format_duration(
+                eta_to_warehouse
+            )
+
+            total_eta_to_warehouse_seconds += max(
+                eta_to_warehouse.total_seconds(),
+                0
+            )
+
+            eta_to_warehouse_count += 1
+
+
+        # =====================================
+        # 2. Arrival in Warehouse → GRN Complete
+        # =====================================
+
+        warehouse_to_grn = None
+        warehouse_to_grn_text = "-"
+
+        if (
+            shipment.arrival_at_warehouse_date
+            and shipment.grn_complete_at_warehouse_date
+        ):
+
+            warehouse_to_grn = (
+                shipment.grn_complete_at_warehouse_date
+                - shipment.arrival_at_warehouse_date
+            )
+
+            warehouse_to_grn_text = format_duration(
+                warehouse_to_grn
+            )
+
+            total_warehouse_to_grn_seconds += max(
+                warehouse_to_grn.total_seconds(),
+                0
+            )
+
+            warehouse_to_grn_count += 1
+
+
+        # =====================================
+        # 3. GRN Upload → GRN Complete
+        # =====================================
+
+        upload_to_grn = None
+        upload_to_grn_text = "-"
+
+        if (
+            shipment.grn_upload_at_warehouse_date
+            and shipment.grn_complete_at_warehouse_date
+        ):
+
+            upload_to_grn = (
+                shipment.grn_complete_at_warehouse_date
+                - shipment.grn_upload_at_warehouse_date
+            )
+
+            upload_to_grn_text = format_duration(
+                upload_to_grn
+            )
+
+            total_upload_to_grn_seconds += max(
+                upload_to_grn.total_seconds(),
+                0
+            )
+
+            upload_to_grn_count += 1
+
+
+        # =====================================
+        # Overall GRN status
+        # =====================================
+
+        if shipment.grn_complete_at_warehouse_date:
+
+            completed_shipments += 1
+
+            status = "Completed"
+
+        else:
+
+            pending_shipments += 1
+
+            status = "Pending GRN"
+
+
+        # =====================================
+        # Add row
+        # =====================================
+
+        report_data.append({
+
+            "shipment": shipment,
+
+            "eta_to_warehouse": eta_to_warehouse,
+
+            "eta_to_warehouse_text":
+                eta_to_warehouse_text,
+
+            "warehouse_to_grn": warehouse_to_grn,
+
+            "warehouse_to_grn_text":
+                warehouse_to_grn_text,
+
+            "upload_to_grn": upload_to_grn,
+
+            "upload_to_grn_text":
+                upload_to_grn_text,
+
+            "status": status,
+
+        })
+
+
+    # ---------------------------------------
+    # Average ETA → Warehouse
+    # ---------------------------------------
+
+    average_eta_to_warehouse = "-"
+
+    if eta_to_warehouse_count > 0:
+
+        average_seconds = (
+            total_eta_to_warehouse_seconds
+            / eta_to_warehouse_count
+        )
+
+        average_eta_to_warehouse = format_duration(
+            timedelta(seconds=average_seconds)
+        )
+
+
+    # ---------------------------------------
+    # Average Warehouse → GRN
+    # ---------------------------------------
+
+    average_warehouse_to_grn = "-"
+
+    if warehouse_to_grn_count > 0:
+
+        average_seconds = (
+            total_warehouse_to_grn_seconds
+            / warehouse_to_grn_count
+        )
+
+        average_warehouse_to_grn = format_duration(
+            timedelta(seconds=average_seconds)
+        )
+
+
+    # ---------------------------------------
+    # Average GRN Upload → GRN Complete
+    # ---------------------------------------
+
+    average_upload_to_grn = "-"
+
+    if upload_to_grn_count > 0:
+
+        average_seconds = (
+            total_upload_to_grn_seconds
+            / upload_to_grn_count
+        )
+
+        average_upload_to_grn = format_duration(
+            timedelta(seconds=average_seconds)
+        )
+
+
+    # ---------------------------------------
+    # Context
+    # ---------------------------------------
+
+    context = {
+
+        "report_data": report_data,
+
+        "from_date": from_date,
+        "to_date": to_date,
+
+        "total_shipments":
+            total_shipments,
+
+        "completed_shipments":
+            completed_shipments,
+
+        "pending_shipments":
+            pending_shipments,
+
+        "average_eta_to_warehouse":
+            average_eta_to_warehouse,
+
+        "average_warehouse_to_grn":
+            average_warehouse_to_grn,
+
+        "average_upload_to_grn":
+            average_upload_to_grn,
+
+        "eta_to_warehouse_count":
+            eta_to_warehouse_count,
+
+        "warehouse_to_grn_count":
+            warehouse_to_grn_count,
+
+        "upload_to_grn_count":
+            upload_to_grn_count,
+    }
+
+
+    return render(
+        request,
+        "bc/shipment_report_web.html",
+        context
+    )
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required

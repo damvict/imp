@@ -1,0 +1,1696 @@
+{% extends "base.html" %}
+
+{% block title %}Shipment Performance Report{% endblock %}
+
+{% block content %}
+
+<style>
+
+    /* =========================================================
+       PAGE
+    ========================================================= */
+
+    .shipment-report-page {
+        background: #F4F7FB;
+        min-height: 100vh;
+        color: #1F2937;
+    }
+
+
+    /* =========================================================
+       TOP HEADER
+    ========================================================= */
+
+    .report-topbar {
+        background: linear-gradient(
+            135deg,
+            #0F2A5F 0%,
+            #1E3A8A 55%,
+            #2563EB 100%
+        );
+
+        min-height: 68px;
+
+        box-shadow:
+            0 3px 10px rgba(15, 42, 95, 0.20);
+    }
+
+
+    .report-topbar-title {
+        letter-spacing: 0.2px;
+        font-size: 17px;
+    }
+
+
+    .back-button {
+        width: 38px;
+        height: 38px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 10px;
+
+        background: rgba(255,255,255,0.12);
+
+        transition: all 0.2s ease;
+    }
+
+
+    .back-button:hover {
+        background: rgba(255,255,255,0.22);
+    }
+
+
+    /* =========================================================
+       CONTENT
+    ========================================================= */
+
+    .report-content {
+        padding: 28px 24px 40px;
+    }
+
+
+    .report-heading {
+        margin-bottom: 22px;
+    }
+
+
+    .report-heading h4 {
+        font-size: 25px;
+        font-weight: 700;
+
+        color: #172033;
+
+        margin-bottom: 5px;
+    }
+
+
+    .report-heading p {
+        color: #6B7280;
+        margin: 0;
+
+        font-size: 14px;
+    }
+
+
+    /* =========================================================
+       DATE FILTER
+    ========================================================= */
+
+    .filter-card {
+        background: #FFFFFF;
+
+        border: 1px solid #E5EAF1;
+
+        border-radius: 16px;
+
+        box-shadow:
+            0 5px 18px rgba(15, 23, 42, 0.06);
+
+        margin-bottom: 24px;
+    }
+
+
+    .filter-card-body {
+        padding: 22px;
+    }
+
+
+    .filter-label {
+        font-size: 12px;
+        font-weight: 600;
+
+        color: #64748B;
+
+        margin-bottom: 7px;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.5px;
+    }
+
+
+    .date-input {
+        height: 44px;
+
+        border: 1px solid #D7DEE9;
+
+        border-radius: 9px;
+
+        font-size: 14px;
+
+        color: #1F2937;
+
+        background: #FFFFFF;
+    }
+
+
+    .date-input:focus {
+        border-color: #2563EB;
+
+        box-shadow:
+            0 0 0 3px rgba(37, 99, 235, 0.10);
+    }
+
+
+    .generate-btn {
+        height: 44px;
+
+        border: none;
+
+        border-radius: 9px;
+
+        background: linear-gradient(
+            135deg,
+            #1E3A8A,
+            #2563EB
+        );
+
+        font-weight: 600;
+
+        font-size: 14px;
+
+        box-shadow:
+            0 4px 10px rgba(37, 99, 235, 0.20);
+
+        transition: all 0.2s ease;
+    }
+
+
+    .generate-btn:hover {
+        transform: translateY(-1px);
+
+        box-shadow:
+            0 6px 14px rgba(37, 99, 235, 0.28);
+    }
+
+
+    /* =========================================================
+       KPI CARDS
+    ========================================================= */
+
+    .kpi-card {
+        position: relative;
+
+        overflow: hidden;
+
+        background: #FFFFFF;
+
+        border: 1px solid #E5EAF1;
+
+        border-radius: 16px;
+
+        min-height: 142px;
+
+        box-shadow:
+            0 5px 18px rgba(15, 23, 42, 0.055);
+
+        transition: all 0.2s ease;
+    }
+
+
+    .kpi-card:hover {
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 8px 22px rgba(15, 23, 42, 0.09);
+    }
+
+
+    .kpi-card::before {
+        content: "";
+
+        position: absolute;
+
+        left: 0;
+        top: 0;
+        bottom: 0;
+
+        width: 5px;
+    }
+
+
+    .kpi-total::before {
+        background: #334155;
+    }
+
+
+    .kpi-eta::before {
+        background: #2563EB;
+    }
+
+
+    .kpi-warehouse::before {
+        background: #059669;
+    }
+
+
+    .kpi-upload::before {
+        background: #D97706;
+    }
+
+
+    .kpi-body {
+        padding: 21px 20px 18px 23px;
+    }
+
+
+    .kpi-label {
+        display: flex;
+
+        align-items: center;
+
+        gap: 8px;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        color: #64748B;
+
+        margin-bottom: 12px;
+    }
+
+
+    .kpi-icon {
+        width: 30px;
+        height: 30px;
+
+        border-radius: 8px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        font-size: 14px;
+    }
+
+
+    .kpi-icon-total {
+        background: #F1F5F9;
+        color: #475569;
+    }
+
+
+    .kpi-icon-eta {
+        background: #EFF6FF;
+        color: #2563EB;
+    }
+
+
+    .kpi-icon-warehouse {
+        background: #ECFDF5;
+        color: #059669;
+    }
+
+
+    .kpi-icon-upload {
+        background: #FFFBEB;
+        color: #D97706;
+    }
+
+
+    .kpi-value {
+        font-size: 25px;
+
+        line-height: 1.1;
+
+        font-weight: 700;
+
+        color: #172033;
+
+        margin-bottom: 7px;
+    }
+
+
+    .kpi-subtitle {
+        font-size: 11px;
+
+        color: #94A3B8;
+    }
+
+
+    /* =========================================================
+       STATUS CARDS
+    ========================================================= */
+
+    .status-card {
+        background: #FFFFFF;
+
+        border: 1px solid #E5EAF1;
+
+        border-radius: 15px;
+
+        box-shadow:
+            0 4px 16px rgba(15, 23, 42, 0.05);
+    }
+
+
+    .status-body {
+        padding: 18px 20px;
+    }
+
+
+    .status-title {
+        font-size: 12px;
+
+        font-weight: 600;
+
+        color: #64748B;
+
+        margin-bottom: 8px;
+    }
+
+
+    .status-number {
+        font-size: 25px;
+
+        font-weight: 700;
+    }
+
+
+    .completed-number {
+        color: #059669;
+    }
+
+
+    .pending-number {
+        color: #D97706;
+    }
+
+
+    .status-progress {
+        height: 5px;
+
+        border-radius: 10px;
+
+        background: #F1F5F9;
+
+        margin-top: 12px;
+
+        overflow: hidden;
+    }
+
+
+    .completed-progress {
+        height: 100%;
+
+        background: #10B981;
+
+        border-radius: 10px;
+    }
+
+
+    .pending-progress {
+        height: 100%;
+
+        background: #F59E0B;
+
+        border-radius: 10px;
+    }
+
+
+    /* =========================================================
+       REPORT TABLE CARD
+    ========================================================= */
+
+    .table-card {
+        background: #FFFFFF;
+
+        border: 1px solid #E1E7EF;
+
+        border-radius: 16px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 6px 20px rgba(15, 23, 42, 0.06);
+    }
+
+
+    .table-card-header {
+        padding: 18px 20px;
+
+        border-bottom: 1px solid #E8EDF3;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+    }
+
+
+    .table-card-title {
+        font-size: 15px;
+
+        font-weight: 700;
+
+        color: #172033;
+
+        margin: 0;
+    }
+
+
+    .table-card-subtitle {
+        font-size: 11px;
+
+        color: #94A3B8;
+
+        margin-top: 3px;
+    }
+
+
+    .table-wrapper {
+        overflow-x: auto;
+
+        max-height: 600px;
+    }
+
+
+    /* =========================================================
+       TABLE
+    ========================================================= */
+
+    .shipment-table {
+        width: 100%;
+
+        min-width: 1450px;
+
+        margin: 0;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+    }
+
+
+    .shipment-table thead th {
+        position: sticky;
+
+        top: 0;
+
+        z-index: 5;
+
+        background: #F1F5F9;
+
+        color: #334155;
+
+        font-size: 11px;
+
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.35px;
+
+        white-space: nowrap;
+
+        padding: 13px 12px;
+
+        border-bottom: 2px solid #D9E1EA;
+
+        vertical-align: middle;
+    }
+
+
+    .shipment-table tbody td {
+        padding: 14px 12px;
+
+        font-size: 12px;
+
+        color: #475569;
+
+        border-bottom: 1px solid #EDF1F5;
+
+        vertical-align: middle;
+
+        white-space: nowrap;
+    }
+
+
+    .shipment-table tbody tr {
+        background: #FFFFFF;
+
+        transition: background 0.15s ease;
+    }
+
+
+    .shipment-table tbody tr:nth-child(even) {
+        background: #FAFBFD;
+    }
+
+
+    .shipment-table tbody tr:hover {
+        background: #F0F6FF;
+    }
+
+
+    .shipment-number {
+        color: #94A3B8;
+
+        font-weight: 600;
+    }
+
+
+    .shipment-code {
+        color: #1E3A8A;
+
+        font-weight: 700;
+
+        font-size: 12px;
+    }
+
+
+    .supplier-name {
+        color: #334155;
+
+        font-weight: 500;
+    }
+
+
+    .agent-name {
+        color: #475569;
+    }
+
+
+    .date-main {
+        color: #334155;
+
+        font-weight: 500;
+    }
+
+
+    .date-time {
+        color: #94A3B8;
+
+        font-size: 10px;
+
+        margin-top: 2px;
+    }
+
+
+    /* =========================================================
+       PERFORMANCE BADGES
+    ========================================================= */
+
+    .duration-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        padding: 5px 9px;
+
+        border-radius: 7px;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        white-space: nowrap;
+    }
+
+
+    .duration-blue {
+        background: #EFF6FF;
+
+        color: #1D4ED8;
+
+        border: 1px solid #DBEAFE;
+    }
+
+
+    .duration-green {
+        background: #ECFDF5;
+
+        color: #047857;
+
+        border: 1px solid #D1FAE5;
+    }
+
+
+    .duration-orange {
+        background: #FFF7ED;
+
+        color: #C2410C;
+
+        border: 1px solid #FED7AA;
+    }
+
+
+    .empty-value {
+        color: #CBD5E1;
+
+        font-weight: 500;
+    }
+
+
+    /* =========================================================
+       STATUS BADGES
+    ========================================================= */
+
+    .status-badge {
+        display: inline-flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        padding: 5px 9px;
+
+        border-radius: 20px;
+
+        font-size: 10px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+    }
+
+
+    .status-badge::before {
+        content: "";
+
+        width: 6px;
+        height: 6px;
+
+        border-radius: 50%;
+    }
+
+
+    .status-completed {
+        background: #ECFDF5;
+
+        color: #047857;
+
+        border: 1px solid #D1FAE5;
+    }
+
+
+    .status-completed::before {
+        background: #10B981;
+    }
+
+
+    .status-pending {
+        background: #FFF7ED;
+
+        color: #C2410C;
+
+        border: 1px solid #FED7AA;
+    }
+
+
+    .status-pending::before {
+        background: #F59E0B;
+    }
+
+
+    /* =========================================================
+       MOBILE
+    ========================================================= */
+
+    @media (max-width: 768px) {
+
+        .report-content {
+            padding: 20px 12px 30px;
+        }
+
+
+        .report-heading h4 {
+            font-size: 21px;
+        }
+
+
+        .filter-card-body {
+            padding: 16px;
+        }
+
+
+        .kpi-value {
+            font-size: 21px;
+        }
+
+
+        .table-card-header {
+            padding: 15px;
+        }
+
+    }
+
+</style>
+
+
+<div class="shipment-report-page">
+
+
+    <!-- =====================================================
+         TOP HEADER
+    ====================================================== -->
+
+    <div class="report-topbar d-flex align-items-center px-3">
+
+        <a href="javascript:history.back()"
+           class="back-button text-white text-decoration-none me-3">
+
+            <span style="font-size:21px;">
+                ←
+            </span>
+
+        </a>
+
+
+        <div class="flex-grow-1">
+
+            <div class="report-topbar-title text-white fw-semibold">
+                Shipment Performance
+            </div>
+
+            <div class="text-white-50"
+                 style="font-size:10px;">
+
+                Logistics Performance Dashboard
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="report-content">
+
+
+        <!-- =================================================
+             TITLE
+        ================================================== -->
+
+        <div class="report-heading">
+
+            <h4>
+                Shipment Performance Report
+            </h4>
+
+            <p>
+                Performance from Estimated Arrival to GRN Completion
+            </p>
+
+        </div>
+
+
+
+        <!-- =================================================
+             DATE FILTER
+        ================================================== -->
+
+        <div class="filter-card">
+
+            <div class="filter-card-body">
+
+                <form method="GET">
+
+                    <div class="row g-3 align-items-end">
+
+
+                        <!-- FROM -->
+
+                        <div class="col-md-4">
+
+                            <label class="filter-label">
+                                From Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="from_date"
+                                class="form-control date-input"
+                                value="{{ from_date }}"
+                            >
+
+                        </div>
+
+
+                        <!-- TO -->
+
+                        <div class="col-md-4">
+
+                            <label class="filter-label">
+                                To Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="to_date"
+                                class="form-control date-input"
+                                value="{{ to_date }}"
+                            >
+
+                        </div>
+
+
+                        <!-- BUTTON -->
+
+                        <div class="col-md-4">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary generate-btn w-100"
+                            >
+
+                                <span class="me-2">
+                                    ↻
+                                </span>
+
+                                View Report
+
+                            </button>
+
+                        </div>
+
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             KPI CARDS
+        ================================================== -->
+
+        <div class="row g-3 mb-4">
+
+
+            <!-- TOTAL -->
+
+            <div class="col-6 col-lg-3">
+
+                <div class="kpi-card kpi-total h-100">
+
+                    <div class="kpi-body">
+
+                        <div class="kpi-label">
+
+                            <div class="kpi-icon kpi-icon-total">
+                                ▣
+                            </div>
+
+                            Total Shipments
+
+                        </div>
+
+
+                        <div class="kpi-value">
+
+                            {{ total_shipments }}
+
+                        </div>
+
+
+                        <div class="kpi-subtitle">
+
+                            Shipments in selected period
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ETA → WAREHOUSE -->
+
+            <div class="col-6 col-lg-3">
+
+                <div class="kpi-card kpi-eta h-100">
+
+                    <div class="kpi-body">
+
+                        <div class="kpi-label">
+
+                            <div class="kpi-icon kpi-icon-eta">
+                                ↘
+                            </div>
+
+                            ETA → Warehouse
+
+                        </div>
+
+
+                        <div class="kpi-value">
+
+                            {{ average_eta_to_warehouse }}
+
+                        </div>
+
+
+                        <div class="kpi-subtitle">
+
+                            {{ eta_to_warehouse_count }}
+                            shipments measured
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- WAREHOUSE → GRN -->
+
+            <div class="col-6 col-lg-3">
+
+                <div class="kpi-card kpi-warehouse h-100">
+
+                    <div class="kpi-body">
+
+                        <div class="kpi-label">
+
+                            <div class="kpi-icon kpi-icon-warehouse">
+                                ✓
+                            </div>
+
+                            Warehouse → GRN
+
+                        </div>
+
+
+                        <div class="kpi-value">
+
+                            {{ average_warehouse_to_grn }}
+
+                        </div>
+
+
+                        <div class="kpi-subtitle">
+
+                            {{ warehouse_to_grn_count }}
+                            shipments measured
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- UPLOAD → COMPLETE -->
+
+            <div class="col-6 col-lg-3">
+
+                <div class="kpi-card kpi-upload h-100">
+
+                    <div class="kpi-body">
+
+                        <div class="kpi-label">
+
+                            <div class="kpi-icon kpi-icon-upload">
+                                ↑
+                            </div>
+
+                            GRN Upload → Complete
+
+                        </div>
+
+
+                        <div class="kpi-value">
+
+                            {{ average_upload_to_grn }}
+
+                        </div>
+
+
+                        <div class="kpi-subtitle">
+
+                            {{ upload_to_grn_count }}
+                            shipments measured
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             STATUS SUMMARY
+        ================================================== -->
+
+        <div class="row g-3 mb-4">
+
+
+            <!-- COMPLETED -->
+
+            <div class="col-md-6">
+
+                <div class="status-card">
+
+                    <div class="status-body">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center">
+
+                            <div>
+
+                                <div class="status-title">
+                                    GRN Completed
+                                </div>
+
+                                <div class="status-number completed-number">
+
+                                    {{ completed_shipments }}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="kpi-icon kpi-icon-warehouse"
+                                 style="width:42px;height:42px;font-size:18px;">
+
+                                ✓
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="status-progress">
+
+                            <div class="completed-progress"
+                                 style="width:
+                                 {% if total_shipments %}
+                                     {% widthratio completed_shipments total_shipments 100 %}
+                                 {% else %}
+                                     0
+                                 {% endif %}%;">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PENDING -->
+
+            <div class="col-md-6">
+
+                <div class="status-card">
+
+                    <div class="status-body">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center">
+
+                            <div>
+
+                                <div class="status-title">
+                                    Pending GRN
+                                </div>
+
+                                <div class="status-number pending-number">
+
+                                    {{ pending_shipments }}
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="kpi-icon kpi-icon-upload"
+                                 style="width:42px;height:42px;font-size:18px;">
+
+                                !
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="status-progress">
+
+                            <div class="pending-progress"
+                                 style="width:
+                                 {% if total_shipments %}
+                                     {% widthratio pending_shipments total_shipments 100 %}
+                                 {% else %}
+                                     0
+                                 {% endif %}%;">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             REPORT TABLE
+        ================================================== -->
+
+        <div class="table-card">
+
+
+            <!-- TABLE HEADER -->
+
+            <div class="table-card-header">
+
+                <div>
+
+                    <h6 class="table-card-title">
+                        Shipment Performance Details
+                    </h6>
+
+                    <div class="table-card-subtitle">
+
+                        Detailed shipment timeline and processing duration
+
+                    </div>
+
+                </div>
+
+
+                <div class="text-muted"
+                     style="font-size:11px;">
+
+                    {{ total_shipments }} Records
+
+                </div>
+
+            </div>
+
+
+
+            <!-- TABLE -->
+
+            <div class="table-wrapper">
+
+                <table class="shipment-table">
+
+
+                    <!-- =================================================
+                         HEADER
+                    ================================================== -->
+
+                    <thead>
+
+                        <tr>
+
+                            <th style="width:45px;">
+                                #
+                            </th>
+
+                            <th>
+                                Shipment
+                            </th>
+
+                            <th>
+                                Brand
+                            </th>
+
+                            <th>
+                                Supplier
+                            </th>
+
+                            <th>
+                                Clearing Agent
+                            </th>
+
+                            <th>
+                                CusDec No.
+                            </th>
+
+                            <th>
+                                ETA
+                            </th>
+
+                            <th>
+                                Arrival Warehouse
+                            </th>
+
+                            <th>
+                                ETA → Warehouse
+                            </th>
+
+                            <th>
+                                GRN Upload
+                            </th>
+
+                            <th>
+                                GRN Complete
+                            </th>
+
+                            <th>
+                                Warehouse → GRN
+                            </th>
+
+                            <th>
+                                Upload → GRN
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+
+                    <!-- =================================================
+                         BODY
+                    ================================================== -->
+
+                    <tbody>
+
+
+                        {% for row in report_data %}
+
+                        <tr>
+
+
+                            <!-- NUMBER -->
+
+                            <td class="shipment-number">
+
+                                {{ forloop.counter }}
+
+                            </td>
+
+
+
+                            <!-- SHIPMENT -->
+
+                            <td>
+
+                                <span class="shipment-code">
+
+                                    {{ row.shipment.shipment_code }}
+
+                                </span>
+
+                            </td>
+
+
+
+                            <!-- BRAND -->
+
+                            <td>
+
+                                {% if row.shipment.bl %}
+
+                                    {{ row.shipment.bl }}
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- SUPPLIER -->
+
+                            <td>
+
+                                {% if row.shipment.supplier %}
+
+                                    <span class="supplier-name">
+
+                                        {{ row.shipment.supplier.supplier_name }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- CLEARING AGENT -->
+
+                            <td>
+
+                                {% if row.shipment.clearing_agent %}
+
+                                    <span class="agent-name">
+
+                                        {% if row.shipment.clearing_agent.get_full_name %}
+
+                                            {{ row.shipment.clearing_agent.get_full_name }}
+
+                                        {% else %}
+
+                                            {{ row.shipment.clearing_agent.username }}
+
+                                        {% endif %}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- CUSDEC -->
+
+                            <td>
+
+                                {% if row.shipment.customs_declaration_number %}
+
+                                    {{ row.shipment.customs_declaration_number }}
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- ETA -->
+
+                            <td>
+
+                                {% if row.shipment.expected_arrival_date %}
+
+                                    <span class="date-main">
+
+                                        {{ row.shipment.expected_arrival_date|date:"d-M-Y" }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- ARRIVAL WAREHOUSE -->
+
+                            <td>
+
+                                {% if row.shipment.arrival_at_warehouse_date %}
+
+                                    <div class="date-main">
+
+                                        {{ row.shipment.arrival_at_warehouse_date|date:"d-M-Y" }}
+
+                                    </div>
+
+                                    <div class="date-time">
+
+                                        {{ row.shipment.arrival_at_warehouse_date|date:"H:i" }}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- ETA → WAREHOUSE -->
+
+                            <td>
+
+                                {% if row.eta_to_warehouse_text != "-" %}
+
+                                    <span class="duration-badge duration-blue">
+
+                                        {{ row.eta_to_warehouse_text }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- GRN UPLOAD -->
+
+                            <td>
+
+                                {% if row.shipment.grn_upload_at_warehouse_date %}
+
+                                    <div class="date-main">
+
+                                        {{ row.shipment.grn_upload_at_warehouse_date|date:"d-M-Y" }}
+
+                                    </div>
+
+                                    <div class="date-time">
+
+                                        {{ row.shipment.grn_upload_at_warehouse_date|date:"H:i" }}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- GRN COMPLETE -->
+
+                            <td>
+
+                                {% if row.shipment.grn_complete_at_warehouse_date %}
+
+                                    <div class="date-main">
+
+                                        {{ row.shipment.grn_complete_at_warehouse_date|date:"d-M-Y" }}
+
+                                    </div>
+
+                                    <div class="date-time">
+
+                                        {{ row.shipment.grn_complete_at_warehouse_date|date:"H:i" }}
+
+                                    </div>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- WAREHOUSE → GRN -->
+
+                            <td>
+
+                                {% if row.warehouse_to_grn_text != "-" %}
+
+                                    <span class="duration-badge duration-green">
+
+                                        {{ row.warehouse_to_grn_text }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- UPLOAD → GRN -->
+
+                            <td>
+
+                                {% if row.upload_to_grn_text != "-" %}
+
+                                    <span class="duration-badge duration-orange">
+
+                                        {{ row.upload_to_grn_text }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="empty-value">
+                                        -
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+
+                            <!-- STATUS -->
+
+                            <td>
+
+                                {% if row.status == "Completed" %}
+
+                                    <span class="status-badge status-completed">
+
+                                        Completed
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="status-badge status-pending">
+
+                                        Pending GRN
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                        </tr>
+
+
+                        {% empty %}
+
+                        <!-- EMPTY -->
+
+                        <tr>
+
+                            <td colspan="14"
+                                class="text-center py-5">
+
+                                <div style="font-size:28px;
+                                            margin-bottom:8px;">
+
+                                    📊
+
+                                </div>
+
+                                <div style="font-weight:600;
+                                            color:#475569;">
+
+                                    No shipments found
+
+                                </div>
+
+                                <div style="font-size:11px;
+                                            color:#94A3B8;
+                                            margin-top:4px;">
+
+                                    No shipment records are available
+                                    for the selected date range.
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+{% endblock %}
