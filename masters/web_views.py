@@ -58,6 +58,16 @@ def shipment_timeline(request, shipment_code):
 
     dispatch = getattr(shipment, "dispatch", None)
 
+
+     # ---------------------------------------
+    # Payment Reference Document Permission
+    # Only Groups 1, 2, 3, 5, 6 can view
+    # ---------------------------------------
+    allowed_group_ids = [1, 2, 3, 5, 6]
+
+    can_view_payref = request.user.groups.filter(
+        id__in=allowed_group_ids
+    ).exists()
     phases = []
 
     for mp in master_phases:
@@ -85,9 +95,11 @@ def shipment_timeline(request, shipment_code):
 
         elif mp.order == 4:
             extra = {
-                "assessment": shipment.assessment_document,
+                
                 "duty": shipment.total_duty_value,
             }
+            if can_view_payref:
+                extra["assessment"] = shipment.assessment_document
 
         elif mp.order == 5:
             extra = {
@@ -102,13 +114,17 @@ def shipment_timeline(request, shipment_code):
         elif mp.order == 7:
             extra = {
                 "pay_ref": shipment.payref_document_ref,
-                "payref_file": shipment.payref_document,
+
             }
+
+            if can_view_payref:
+                extra["payref_file"] = shipment.payref_document
 
         elif mp.order == 8:
             extra = {
                 "clearing_started": shipment.C_Process_Initiated,
             }
+            
 
         elif mp.order == 9:
             extra = {
