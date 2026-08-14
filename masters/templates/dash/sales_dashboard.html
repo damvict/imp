@@ -197,11 +197,18 @@ tbody tr:hover{
     <small>Shipment Overview • Active Shipments</small>
   </div>
   <div class="actions">
-    <div class="pill">
-      Last refresh: <b id="last-refresh">—</b>
-    </div>
-    <button class="btn" id="btn-refresh" type="button">Refresh</button>
+  <div class="pill">
+    Last refresh: <b id="last-refresh">—</b>
   </div>
+
+  <a href="{% url 'shipments_active' %}" class="btn">
+    View Active Shipments
+  </a>
+
+  <button class="btn" id="btn-refresh" type="button">
+    Refresh
+  </button>
+</div>
 </div>
 
 <div class="shipment-overview">
