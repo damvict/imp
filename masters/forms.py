@@ -657,3 +657,53 @@ class EditShipmentForm(forms.ModelForm):
 
 
         }
+
+
+#############################################################
+
+from django import forms
+from .models import Shipment
+
+
+class UpdateExpectedArrivalDateForm(forms.ModelForm):
+
+    class Meta:
+        model = Shipment
+        fields = ["shipment_code", "expected_arrival_date"]
+
+        widgets = {
+            "shipment_code": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Enter Shipment Code",
+            }),
+            "expected_arrival_date": forms.DateInput(
+                attrs={
+                    "class": "form-control",
+                    "type": "date",
+                }
+            ),
+        }
+
+        labels = {
+            "shipment_code": "Shipment Code",
+            "expected_arrival_date": "Expected Arrival Date",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Shipment code should identify the shipment,
+        # not be changed by the user.
+        self.fields["shipment_code"].disabled = False
+
+    def clean_shipment_code(self):
+        shipment_code = self.cleaned_data["shipment_code"]
+
+        try:
+            Shipment.objects.get(shipment_code=shipment_code)
+        except Shipment.DoesNotExist:
+            raise forms.ValidationError(
+                "Shipment code does not exist."
+            )
+
+        return shipment_code
