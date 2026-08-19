@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load humanize %}
 
 {% block title %}Shipment Aging Report{% endblock %}
 
@@ -27,9 +28,12 @@
     </div>
 
 
-    <!-- ================= FILTER ================= -->
+    <!-- ================= CONTENT ================= -->
 
     <div class="container-fluid py-3">
+
+
+        <!-- ================= FILTER CARD ================= -->
 
         <div class="card border-0 shadow-sm"
              style="border-radius:12px;">
@@ -38,42 +42,52 @@
 
                 <form method="GET">
 
+
                     <!-- ================= DATE RANGE ================= -->
 
-                    <div class="row g-3 mb-4">
+                    <div class="mb-4">
 
-                        <div class="col-md-6">
+                        <h6 class="fw-bold mb-3">
+                            Shipment Date Range
+                        </h6>
 
-                            <label class="form-label fw-semibold">
-                                From Date
-                            </label>
+                        <div class="row g-3">
 
-                            <input type="date"
-                                   name="from_date"
-                                   value="{{ from_date }}"
-                                   class="form-control"
-                                   required>
+                            <div class="col-md-6">
 
-                        </div>
+                                <label class="form-label fw-semibold">
+                                    From Date
+                                </label>
 
-                        <div class="col-md-6">
+                                <input type="date"
+                                       name="from_date"
+                                       value="{{ from_date }}"
+                                       class="form-control"
+                                       required>
 
-                            <label class="form-label fw-semibold">
-                                To Date
-                            </label>
+                            </div>
 
-                            <input type="date"
-                                   name="to_date"
-                                   value="{{ to_date }}"
-                                   class="form-control"
-                                   required>
+
+                            <div class="col-md-6">
+
+                                <label class="form-label fw-semibold">
+                                    To Date
+                                </label>
+
+                                <input type="date"
+                                       name="to_date"
+                                       value="{{ to_date }}"
+                                       class="form-control"
+                                       required>
+
+                            </div>
 
                         </div>
 
                     </div>
 
 
-                    <hr class="mb-4">
+                    <hr class="my-4">
 
 
                     <!-- ================= AGE 1 ================= -->
@@ -87,6 +101,9 @@
                         <div class="card-body">
 
                             <div class="row g-3">
+
+
+                                <!-- AGE 1 FROM -->
 
                                 <div class="col-md-6">
 
@@ -103,14 +120,14 @@
 
                                         {% for p in phases %}
 
-                                        <option value="{{ p.order }}"
-                                            {% if age1_from == p.order|stringformat:"s" %}
-                                                selected
-                                            {% endif %}>
+                                            <option value="{{ p.order }}"
+                                                {% if age1_from == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                                            {{ p.order }} - {{ p.phase_name }}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                                        </option>
+                                            </option>
 
                                         {% endfor %}
 
@@ -118,6 +135,8 @@
 
                                 </div>
 
+
+                                <!-- AGE 1 TO -->
 
                                 <div class="col-md-6">
 
@@ -134,14 +153,14 @@
 
                                         {% for p in phases %}
 
-                                        <option value="{{ p.order }}"
-                                            {% if age1_to == p.order|stringformat:"s" %}
-                                                selected
-                                            {% endif %}>
+                                            <option value="{{ p.order }}"
+                                                {% if age1_to == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                                            {{ p.order }} - {{ p.phase_name }}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                                        </option>
+                                            </option>
 
                                         {% endfor %}
 
@@ -168,6 +187,9 @@
 
                             <div class="row g-3">
 
+
+                                <!-- AGE 2 FROM -->
+
                                 <div class="col-md-6">
 
                                     <label class="form-label">
@@ -183,14 +205,14 @@
 
                                         {% for p in phases %}
 
-                                        <option value="{{ p.order }}"
-                                            {% if age2_from == p.order|stringformat:"s" %}
-                                                selected
-                                            {% endif %}>
+                                            <option value="{{ p.order }}"
+                                                {% if age2_from == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                                            {{ p.order }} - {{ p.phase_name }}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                                        </option>
+                                            </option>
 
                                         {% endfor %}
 
@@ -198,6 +220,8 @@
 
                                 </div>
 
+
+                                <!-- AGE 2 TO -->
 
                                 <div class="col-md-6">
 
@@ -214,14 +238,14 @@
 
                                         {% for p in phases %}
 
-                                        <option value="{{ p.order }}"
-                                            {% if age2_to == p.order|stringformat:"s" %}
-                                                selected
-                                            {% endif %}>
+                                            <option value="{{ p.order }}"
+                                                {% if age2_to == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                                            {{ p.order }} - {{ p.phase_name }}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                                        </option>
+                                            </option>
 
                                         {% endfor %}
 
@@ -248,6 +272,9 @@
 
                             <div class="row g-3">
 
+
+                                <!-- AGE 3 FROM -->
+
                                 <div class="col-md-6">
 
                                     <label class="form-label">
@@ -263,14 +290,14 @@
 
                                         {% for p in phases %}
 
-                                        <option value="{{ p.order }}"
-                                            {% if age3_from == p.order|stringformat:"s" %}
-                                                selected
-                                            {% endif %}>
+                                            <option value="{{ p.order }}"
+                                                {% if age3_from == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                                            {{ p.order }} - {{ p.phase_name }}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                                        </option>
+                                            </option>
 
                                         {% endfor %}
 
@@ -278,6 +305,8 @@
 
                                 </div>
 
+
+                                <!-- AGE 3 TO -->
 
                                 <div class="col-md-6">
 
@@ -294,14 +323,14 @@
 
                                         {% for p in phases %}
 
-                                        <option value="{{ p.order }}"
-                                            {% if age3_to == p.order|stringformat:"s" %}
-                                                selected
-                                            {% endif %}>
+                                            <option value="{{ p.order }}"
+                                                {% if age3_to == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                                            {{ p.order }} - {{ p.phase_name }}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                                        </option>
+                                            </option>
 
                                         {% endfor %}
 
@@ -354,16 +383,110 @@
 
                             <tr>
 
-                                <th>Shipment Code</th>
-                                <th>Description</th>
-                                <th>Supplier</th>
-                                <th>BL / AWB</th>
-                                <th>Amount</th>
-                                <th>Arrival Date</th>
-                                <th>Current Phase</th>
-                                <th class="text-center">Age 1</th>
-                                <th class="text-center">Age 2</th>
-                                <th class="text-center">Age 3</th>
+                                <th rowspan="2"
+                                    class="align-middle">
+                                    Shipment Code
+                                </th>
+
+                                <th rowspan="2"
+                                    class="align-middle">
+                                    Description
+                                </th>
+
+                                <th rowspan="2"
+                                    class="align-middle">
+                                    Supplier
+                                </th>
+
+                                <th rowspan="2"
+                                    class="align-middle">
+                                    Amount
+                                </th>
+
+                                <th rowspan="2"
+                                    class="align-middle">
+                                    Arrival Date
+                                </th>
+
+                                <th rowspan="2"
+                                    class="align-middle">
+                                    Current Phase
+                                </th>
+
+
+                                <!-- AGE 1 -->
+
+                                <th colspan="3"
+                                    class="text-center border-start">
+                                    Age 1
+                                </th>
+
+
+                                <!-- AGE 2 -->
+
+                                <th colspan="3"
+                                    class="text-center border-start">
+                                    Age 2
+                                </th>
+
+
+                                <!-- AGE 3 -->
+
+                                <th colspan="3"
+                                    class="text-center border-start">
+                                    Age 3
+                                </th>
+
+                            </tr>
+
+
+                            <!-- SECOND HEADER ROW -->
+
+                            <tr>
+
+                                <!-- AGE 1 -->
+
+                                <th class="text-center border-start">
+                                    Start Date
+                                </th>
+
+                                <th class="text-center">
+                                    End Date
+                                </th>
+
+                                <th class="text-center">
+                                    Days
+                                </th>
+
+
+                                <!-- AGE 2 -->
+
+                                <th class="text-center border-start">
+                                    Start Date
+                                </th>
+
+                                <th class="text-center">
+                                    End Date
+                                </th>
+
+                                <th class="text-center">
+                                    Days
+                                </th>
+
+
+                                <!-- AGE 3 -->
+
+                                <th class="text-center border-start">
+                                    Start Date
+                                </th>
+
+                                <th class="text-center">
+                                    End Date
+                                </th>
+
+                                <th class="text-center">
+                                    Days
+                                </th>
 
                             </tr>
 
@@ -376,12 +499,13 @@
 
                             <tr>
 
+
+                                <!-- ================= SHIPMENT ================= -->
+
                                 <td>
 
                                     <strong class="text-primary">
-
                                         {{ s.shipment_code }}
-
                                     </strong>
 
                                 </td>
@@ -401,16 +525,9 @@
                                 </td>
 
 
-                                <td>
+                                <td class="text-end">
 
-                                    {{ s.bl|default:"-" }}
-
-                                </td>
-
-
-                                <td>
-
-                                    Rs. {{ s.amount|floatformat:2 }}
+                                    {{ s.amount|floatformat:2|intcomma }}
 
                                 </td>
 
@@ -429,85 +546,227 @@
                                 </td>
 
 
-                                <!-- AGE 1 -->
+                                <!-- ================= AGE 1 ================= -->
 
-                                <td class="text-center">
 
-                                    {% if "In Progress" in s.age1 %}
+                                <!-- START DATE -->
 
-                                        <span class="badge bg-primary">
-                                            {{ s.age1 }}
-                                        </span>
+                                <td class="text-center border-start">
 
-                                    {% elif s.age1 == "Not Started" %}
+                                    {% if s.age1.start_date %}
 
-                                        <span class="text-muted">
-                                            Not Started
-                                        </span>
+                                        {{ s.age1.start_date|date:"d M Y H:i" }}
 
                                     {% else %}
 
-                                        <strong>
-                                            {{ s.age1 }}
-                                        </strong>
+                                        -
 
                                     {% endif %}
 
                                 </td>
 
 
-                                <!-- AGE 2 -->
+                                <!-- END DATE -->
 
                                 <td class="text-center">
 
-                                    {% if "In Progress" in s.age2 %}
+                                    {% if s.age1.end_date %}
 
-                                        <span class="badge bg-success">
-                                            {{ s.age2 }}
-                                        </span>
+                                        {{ s.age1.end_date|date:"d M Y H:i" }}
 
-                                    {% elif s.age2 == "Not Started" %}
+                                    {% elif s.age1.status == "In Progress" %}
 
                                         <span class="text-muted">
-                                            Not Started
+                                            In Progress
                                         </span>
 
                                     {% else %}
 
-                                        <strong>
-                                            {{ s.age2 }}
-                                        </strong>
+                                        -
 
                                     {% endif %}
 
                                 </td>
 
 
-                                <!-- AGE 3 -->
+                                <!-- DAYS -->
 
                                 <td class="text-center">
 
-                                    {% if "In Progress" in s.age3 %}
+                                    {% if s.age1.days is not None %}
 
-                                        <span class="badge bg-warning text-dark">
-                                            {{ s.age3 }}
-                                        </span>
+                                        {% if s.age1.status == "In Progress" %}
 
-                                    {% elif s.age3 == "Not Started" %}
+                                            <span class="badge bg-primary">
+                                                {{ s.age1.days }} Days
+                                            </span>
 
-                                        <span class="text-muted">
-                                            Not Started
-                                        </span>
+                                        {% else %}
+
+                                            <strong>
+                                                {{ s.age1.days }} Days
+                                            </strong>
+
+                                        {% endif %}
 
                                     {% else %}
 
-                                        <strong>
-                                            {{ s.age3 }}
-                                        </strong>
+                                        <span class="text-muted">
+                                            {{ s.age1.status }}
+                                        </span>
 
                                     {% endif %}
 
                                 </td>
+
+
+                                <!-- ================= AGE 2 ================= -->
+
+
+                                <!-- START DATE -->
+
+                                <td class="text-center border-start">
+
+                                    {% if s.age2.start_date %}
+
+                                        {{ s.age2.start_date|date:"d M Y H:i" }}
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- END DATE -->
+
+                                <td class="text-center">
+
+                                    {% if s.age2.end_date %}
+
+                                        {{ s.age2.end_date|date:"d M Y H:i" }}
+
+                                    {% elif s.age2.status == "In Progress" %}
+
+                                        <span class="text-muted">
+                                            In Progress
+                                        </span>
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- DAYS -->
+
+                                <td class="text-center">
+
+                                    {% if s.age2.days is not None %}
+
+                                        {% if s.age2.status == "In Progress" %}
+
+                                            <span class="badge bg-success">
+                                                {{ s.age2.days }} Days
+                                            </span>
+
+                                        {% else %}
+
+                                            <strong>
+                                                {{ s.age2.days }} Days
+                                            </strong>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            {{ s.age2.status }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- ================= AGE 3 ================= -->
+
+
+                                <!-- START DATE -->
+
+                                <td class="text-center border-start">
+
+                                    {% if s.age3.start_date %}
+
+                                        {{ s.age3.start_date|date:"d M Y H:i" }}
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- END DATE -->
+
+                                <td class="text-center">
+
+                                    {% if s.age3.end_date %}
+
+                                        {{ s.age3.end_date|date:"d M Y H:i" }}
+
+                                    {% elif s.age3.status == "In Progress" %}
+
+                                        <span class="text-muted">
+                                            In Progress
+                                        </span>
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- DAYS -->
+
+                                <td class="text-center">
+
+                                    {% if s.age3.days is not None %}
+
+                                        {% if s.age3.status == "In Progress" %}
+
+                                            <span class="badge bg-warning text-dark">
+                                                {{ s.age3.days }} Days
+                                            </span>
+
+                                        {% else %}
+
+                                            <strong>
+                                                {{ s.age3.days }} Days
+                                            </strong>
+
+                                        {% endif %}
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            {{ s.age3.status }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
 
                             </tr>
 
@@ -516,7 +775,7 @@
 
                             <tr>
 
-                                <td colspan="10"
+                                <td colspan="15"
                                     class="text-center p-5 text-muted">
 
                                     No shipment records found for the selected date range.
@@ -536,6 +795,7 @@
             </div>
 
         </div>
+
 
     </div>
 
