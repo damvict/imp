@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid p-0"
+     style="background-color:#F9FAFB; min-height:100vh;">
+
+  <!-- ================= HEADER ================= -->
+  <div class="d-flex align-items-center px-3"
+       style="background:#1E3A8A; min-height:60px;">
+
+    <a href="javascript:history.back()"
+       class="btn btn-link text-white text-decoration-none me-2">
+      ←
+    </a>
+
+    <h5 class="flex-grow-1 text-center text-white fw-bold mb-0">
+      Reports
+    </h5>
+
+    <!-- Spacer -->
+    <div style="width:44px;"></div>
+
+  </div>
+
+
+  <!-- ================= CONTENT ================= -->
+  <div class="container py-4">
+
+    <h4 class="fw-bold mb-4 text-dark">
+      Available Reports
+    </h4>
+
+
+    <!-- ================= REPORT LIST ================= -->
+    {% for report in reports %}
+
+    <a href="{% url report.url %}"
+       class="text-decoration-none">
+
+      <div class="card mb-3 border-0 shadow-sm"
+           style="
+             border-radius:16px;
+             transition:0.2s;
+           ">
+
+        <div class="card-body d-flex align-items-center p-3">
+
+          <!-- REPORT ICON -->
+          <div class="me-3 d-flex align-items-center justify-content-center"
+               style="
+                 width:54px;
+                 height:54px;
+                 border-radius:14px;
+                 background:#DBEAFE;
+                 font-size:24px;
+                 flex-shrink:0;
+               ">
+
+            {{ report.icon }}
+
+          </div>
+
+
+          <!-- REPORT DETAILS -->
+          <div class="flex-grow-1">
+
+            <div class="fw-bold text-dark">
+              {{ report.title }}
+            </div>
+
+            <div class="text-muted small">
+              {{ report.description }}
+            </div>
+
+          </div>
+
+
+          <!-- ARROW -->
+          <div class="ms-2 text-muted"
+               style="font-size:22px;">
+            ›
+          </div>
+
+        </div>
+
+      </div>
+
+    </a>
+
+    {% empty %}
+
+    <!-- NO REPORTS -->
+    <div class="text-center text-muted py-5">
+
+      <div style="font-size:48px;">
+        📊
+      </div>
+
+      <h5 class="mt-3">
+        No Reports Available
+      </h5>
+
+      <p class="small">
+        You do not currently have access to any reports.
+      </p>
+
+    </div>
+
+    {% endfor %}
+
+  </div>
+
+</div>
+
+{% endblock %}

@@ -115,6 +115,87 @@ body {
   font-size: 12px;
   font-weight: 700;
 }
+
+/* ===============================
+   REPORT CARD
+================================ */
+
+.report-card {
+    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+    border: 1px solid #d6e7f7;
+    border-left: 4px solid #2563eb;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 18px 20px;
+    border-radius: 12px;
+
+    transition: all 0.25s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+    border-color: #2563eb;
+}
+
+
+/* Report Icon */
+
+.report-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #2563eb;
+    color: white;
+
+    border-radius: 12px;
+
+    font-size: 21px;
+
+    box-shadow: 0 5px 12px rgba(37, 99, 235, 0.25);
+}
+
+
+/* Text */
+
+.action-content {
+    flex: 1;
+}
+
+.report-card .action-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.action-subtext {
+    margin-top: 3px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+
+/* Arrow */
+
+.action-arrow {
+    color: #94a3b8;
+    font-size: 14px;
+
+    transition: transform 0.25s ease;
+}
+
+.report-card:hover .action-arrow {
+    transform: translateX(4px);
+    color: #2563eb;
+}
 </style>
 
 <!-- ---------- WELCOME ---------- -->
@@ -165,6 +246,22 @@ body {
     {% endif %}
 
   </a>
+
+      <a href="{% url 'report_dashboard' %}" 
+       class="action-card report-card {% if bm.upload_payment > 0 %}alert-card{% endif %}"
+   style="text-decoration:none; color:inherit;">
+
+           <div class="action-icon report-icon">
+        <i class="fas fa-chart-bar"></i>
+    </div>
+
+          <div class="action-text">Document Report</div>
+           <div class="action-arrow">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+      </a>
+
+  
 
 </div>
 <script>

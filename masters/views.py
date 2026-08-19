@@ -6948,3 +6948,278 @@ def phase_range_report(request):
     }
 
     return render(request, 'reports/phase_range_report.html', context)
+
+
+
+    #################### common reports
+
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def report_dashboard(request):
+
+    user = request.user
+
+    user_groups = set(
+        user.groups.values_list("name", flat=True)
+    )
+
+    reports = []
+
+    # Document Report
+    reports.append({
+        "title": "Shipment Age Report",
+        "description": "View Shipment listing with Age",
+        "icon": "📄",
+        "url": "shipment_aging_report",
+    })
+
+    # Management groups
+    management_groups = {
+        "Admin",
+        "Managing Director",
+        "Bank Manager",
+        "Bank Controller",
+        "Imports Department",
+    }
+
+    if (
+        user.is_superuser
+        or user.is_staff
+        or user_groups.intersection(management_groups)
+    ):
+        reports.append({
+            "title": "Shipment Phase Report",
+            "description": "View shipment progress and phase status within a selected date range.",
+            "icon": "🚢",
+            "url": "phase_range_report",
+        })
+
+    return render(
+        request,
+        "reports/report_dashboard.html",
+        {
+            "reports": reports,
+        }
+    )
+
+
+###################################
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.utils import timezone
+
+from .models import Shipment, ShipmentPhaseMaster
+
+
+def calculate_phase_age(shipment, from_order, to_order):
+    """
+    Calculate duration between two selected shipment phases.
+
+    Example:
+    From Phase Order = 1
+    To Phase Order   = 4
+
+    Age = completed_at of Phase 4
+          -
+          completed_at of Phase 1
+    """
+
+    # If user has not selected both phases
+    if not from_order or not to_order:
+        return "-"
+
+    try:
+        from_order = int(from_order)
+        to_order = int(to_order)
+    except (ValueError, TypeError):
+        return "-"
+
+    # Prevent invalid range
+    if from_order > to_order:
+        return "Invalid Range"
+
+    # Get starting phase
+    start_phase = shipment.phases.filter(
+        order=from_order
+    ).first()
+
+    # Shipment has not reached the starting phase
+    if not start_phase:
+        return "Not Started"
+
+    # Start phase must have a completion date
+    if not start_phase.completed_at:
+        return "Not Started"
+
+    # Get ending phase
+    end_phase = shipment.phases.filter(
+        order=to_order
+    ).first()
+
+    # ==========================================================
+    # END PHASE COMPLETED
+    # ==========================================================
+
+    if end_phase and end_phase.completed_at:
+
+        duration = (
+            end_phase.completed_at
+            -
+            start_phase.completed_at
+        )
+
+        total_days = duration.days
+
+        return f"{total_days} Days"
+
+    # ==========================================================
+    # END PHASE NOT YET COMPLETED
+    # CALCULATE UNTIL CURRENT TIME
+    # ==========================================================
+
+    duration = timezone.now() - start_phase.completed_at
+
+    total_days = duration.days
+
+    return f"{total_days} Days (In Progress)"
+
+
+@login_required
+def shipment_aging_report(request):
+
+    # ==========================================================
+    # GET ALL PHASE MASTER RECORDS
+    # ==========================================================
+
+    phases = ShipmentPhaseMaster.objects.all().order_by("order")
+
+    # ==========================================================
+    # DATE RANGE
+    # ==========================================================
+
+    from_date = request.GET.get("from_date")
+    to_date = request.GET.get("to_date")
+
+    # ==========================================================
+    # AGE 1 RANGE
+    # ==========================================================
+
+    age1_from = request.GET.get("age1_from")
+    age1_to = request.GET.get("age1_to")
+
+    # ==========================================================
+    # AGE 2 RANGE
+    # ==========================================================
+
+    age2_from = request.GET.get("age2_from")
+    age2_to = request.GET.get("age2_to")
+
+    # ==========================================================
+    # AGE 3 RANGE
+    # ==========================================================
+
+    age3_from = request.GET.get("age3_from")
+    age3_to = request.GET.get("age3_to")
+
+    # Default empty queryset
+    shipments = Shipment.objects.none()
+
+    # ==========================================================
+    # ONLY LOAD REPORT AFTER DATE RANGE IS SELECTED
+    # ==========================================================
+
+    if from_date and to_date:
+
+        # ------------------------------------------------------
+        # GET ALL SHIPMENTS WITHIN SELECTED DATE RANGE
+        # ------------------------------------------------------
+
+        shipments = Shipment.objects.filter(
+            expected_arrival_date__range=[
+                from_date,
+                to_date
+            ]
+        ).prefetch_related(
+            "phases"
+        )
+
+        # ======================================================
+        # CALCULATE AGES FOR EACH SHIPMENT
+        # ======================================================
+
+        for shipment in shipments:
+
+            # --------------------------------------------------
+            # GET CURRENT / LATEST PHASE
+            # --------------------------------------------------
+
+            latest_phase = shipment.phases.order_by(
+                "-order"
+            ).first()
+
+            if latest_phase:
+                shipment.current_phase_name = (
+                    latest_phase.phase_name
+                )
+            else:
+                shipment.current_phase_name = "No Phase"
+
+            # --------------------------------------------------
+            # CALCULATE AGE 1
+            # --------------------------------------------------
+
+            shipment.age1 = calculate_phase_age(
+                shipment,
+                age1_from,
+                age1_to
+            )
+
+            # --------------------------------------------------
+            # CALCULATE AGE 2
+            # --------------------------------------------------
+
+            shipment.age2 = calculate_phase_age(
+                shipment,
+                age2_from,
+                age2_to
+            )
+
+            # --------------------------------------------------
+            # CALCULATE AGE 3
+            # --------------------------------------------------
+
+            shipment.age3 = calculate_phase_age(
+                shipment,
+                age3_from,
+                age3_to
+            )
+
+    # ==========================================================
+    # CONTEXT
+    # ==========================================================
+
+    context = {
+        "phases": phases,
+        "shipments": shipments,
+
+        "from_date": from_date,
+        "to_date": to_date,
+
+        "age1_from": age1_from,
+        "age1_to": age1_to,
+
+        "age2_from": age2_from,
+        "age2_to": age2_to,
+
+        "age3_from": age3_from,
+        "age3_to": age3_to,
+    }
+
+    return render(
+        request,
+        "reports/shipment_aging_report.html",
+        context
+    )

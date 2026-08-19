@@ -1,0 +1,544 @@
+{% extends "base.html" %}
+
+{% block title %}Shipment Aging Report{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid p-0"
+     style="background-color:#F9FAFB; min-height:100vh;">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="d-flex align-items-center px-3"
+         style="background:#1E3A8A; min-height:60px;">
+
+        <a href="javascript:history.back()"
+           class="btn btn-link text-white text-decoration-none me-2">
+            ←
+        </a>
+
+        <h5 class="flex-grow-1 text-center text-white fw-bold mb-0">
+            📊 Shipment Aging Report
+        </h5>
+
+        <div style="width:44px;"></div>
+
+    </div>
+
+
+    <!-- ================= FILTER ================= -->
+
+    <div class="container-fluid py-3">
+
+        <div class="card border-0 shadow-sm"
+             style="border-radius:12px;">
+
+            <div class="card-body">
+
+                <form method="GET">
+
+                    <!-- ================= DATE RANGE ================= -->
+
+                    <div class="row g-3 mb-4">
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                From Date
+                            </label>
+
+                            <input type="date"
+                                   name="from_date"
+                                   value="{{ from_date }}"
+                                   class="form-control"
+                                   required>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                To Date
+                            </label>
+
+                            <input type="date"
+                                   name="to_date"
+                                   value="{{ to_date }}"
+                                   class="form-control"
+                                   required>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="mb-4">
+
+
+                    <!-- ================= AGE 1 ================= -->
+
+                    <div class="card border-primary mb-3">
+
+                        <div class="card-header bg-primary text-white fw-bold">
+                            Age 1 - Phase Range
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        From Phase
+                                    </label>
+
+                                    <select name="age1_from"
+                                            class="form-select">
+
+                                        <option value="">
+                                            Select Starting Phase
+                                        </option>
+
+                                        {% for p in phases %}
+
+                                        <option value="{{ p.order }}"
+                                            {% if age1_from == p.order|stringformat:"s" %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ p.order }} - {{ p.phase_name }}
+
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        To Phase
+                                    </label>
+
+                                    <select name="age1_to"
+                                            class="form-select">
+
+                                        <option value="">
+                                            Select Ending Phase
+                                        </option>
+
+                                        {% for p in phases %}
+
+                                        <option value="{{ p.order }}"
+                                            {% if age1_to == p.order|stringformat:"s" %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ p.order }} - {{ p.phase_name }}
+
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================= AGE 2 ================= -->
+
+                    <div class="card border-success mb-3">
+
+                        <div class="card-header bg-success text-white fw-bold">
+                            Age 2 - Phase Range
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        From Phase
+                                    </label>
+
+                                    <select name="age2_from"
+                                            class="form-select">
+
+                                        <option value="">
+                                            Select Starting Phase
+                                        </option>
+
+                                        {% for p in phases %}
+
+                                        <option value="{{ p.order }}"
+                                            {% if age2_from == p.order|stringformat:"s" %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ p.order }} - {{ p.phase_name }}
+
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        To Phase
+                                    </label>
+
+                                    <select name="age2_to"
+                                            class="form-select">
+
+                                        <option value="">
+                                            Select Ending Phase
+                                        </option>
+
+                                        {% for p in phases %}
+
+                                        <option value="{{ p.order }}"
+                                            {% if age2_to == p.order|stringformat:"s" %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ p.order }} - {{ p.phase_name }}
+
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================= AGE 3 ================= -->
+
+                    <div class="card border-warning mb-4">
+
+                        <div class="card-header bg-warning text-dark fw-bold">
+                            Age 3 - Phase Range
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        From Phase
+                                    </label>
+
+                                    <select name="age3_from"
+                                            class="form-select">
+
+                                        <option value="">
+                                            Select Starting Phase
+                                        </option>
+
+                                        {% for p in phases %}
+
+                                        <option value="{{ p.order }}"
+                                            {% if age3_from == p.order|stringformat:"s" %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ p.order }} - {{ p.phase_name }}
+
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+
+                                <div class="col-md-6">
+
+                                    <label class="form-label">
+                                        To Phase
+                                    </label>
+
+                                    <select name="age3_to"
+                                            class="form-select">
+
+                                        <option value="">
+                                            Select Ending Phase
+                                        </option>
+
+                                        {% for p in phases %}
+
+                                        <option value="{{ p.order }}"
+                                            {% if age3_to == p.order|stringformat:"s" %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ p.order }} - {{ p.phase_name }}
+
+                                        </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================= BUTTON ================= -->
+
+                    <div class="text-end">
+
+                        <button type="submit"
+                                class="btn btn-primary px-4">
+
+                            🔍 Filter Report
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= REPORT TABLE ================= -->
+
+        <div class="card border-0 shadow-sm mt-4"
+             style="border-radius:12px;">
+
+            <div class="card-body p-0">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover table-striped mb-0">
+
+                        <thead style="
+                            background:#343A40;
+                            color:white;
+                        ">
+
+                            <tr>
+
+                                <th>Shipment Code</th>
+                                <th>Description</th>
+                                <th>Supplier</th>
+                                <th>BL / AWB</th>
+                                <th>Amount</th>
+                                <th>Arrival Date</th>
+                                <th>Current Phase</th>
+                                <th class="text-center">Age 1</th>
+                                <th class="text-center">Age 2</th>
+                                <th class="text-center">Age 3</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for s in shipments %}
+
+                            <tr>
+
+                                <td>
+
+                                    <strong class="text-primary">
+
+                                        {{ s.shipment_code }}
+
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ s.shipment_description|default:"-" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ s.supplier|default:"-" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ s.bl|default:"-" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    Rs. {{ s.amount|floatformat:2 }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ s.expected_arrival_date|date:"d M Y" }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ s.current_phase_name }}
+
+                                </td>
+
+
+                                <!-- AGE 1 -->
+
+                                <td class="text-center">
+
+                                    {% if "In Progress" in s.age1 %}
+
+                                        <span class="badge bg-primary">
+                                            {{ s.age1 }}
+                                        </span>
+
+                                    {% elif s.age1 == "Not Started" %}
+
+                                        <span class="text-muted">
+                                            Not Started
+                                        </span>
+
+                                    {% else %}
+
+                                        <strong>
+                                            {{ s.age1 }}
+                                        </strong>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- AGE 2 -->
+
+                                <td class="text-center">
+
+                                    {% if "In Progress" in s.age2 %}
+
+                                        <span class="badge bg-success">
+                                            {{ s.age2 }}
+                                        </span>
+
+                                    {% elif s.age2 == "Not Started" %}
+
+                                        <span class="text-muted">
+                                            Not Started
+                                        </span>
+
+                                    {% else %}
+
+                                        <strong>
+                                            {{ s.age2 }}
+                                        </strong>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- AGE 3 -->
+
+                                <td class="text-center">
+
+                                    {% if "In Progress" in s.age3 %}
+
+                                        <span class="badge bg-warning text-dark">
+                                            {{ s.age3 }}
+                                        </span>
+
+                                    {% elif s.age3 == "Not Started" %}
+
+                                        <span class="text-muted">
+                                            Not Started
+                                        </span>
+
+                                    {% else %}
+
+                                        <strong>
+                                            {{ s.age3 }}
+                                        </strong>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+
+                            {% empty %}
+
+                            <tr>
+
+                                <td colspan="10"
+                                    class="text-center p-5 text-muted">
+
+                                    No shipment records found for the selected date range.
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
