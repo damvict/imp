@@ -7032,7 +7032,7 @@ def format_duration(duration):
     if total_days == 1:
         return "1 Day"
 
-    return f"{total_days}"
+    return f"{total_days} Days "
 
 
 # ==========================================================
