@@ -7407,14 +7407,14 @@ def shipment_aging_report(request):
     if from_date and to_date:
 
         shipments = Shipment.objects.filter(
-            expected_arrival_date__range=[
+            order_date__range=[
                 from_date,
                 to_date
             ]
         ).prefetch_related(
             "phases"
         ).order_by(
-            "expected_arrival_date",
+            "order_date",
             "shipment_code"
         )
 
