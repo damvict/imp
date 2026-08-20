@@ -7144,6 +7144,7 @@ def calculate_phase_age(shipment, from_order, to_order):
         "start_date": None,
         "end_date": None,
         "days": None,
+        "days_value": None,
         "status": "Not Started",
     }
 
@@ -7194,6 +7195,9 @@ def calculate_phase_age(shipment, from_order, to_order):
 
         result["days"] = format_duration(duration)
         result["status"] = "Completed"
+        result["days_value"] = (
+            duration.total_seconds() / 86400
+        )
 
         return result
 
@@ -7207,6 +7211,133 @@ def calculate_phase_age(shipment, from_order, to_order):
     )
 
     result["days"] = format_duration(duration)
+    result["status"] = "In Progress"
+
+    return result
+
+
+from datetime import timedelta
+from django.utils import timezone
+
+
+def calculate_age3(shipment, to_order):
+
+    result = {
+        "start_date": None,
+        "end_date": None,
+        "days": None,
+        "days_value": None,  # numeric value for average
+        "status": "Not Started",
+    }
+
+    # ==========================================
+    # VALIDATE TO PHASE
+    # ==========================================
+
+    if not to_order:
+        result["status"] = "-"
+        return result
+
+    try:
+        to_order = int(to_order)
+
+    except (ValueError, TypeError):
+        result["status"] = "Invalid Range"
+        return result
+
+    # Age 3 To phase must be after MD Approval
+    # Order 5 onwards
+
+    if to_order <= 4:
+        result["status"] = "Invalid Range"
+        return result
+
+    # ==========================================
+    # DOCUMENT HANDOVER
+    # Order = 3
+    # ==========================================
+
+    document_handover = shipment.phases.filter(
+        order=3
+    ).first()
+
+    if not document_handover or not document_handover.completed_at:
+        result["status"] = "Not Started"
+        return result
+
+    # ==========================================
+    # START DATE = DOCUMENT HANDOVER + 3 DAYS
+    # ==========================================
+
+    age_start_date = (
+        document_handover.completed_at
+        + timedelta(days=3)
+    )
+
+    result["start_date"] = age_start_date
+
+    # ==========================================
+    # TO PHASE
+    # ==========================================
+
+    end_phase = shipment.phases.filter(
+        order=to_order
+    ).first()
+
+    # ==========================================
+    # COMPLETED
+    # ==========================================
+
+    if end_phase and end_phase.completed_at:
+
+        result["end_date"] = end_phase.completed_at
+
+        duration = (
+            end_phase.completed_at
+            - age_start_date
+        )
+
+        # If completed before the 3-day grace period
+        if duration.total_seconds() < 0:
+            duration = timedelta(0)
+
+        result["days"] = format_duration(duration)
+
+        # Numeric days for average
+        result["days_value"] = (
+            duration.total_seconds() / 86400
+        )
+
+        result["status"] = "Completed"
+
+        return result
+
+    # ==========================================
+    # IN PROGRESS
+    # ==========================================
+
+    now = timezone.now()
+
+    duration = now - age_start_date
+
+    # Still inside the 3-day grace period
+    if duration.total_seconds() < 0:
+
+        result["days"] = format_duration(
+            timedelta(0)
+        )
+
+        result["days_value"] = 0
+        result["status"] = "Grace Period"
+
+        return result
+
+    result["days"] = format_duration(duration)
+
+    result["days_value"] = (
+        duration.total_seconds() / 86400
+    )
+
     result["status"] = "In Progress"
 
     return result
@@ -7248,14 +7379,26 @@ def shipment_aging_report(request):
     age2_to = request.GET.get("age2_to")
 
     # ======================================================
-    # AGE 3 PHASE RANGE
+    # AGE 3
+    # FROM = DOCUMENT HANDOVER + 3 DAYS
+    # ONLY TO PHASE IS SELECTED
     # ======================================================
 
-    age3_from = request.GET.get("age3_from")
     age3_to = request.GET.get("age3_to")
 
-    # Default empty queryset
+    # ======================================================
+    # DEFAULT VALUES
+    # ======================================================
+
     shipments = Shipment.objects.none()
+
+    average_age1 = None
+    average_age2 = None
+    average_age3 = None
+
+    age1_values = []
+    age2_values = []
+    age3_values = []
 
     # ======================================================
     # LOAD SHIPMENTS ONLY WHEN DATE RANGE IS SELECTED
@@ -7311,6 +7454,13 @@ def shipment_aging_report(request):
                 age1_to
             )
 
+            # Add numeric value for average
+            if shipment.age1.get("days_value") is not None:
+
+                age1_values.append(
+                    shipment.age1["days_value"]
+                )
+
             # ==============================================
             # AGE 2
             # ==============================================
@@ -7321,14 +7471,53 @@ def shipment_aging_report(request):
                 age2_to
             )
 
+            # Add numeric value for average
+            if shipment.age2.get("days_value") is not None:
+
+                age2_values.append(
+                    shipment.age2["days_value"]
+                )
+
             # ==============================================
             # AGE 3
+            # DOCUMENT HANDOVER + 3 DAYS
             # ==============================================
 
-            shipment.age3 = calculate_phase_age(
+            shipment.age3 = calculate_age3(
                 shipment,
-                age3_from,
                 age3_to
+            )
+
+            # Add numeric value for average
+            if shipment.age3.get("days_value") is not None:
+
+                age3_values.append(
+                    shipment.age3["days_value"]
+                )
+
+        # ==================================================
+        # CALCULATE AVERAGES
+        # ==================================================
+
+        if age1_values:
+
+            average_age1 = (
+                sum(age1_values)
+                / len(age1_values)
+            )
+
+        if age2_values:
+
+            average_age2 = (
+                sum(age2_values)
+                / len(age2_values)
+            )
+
+        if age3_values:
+
+            average_age3 = (
+                sum(age3_values)
+                / len(age3_values)
             )
 
     # ======================================================
@@ -7337,27 +7526,52 @@ def shipment_aging_report(request):
 
     context = {
 
-        # Phase dropdowns
+        # ==============================================
+        # PHASE DROPDOWNS
+        # ==============================================
+
         "phases": phases,
 
-        # Report data
+        # ==============================================
+        # REPORT DATA
+        # ==============================================
+
         "shipments": shipments,
 
-        # Date range
+        # ==============================================
+        # DATE RANGE
+        # ==============================================
+
         "from_date": from_date,
         "to_date": to_date,
 
-        # Age 1
+        # ==============================================
+        # AGE 1
+        # ==============================================
+
         "age1_from": age1_from,
         "age1_to": age1_to,
 
-        # Age 2
+        # ==============================================
+        # AGE 2
+        # ==============================================
+
         "age2_from": age2_from,
         "age2_to": age2_to,
 
-        # Age 3
-        "age3_from": age3_from,
+        # ==============================================
+        # AGE 3
+        # ==============================================
+
         "age3_to": age3_to,
+
+        # ==============================================
+        # AVERAGES
+        # ==============================================
+
+        "average_age1": average_age1,
+        "average_age2": average_age2,
+        "average_age3": average_age3,
     }
 
     return render(

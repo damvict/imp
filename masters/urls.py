@@ -614,6 +614,7 @@ path(
 
 
 path("reports/", views.report_dashboard, name="report_dashboard"),
+
 path(
     "shipment-aging-report/",
     views.shipment_aging_report,
