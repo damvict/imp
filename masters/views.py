@@ -7008,7 +7008,8 @@ def report_dashboard(request):
 ###################################
 
 from django.utils import timezone
-
+from datetime import datetime
+from django.utils import timezone
 
 # ==========================================================
 # FORMAT DURATION
@@ -7034,7 +7035,105 @@ def format_duration(duration):
 
     return f"{total_days} Days "
 
+# ==========================================================
+# CALCULATE AGE 3
+# Expected Arrival Date → Selected End Phase
+# ==========================================================
 
+def calculate_age3(shipment, to_order):
+
+    result = {
+        "start_date": None,
+        "end_date": None,
+        "days": None,
+        "status": "Not Started",
+    }
+
+    # ======================================================
+    # EXPECTED ARRIVAL DATE
+    # ======================================================
+
+    if not shipment.expected_arrival_date:
+
+        result["status"] = "No Expected Arrival Date"
+
+        return result
+
+    # Display expected arrival date as start date
+    result["start_date"] = shipment.expected_arrival_date
+
+    # ======================================================
+    # VALIDATE END PHASE
+    # ======================================================
+
+    if not to_order:
+
+        result["status"] = "-"
+
+        return result
+
+    try:
+
+        to_order = int(to_order)
+
+    except (ValueError, TypeError):
+
+        result["status"] = "Invalid Phase"
+
+        return result
+
+    # ======================================================
+    # GET END PHASE
+    # ======================================================
+
+    end_phase = shipment.phases.filter(
+        order=to_order
+    ).first()
+
+    # ======================================================
+    # CONVERT EXPECTED ARRIVAL DATE TO DATETIME
+    # ======================================================
+
+    start_datetime = timezone.make_aware(
+        datetime.combine(
+            shipment.expected_arrival_date,
+            datetime.min.time()
+        )
+    )
+
+    # ======================================================
+    # COMPLETED
+    # ======================================================
+
+    if end_phase and end_phase.completed_at:
+
+        result["end_date"] = end_phase.completed_at
+
+        duration = (
+            end_phase.completed_at
+            - start_datetime
+        )
+
+        result["days"] = format_duration(duration)
+
+        result["status"] = "Completed"
+
+        return result
+
+    # ======================================================
+    # IN PROGRESS
+    # ======================================================
+
+    duration = (
+        timezone.now()
+        - start_datetime
+    )
+
+    result["days"] = format_duration(duration)
+
+    result["status"] = "In Progress"
+
+    return result
 # ==========================================================
 # CALCULATE PHASE AGE
 # ==========================================================
@@ -7120,231 +7219,7 @@ def calculate_phase_age(shipment, from_order, to_order):
 
     return result
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.utils import timezone
 
-from .models import Shipment, ShipmentPhaseMaster
-
-
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from django.utils import timezone
-
-from .models import Shipment, ShipmentPhaseMaster
-
-
-# ==========================================================
-# CALCULATE PHASE AGE
-# ==========================================================
-
-def calculate_phase_age(shipment, from_order, to_order):
-
-    result = {
-        "start_date": None,
-        "end_date": None,
-        "days": None,
-        "days_value": None,
-        "status": "Not Started",
-    }
-
-    if not from_order or not to_order:
-        result["status"] = "-"
-        return result
-
-    try:
-        from_order = int(from_order)
-        to_order = int(to_order)
-
-    except (ValueError, TypeError):
-        result["status"] = "Invalid Range"
-        return result
-
-    if from_order > to_order:
-        result["status"] = "Invalid Range"
-        return result
-
-    # START PHASE
-    start_phase = shipment.phases.filter(
-        order=from_order
-    ).first()
-
-    if not start_phase or not start_phase.completed_at:
-        result["status"] = "Not Started"
-        return result
-
-    result["start_date"] = start_phase.completed_at
-
-    # END PHASE
-    end_phase = shipment.phases.filter(
-        order=to_order
-    ).first()
-
-    # ==========================================
-    # COMPLETED
-    # ==========================================
-
-    if end_phase and end_phase.completed_at:
-
-        result["end_date"] = end_phase.completed_at
-
-        duration = (
-            end_phase.completed_at
-            - start_phase.completed_at
-        )
-
-        result["days"] = format_duration(duration)
-        result["status"] = "Completed"
-        result["days_value"] = (
-            duration.total_seconds() / 86400
-        )
-
-        return result
-
-    # ==========================================
-    # IN PROGRESS
-    # ==========================================
-
-    duration = (
-        timezone.now()
-        - start_phase.completed_at
-    )
-
-    result["days"] = format_duration(duration)
-    result["status"] = "In Progress"
-
-    return result
-
-
-from datetime import timedelta
-from django.utils import timezone
-
-
-def calculate_age3(shipment, to_order):
-
-    result = {
-        "start_date": None,
-        "end_date": None,
-        "days": None,
-        "days_value": None,  # numeric value for average
-        "status": "Not Started",
-    }
-
-    # ==========================================
-    # VALIDATE TO PHASE
-    # ==========================================
-
-    if not to_order:
-        result["status"] = "-"
-        return result
-
-    try:
-        to_order = int(to_order)
-
-    except (ValueError, TypeError):
-        result["status"] = "Invalid Range"
-        return result
-
-    # Age 3 To phase must be after MD Approval
-    # Order 5 onwards
-
-    if to_order <= 4:
-        result["status"] = "Invalid Range"
-        return result
-
-    # ==========================================
-    # DOCUMENT HANDOVER
-    # Order = 3
-    # ==========================================
-
-    document_handover = shipment.phases.filter(
-        order=3
-    ).first()
-
-    if not document_handover or not document_handover.completed_at:
-        result["status"] = "Not Started"
-        return result
-
-    # ==========================================
-    # START DATE = DOCUMENT HANDOVER + 3 DAYS
-    # ==========================================
-
-    age_start_date = (
-        document_handover.completed_at
-        + timedelta(days=3)
-    )
-
-    result["start_date"] = age_start_date
-
-    # ==========================================
-    # TO PHASE
-    # ==========================================
-
-    end_phase = shipment.phases.filter(
-        order=to_order
-    ).first()
-
-    # ==========================================
-    # COMPLETED
-    # ==========================================
-
-    if end_phase and end_phase.completed_at:
-
-        result["end_date"] = end_phase.completed_at
-
-        duration = (
-            end_phase.completed_at
-            - age_start_date
-        )
-
-        # If completed before the 3-day grace period
-        if duration.total_seconds() < 0:
-            duration = timedelta(0)
-
-        result["days"] = format_duration(duration)
-
-        # Numeric days for average
-        result["days_value"] = (
-            duration.total_seconds() / 86400
-        )
-
-        result["status"] = "Completed"
-
-        return result
-
-    # ==========================================
-    # IN PROGRESS
-    # ==========================================
-
-    now = timezone.now()
-
-    duration = now - age_start_date
-
-    # Still inside the 3-day grace period
-    if duration.total_seconds() < 0:
-
-        result["days"] = format_duration(
-            timedelta(0)
-        )
-
-        result["days_value"] = 0
-        result["status"] = "Grace Period"
-
-        return result
-
-    result["days"] = format_duration(duration)
-
-    result["days_value"] = (
-        duration.total_seconds() / 86400
-    )
-
-    result["status"] = "In Progress"
-
-    return result
-
-# ==========================================================
-# SHIPMENT AGING REPORT
-# ==========================================================
 
 @login_required
 def shipment_aging_report(request):
@@ -7379,26 +7254,14 @@ def shipment_aging_report(request):
     age2_to = request.GET.get("age2_to")
 
     # ======================================================
-    # AGE 3
-    # FROM = DOCUMENT HANDOVER + 3 DAYS
-    # ONLY TO PHASE IS SELECTED
+    # AGE 3 PHASE RANGE
     # ======================================================
 
+    ###age3_from = request.GET.get("age3_from")
     age3_to = request.GET.get("age3_to")
 
-    # ======================================================
-    # DEFAULT VALUES
-    # ======================================================
-
+    # Default empty queryset
     shipments = Shipment.objects.none()
-
-    average_age1 = None
-    average_age2 = None
-    average_age3 = None
-
-    age1_values = []
-    age2_values = []
-    age3_values = []
 
     # ======================================================
     # LOAD SHIPMENTS ONLY WHEN DATE RANGE IS SELECTED
@@ -7444,7 +7307,14 @@ def shipment_aging_report(request):
                     "No Phase"
                 )
 
+
+                        # ==============================================
+            # ARRIVAL AGE
+            # Expected Arrival Date → Age 1 To Phase
             # ==============================================
+
+            
+                        # ==============================================
             # AGE 1
             # ==============================================
 
@@ -7453,13 +7323,6 @@ def shipment_aging_report(request):
                 age1_from,
                 age1_to
             )
-
-            # Add numeric value for average
-            if shipment.age1.get("days_value") is not None:
-
-                age1_values.append(
-                    shipment.age1["days_value"]
-                )
 
             # ==============================================
             # AGE 2
@@ -7471,53 +7334,13 @@ def shipment_aging_report(request):
                 age2_to
             )
 
-            # Add numeric value for average
-            if shipment.age2.get("days_value") is not None:
-
-                age2_values.append(
-                    shipment.age2["days_value"]
-                )
-
             # ==============================================
             # AGE 3
-            # DOCUMENT HANDOVER + 3 DAYS
             # ==============================================
 
             shipment.age3 = calculate_age3(
-                shipment,
+                shipment,              
                 age3_to
-            )
-
-            # Add numeric value for average
-            if shipment.age3.get("days_value") is not None:
-
-                age3_values.append(
-                    shipment.age3["days_value"]
-                )
-
-        # ==================================================
-        # CALCULATE AVERAGES
-        # ==================================================
-
-        if age1_values:
-
-            average_age1 = (
-                sum(age1_values)
-                / len(age1_values)
-            )
-
-        if age2_values:
-
-            average_age2 = (
-                sum(age2_values)
-                / len(age2_values)
-            )
-
-        if age3_values:
-
-            average_age3 = (
-                sum(age3_values)
-                / len(age3_values)
             )
 
     # ======================================================
@@ -7526,52 +7349,27 @@ def shipment_aging_report(request):
 
     context = {
 
-        # ==============================================
-        # PHASE DROPDOWNS
-        # ==============================================
-
+        # Phase dropdowns
         "phases": phases,
 
-        # ==============================================
-        # REPORT DATA
-        # ==============================================
-
+        # Report data
         "shipments": shipments,
 
-        # ==============================================
-        # DATE RANGE
-        # ==============================================
-
+        # Date range
         "from_date": from_date,
         "to_date": to_date,
 
-        # ==============================================
-        # AGE 1
-        # ==============================================
-
+        # Age 1
         "age1_from": age1_from,
         "age1_to": age1_to,
 
-        # ==============================================
-        # AGE 2
-        # ==============================================
-
+        # Age 2
         "age2_from": age2_from,
         "age2_to": age2_to,
 
-        # ==============================================
-        # AGE 3
-        # ==============================================
-
+        # Age 3
+        ###"age3_from": age3_from,
         "age3_to": age3_to,
-
-        # ==============================================
-        # AVERAGES
-        # ==============================================
-
-        "average_age1": average_age1,
-        "average_age2": average_age2,
-        "average_age3": average_age3,
     }
 
     return render(

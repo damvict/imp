@@ -262,73 +262,68 @@
 
                     <!-- ================= AGE 3 ================= -->
 
-<div class="card border-warning mb-4">
+                    <div class="card border-warning mb-4">
 
-    <div class="card-header bg-warning text-dark fw-bold">
-        Age 3 - Phase Range
-    </div>
+                        <div class="card-header bg-warning text-dark fw-bold">
+                            Age 3 - Phase Range
+                        </div>
 
-    <div class="card-body">
+                        <div class="card-body">
 
-        <div class="row g-3">
-
-            <!-- ================= AGE 3 FROM ================= -->
-
-            <div class="col-md-6">
-
-                <label class="form-label">
-                    From Shipmeent Date
-                </label>
-
-                <input type="text"
-                       class="form-control"
-                       value="Document Handover + 3 Days"
-                       readonly>
-
-            </div>
+                            <div class="row g-3">
 
 
-            <!-- ================= AGE 3 TO ================= -->
+                                <div class="col-md-6">
 
-            <div class="col-md-6">
+                                <label class="form-label">
+                                    From Date
+                                </label>
 
-                <label class="form-label">
-                    To Phase
-                </label>
+                                <input type="text"
+                                    class="form-control"
+                                    value="Expected Arrival Date"
+                                    readonly>
 
-                <select name="age3_to"
-                        class="form-select">
+                            </div>
 
-                    <option value="">
-                        Select Ending Phase
-                    </option>
+                                <!-- AGE 3 TO -->
 
-                    {% for p in phases %}
+                                <div class="col-md-6">
 
-                        {% if p.id > 3 %}
+                                    <label class="form-label">
+                                        To Phase
+                                    </label>
 
-                            <option value="{{ p.order }}"
-                                {% if age3_to == p.order|stringformat:"s" %}
-                                    selected
-                                {% endif %}>
+                                    <select name="age3_to"
+                                            class="form-select">
 
-                                {{ p.order }} - {{ p.phase_name }}
+                                        <option value="">
+                                            Select Ending Phase
+                                        </option>
 
-                            </option>
+                                        {% for p in phases %}
 
-                        {% endif %}
+                                            <option value="{{ p.order }}"
+                                                {% if age3_to == p.order|stringformat:"s" %}
+                                                    selected
+                                                {% endif %}>
 
-                    {% endfor %}
+                                                {{ p.order }} - {{ p.phase_name }}
 
-                </select>
+                                            </option>
 
-            </div>
+                                        {% endfor %}
 
-        </div>
+                                    </select>
 
-    </div>
+                                </div>
 
-</div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
 
                     <!-- ================= BUTTON ================= -->
 
@@ -388,10 +383,7 @@
                                     Amount
                                 </th>
 
-                                <th rowspan="2"
-                                    class="align-middle">
-                                    Arrival Date
-                                </th>
+                               
 
                                 <th rowspan="2"
                                     class="align-middle">
@@ -462,7 +454,7 @@
                                 <!-- AGE 3 -->
 
                                 <th class="text-center border-start">
-                                    Start Date
+                                   Expected Arrival Date
                                 </th>
 
                                 <th class="text-center">
@@ -517,12 +509,7 @@
                                 </td>
 
 
-                                <td>
-
-                                    {{ s.expected_arrival_date|date:"d M Y" }}
-
-                                </td>
-
+                               
 
                                 <td>
 
@@ -688,7 +675,7 @@
 
                                     {% if s.age3.start_date %}
 
-                                        {{ s.age3.start_date|date:"d M Y H:i" }}
+                                    {{ s.age3.start_date|date:"d M Y" }}
 
                                     {% else %}
 
@@ -770,78 +757,6 @@
                             </tr>
 
                             {% endfor %}
-                            {% if shipments %}
-
-<tr class="table-dark fw-bold">
-
-    <td colspan="8"
-        class="text-end">
-
-        AVERAGE DAYS
-
-    </td>
-
-    <!-- AGE 1 AVERAGE -->
-
-    <td class="text-center">
-
-        {% if average_age1 is not None %}
-
-            {{ average_age1|floatformat:2 }} Days
-
-        {% else %}
-
-            -
-
-        {% endif %}
-
-    </td>
-
-
-    <!-- AGE 2 EMPTY -->
-
-    <td colspan="2"></td>
-
-    <!-- AGE 2 AVERAGE -->
-
-    <td class="text-center">
-
-        {% if average_age2 is not None %}
-
-            {{ average_age2|floatformat:2 }} Days
-
-        {% else %}
-
-            -
-
-        {% endif %}
-
-    </td>
-
-
-    <!-- AGE 3 EMPTY -->
-
-    <td colspan="2"></td>
-
-    <!-- AGE 3 AVERAGE -->
-
-    <td class="text-center">
-
-        {% if average_age3 is not None %}
-
-            {{ average_age3|floatformat:2 }} Days
-
-        {% else %}
-
-            -
-
-        {% endif %}
-
-    </td>
-
-</tr>
-
-{% endif %}
 
                         </tbody>
 
