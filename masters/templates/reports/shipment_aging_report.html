@@ -759,7 +759,48 @@
                             {% endfor %}
 
                         </tbody>
+                        {% if shipments %}
 
+<tr class="table-dark">
+
+    <td colspan="6"
+        class="text-end fw-bold">
+        Average Age
+    </td>
+
+
+    <!-- AGE 1 -->
+
+    <td class="border-start"></td>
+  
+
+    <td class="text-center fw-bold">
+        {{ average_age1|default:"-" }}
+    </td>
+
+
+    <!-- AGE 2 -->
+
+    <td class="border-start"></td>
+
+  <td></td>
+    <td class="text-center fw-bold">
+        {{ average_age2|default:"-" }}
+    </td>
+
+
+    <!-- AGE 3 -->
+
+    <td class="border-start"></td>
+    <td></td>
+
+    <td class="text-center fw-bold">
+        {{ average_age3|default:"-" }}
+    </td>
+
+</tr>
+
+{% endif %}
                     </table>
 
                 </div>

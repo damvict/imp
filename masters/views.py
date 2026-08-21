@@ -7047,6 +7047,7 @@ def calculate_age3(shipment, to_order):
         "end_date": None,
         "days": None,
         "status": "Not Started",
+         "total_seconds": None,
     }
 
     # ======================================================
@@ -7117,6 +7118,7 @@ def calculate_age3(shipment, to_order):
         result["days"] = format_duration(duration)
 
         result["status"] = "Completed"
+        result["total_seconds"] = duration.total_seconds()
 
         return result
 
@@ -7132,6 +7134,7 @@ def calculate_age3(shipment, to_order):
     result["days"] = format_duration(duration)
 
     result["status"] = "In Progress"
+    result["total_seconds"] = duration.total_seconds()
 
     return result
 # ==========================================================
@@ -7145,6 +7148,7 @@ def calculate_phase_age(shipment, from_order, to_order):
         "end_date": None,
         "days": None,
         "status": "Not Started",
+        "total_seconds": None,
     }
 
     # Check if phases are selected
@@ -7202,6 +7206,7 @@ def calculate_phase_age(shipment, from_order, to_order):
 
         result["days"] = format_duration(duration)
         result["status"] = "Completed"
+        result["total_seconds"] = duration.total_seconds()
 
         return result
 
@@ -7216,6 +7221,7 @@ def calculate_phase_age(shipment, from_order, to_order):
 
     result["days"] = format_duration(duration)
     result["status"] = "In Progress"
+    result["total_seconds"] = duration.total_seconds()
 
     return result
 
@@ -7343,6 +7349,62 @@ def shipment_aging_report(request):
                 age3_to
             )
 
+        # ======================================================
+    # CALCULATE AVERAGE AGES
+    # ======================================================
+
+    age1_durations = []
+    age2_durations = []
+    age3_durations = []
+
+    for shipment in shipments:
+
+        if shipment.age1.get("total_seconds") is not None:
+            age1_durations.append(
+                shipment.age1["total_seconds"]
+            )
+
+        if shipment.age2.get("total_seconds") is not None:
+            age2_durations.append(
+                shipment.age2["total_seconds"]
+            )
+
+        if shipment.age3.get("total_seconds") is not None:
+            age3_durations.append(
+                shipment.age3["total_seconds"]
+            )
+
+
+    average_age1 = None
+    average_age2 = None
+    average_age3 = None
+
+
+    if age1_durations:
+
+        average_age1 = format_duration(
+            timedelta(
+                seconds=sum(age1_durations) / len(age1_durations)
+            )
+        )
+
+
+    if age2_durations:
+
+        average_age2 = format_duration(
+            timedelta(
+                seconds=sum(age2_durations) / len(age2_durations)
+            )
+        )
+
+
+    if age3_durations:
+
+        average_age3 = format_duration(
+            timedelta(
+                seconds=sum(age3_durations) / len(age3_durations)
+            )
+        )
     # ======================================================
     # CONTEXT
     # ======================================================
@@ -7370,6 +7432,9 @@ def shipment_aging_report(request):
         # Age 3
         ###"age3_from": age3_from,
         "age3_to": age3_to,
+        "average_age1": average_age1,
+        "average_age2": average_age2,
+        "average_age3": average_age3,
     }
 
     return render(
