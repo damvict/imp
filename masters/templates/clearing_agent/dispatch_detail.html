@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Dispatch Shipment{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:720px;">
+
+  <div class="card shadow-sm mt-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Dispatch Shipment</h5>
+    </div>
+
+    <div class="card-body">
+      <p><strong>Shipment Code:</strong> {{ shipment.shipment_code }}</p>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label">Truck No</label>
+          <input type="text" name="truck_no" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Driver Name</label>
+          <input type="text" name="driver_name" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Driver License</label>
+          <input type="text" name="driver_license" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Driver Phone</label>
+          <input type="text" name="driver_phone" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Transport Company</label>
+          <input type="text" name="transport_company" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Estimated Delivery</label>
+          <input type="date" name="estimated_delivery" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Delivery Address</label>
+          <input type="text" name="delivery_address" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Special Instructions</label>
+          <textarea name="special_instructions" class="form-control"></textarea>
+        </div>
+
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary px-4">
+            Save Dispatch
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

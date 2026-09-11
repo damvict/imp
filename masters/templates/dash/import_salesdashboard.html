@@ -1,0 +1,349 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shipment overview </title>
+
+<style>
+:root {
+  --bg0:#071c3d;
+  --bg1:#0a2b5e;
+  --card: rgba(255,255,255,0.08);
+  --card-border: rgba(255,255,255,0.15);
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --orange:#f59e0b;
+  --red:#ef4444;
+  --purple:#8b5cf6;
+  --teal:#2dbae4;
+  --shadow:0 12px 30px rgba(0,0,0,.35);
+  --radius:18px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  padding:20px;
+  font-family:Inter,"Segoe UI",system-ui,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 700px at 10% 10%, #1a53a8 0%, transparent 55%),
+    radial-gradient(900px 550px at 90% 20%, #1f7a6a 0%, transparent 55%),
+    linear-gradient(180deg,var(--bg0),var(--bg1));
+}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+}
+
+.title{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.title h1{
+  font-size:18px;
+  margin:0;
+  font-weight:800;
+  color:#fff;
+}
+
+.title small{
+  color: rgba(229,231,235,.75);
+  font-size:12px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.pill{
+  background: rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.16);
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  backdrop-filter: blur(10px);
+}
+
+.btn{
+  padding:9px 14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(59,130,246,.95), rgba(34,197,94,.85));
+  color:#06162f;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+}
+
+/* ===== KPI ===== */
+.shipment-overview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin-bottom:25px;
+}
+
+.kpi-card{
+  padding:18px;
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  transition:.3s ease;
+  color:#fff;
+}
+.kpi-card:hover{transform:scale(1.04)}
+
+.kpi-card span{
+  font-size:14px;
+  opacity:.9;
+}
+.kpi-card h3{
+  margin:0;
+  font-size:28px;
+  font-weight:800;
+}
+
+.kpi-blue{background:linear-gradient(135deg,#2563EB,#1E40AF);}
+.kpi-green{background:linear-gradient(135deg,#16A34A,#14532D);}
+.kpi-orange{background:linear-gradient(135deg,#F59E0B,#B45309);}
+.kpi-purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);}
+.kpi-red{background:linear-gradient(135deg,#DC2626,#991B1B);}
+.kpi-teal{background:linear-gradient(135deg,#2dbae4,#045e80);}
+
+/* ===== TABLE ===== */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  background:var(--card);
+  backdrop-filter:blur(14px);
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+thead th{
+  position:sticky;
+  top:0;
+  background:rgba(255,255,255,0.08);
+  color:#c7d2fe;
+  padding:12px;
+  font-size:11px;
+  text-transform:uppercase;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+tbody td{
+  padding:11px 12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+tbody tr:hover{
+  background:rgba(255,255,255,.05);
+}
+
+.progress-bar{
+  height:8px;
+  background:rgba(255,255,255,.15);
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,#22c55e,#4ade80);
+}
+
+/* ===== MODAL ===== */
+#shipment-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(6px);
+  padding:40px;
+  overflow:auto;
+}
+.modal-container{max-width:1000px;margin:auto;}
+.modal-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+.card{
+  background:rgba(255,255,255,0.95);
+  color:#111827;
+  padding:20px;
+  border-radius:16px;
+}
+
+.back-inline{
+  text-decoration:none;
+  color:#ffffff;
+  margin-right:14px;
+  font-size:22px;          /* Bigger arrow */
+  font-weight:900;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.15);
+  transition:.2s ease;
+}
+
+.back-inline:hover{
+  background:rgba(255,255,255,0.30);
+  transform:translateX(-4px);
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+<div class="title">
+  <h1>
+    <a href="{% url 'imports_dashboard' %}" class="back-inline">
+      ←
+    </a>
+    Shipment Overview | Dashboard
+  </h1>
+  <small>Shipment Overview • Active Shipments</small>
+</div>
+  <div class="actions">
+    <div class="pill">
+      Last refresh: <b id="last-refresh">—</b>
+    </div>
+    <button class="btn" id="btn-refresh" type="button">Refresh</button>
+  </div>
+</div>
+
+<div class="shipment-overview">
+  <div class="kpi-card kpi-blue" data-status="active"><span>ACTIVE</span><h3 id="kpi-active">0</h3></div>
+  <div class="kpi-card kpi-teal" data-status="new"><span>NEW</span><h3 id="kpi-new">0</h3></div>
+  <div class="kpi-card kpi-orange" data-status="at_port"><span>AT PORT</span><h3 id="kpi-at-port">0</h3></div>
+  <div class="kpi-card kpi-purple" data-status="on_the_way"><span>ON THE WAY</span><h3 id="kpi-on-way">0</h3></div>
+  <div class="kpi-card kpi-red" data-status="grn"><span>GRN PENDING</span><h3 id="kpi-grn">0</h3></div>
+  <div class="kpi-card kpi-green" data-status="completed"><span>THIS MONTH COMPLETED </span><h3 id="kpi-completed">0</h3></div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Shipment</th>
+<th>Brand</th>
+<th>Supplier</th>
+<th>Arrival</th>
+<th>Phase Completed</th>
+<th>Progress</th>
+</tr>
+</thead>
+<tbody id="shipment-body"></tbody>
+</table>
+
+<div id="shipment-modal">
+  <div class="modal-container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 id="modal-title"></h2>
+      <button class="btn" onclick="closeModal()">Close</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+document.getElementById("btn-refresh").addEventListener("click", refreshDashboard);
+
+function updateTime(){
+  const d = new Date();
+  document.getElementById("last-refresh").innerText =
+    d.toLocaleTimeString("en-GB");
+}
+
+function refreshDashboard(status=""){
+  fetch("{% url 'common_dashboard_data_api' %}")
+  .then(res=>res.json())
+  .then(data=>{
+    document.getElementById("kpi-active").innerText=data.kpis.total_active;
+    document.getElementById("kpi-new").innerText=data.kpis.new;
+    document.getElementById("kpi-at-port").innerText=data.kpis.at_port;
+    document.getElementById("kpi-on-way").innerText=data.kpis.on_the_way;
+    document.getElementById("kpi-grn").innerText=data.kpis.grn;
+    document.getElementById("kpi-completed").innerText=data.kpis.completed;
+
+    const tbody=document.getElementById("shipment-body");
+    tbody.innerHTML="";
+
+    data.shipments.forEach(s=>{
+      const p=Math.min(s.progress||0,100);
+      tbody.innerHTML+=`
+      <tr>
+        <td>${s.shipment_code}</td>
+        <td>${s.shipment_description}</td>
+        <td>${s.supplier ?? ""}</td>
+        <td>${s.arrival}</td>
+        <td>${s.phase}</td>
+        <td>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="progress-bar" style="flex:1;">
+              <div class="progress-fill" style="width:${p}%"></div>
+            </div>
+            <span>${p}%</span>
+          </div>
+        </td>
+      </tr>`;
+    });
+
+    updateTime();   // moved outside loop
+  });
+}
+
+function openModal(status){
+  fetch("{% url 'common_dashboard_data_api' %}?status="+status)
+  .then(res=>res.json())
+  .then(data=>{
+    document.getElementById("modal-title").innerText=status.replace("_"," ").toUpperCase()+" SHIPMENTS";
+    const body=document.getElementById("modal-body");
+    body.innerHTML="";
+    data.shipments.forEach(s=>{
+      body.innerHTML+=`
+      <div class="card">
+        <h3>${s.shipment_code}</h3>
+        <p><b>Brand:</b> ${s.shipment_description}</p>
+        <p><b>Arrival:</b> ${s.arrival}</p>
+        <p><b>Phase:</b> ${s.phase}</p>
+        <p><b>Progress:</b> ${s.progress}%</p>
+      </div>`;
+    });
+    document.getElementById("shipment-modal").style.display="block";
+  });
+}
+
+function closeModal(){
+  document.getElementById("shipment-modal").style.display="none";
+}
+
+document.querySelectorAll(".kpi-card").forEach(card=>{
+  card.addEventListener("click",()=>{
+    openModal(card.dataset.status);
+  });
+});
+
+refreshDashboard();
+setInterval(refreshDashboard, 30000);  // Auto refresh every 30 seconds
+</script>
+
+</body>
+</html>

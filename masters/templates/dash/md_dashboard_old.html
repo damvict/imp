@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  /* Container */
+  .md-dashboard-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #1f2937; /* dark gray */
+  }
+
+  /* Table Styles */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  thead {
+    background-color: #2563eb; /* blue */
+    color: white;
+  }
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tbody tr:hover {
+    background-color: #e0f2fe; /* light blue hover */
+  }
+
+  /* Button Styles */
+  .approve-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #10b981; /* green */
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+  }
+
+  .approve-btn:hover {
+    background-color: #059669; /* darker green */
+  }
+
+  .approve-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: white;
+  }
+
+  /* Document Link */
+  .doc-link {
+    color: #2563eb; /* blue */
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .doc-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+
+    tr {
+      margin-bottom: 15px;
+    }
+
+    th {
+      display: none;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    td:before {
+      content: attr(data-label);
+      font-weight: bold;
+      width: 45%;
+      flex-shrink: 0;
+    }
+
+    .approve-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+</style>
+
+<div class="md-dashboard-container">
+  <h2>Pending Duty Approvals</h2>
+
+  {% if shipments %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Document Type</th>
+        <th>Doc. Number</th>
+        <th>Payment Marked</th>
+        <th>Action</th>
+        <th>Document</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for shipment in shipments %}
+      <tr>
+        <td data-label="ID">{{ shipment.id }}</td>
+        <td data-label="Document Type">{{ shipment.bank_doc_type }}</td>
+        <td data-label="Doc. Number">{{ shipment.reference_number }}</td>
+        <td data-label="Payment Marked">
+          {% if shipment.payment_marked %}
+            <span style="color: green; font-weight: bold;">Yes</span>
+          {% else %}
+            <span style="color: red; font-weight: bold;">No</span>
+          {% endif %}
+        </td>
+        <td data-label="Action">
+          <form method="post" action="{% url 'approve_duty_paid_md' shipment.id %}">
+            {% csrf_token %}
+            <button type="submit" class="approve-btn">
+              <!-- Check icon SVG -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M16.707 5.293a1 1 0 010 1.414l-7.071 7.071a1 1 0 01-1.414 0L3.293 9.293a1 1 0 011.414-1.414L8 11.172l6.293-6.293a1 1 0 011.414 0z"/>
+              </svg>
+              Approve Duty
+            </button>
+          </form>
+        </td>
+        <td data-label="Document">
+          {% if shipment.assessment_document %}
+            <a href="{{ shipment.assessment_document.url }}" target="_blank" class="doc-link">View Document</a>
+          {% else %}
+            <span style="color: gray;">No document</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p style="color: gray; margin-top: 20px;">No shipments pending duty approval.</p>
+  {% endif %}
+</div>
+{% endblock %}

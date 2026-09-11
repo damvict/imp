@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+{% block title %}Bank Controller Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid dashboard-wrapper">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <h3 class="dashboard-title">Bank Coordinator Dashboard</h3>
+      
+    </div>
+  </div>
+
+  <!-- WELCOME CARD -->
+
+
+  <!-- KPI OVERVIEW -->
+  <div class="row kpi-row">
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <span class="kpi-label">Shipments (This Month)</span>
+        <h2 class="kpi-value">{{ stats.total_shipments_month }}</h2>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <span class="kpi-label">Active Shipments</span>
+        <h2 class="kpi-value">{{ stats.active_shipments }}</h2>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card warning">
+        <span class="kpi-label">Pending Bank Docs</span>
+        <h2 class="kpi-value">{{ stats.pending_bank_docs }}</h2>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card success">
+        <span class="kpi-label">Completed Shipments</span>
+        <h2 class="kpi-value">{{ stats.completed_shipments }}</h2>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FINANCIAL SUMMARY -->
+  <div class="row">
+    <div class="col-md-4">
+      <div class="kpi-card danger">
+        <span class="kpi-label">Pending Amount</span>
+        <h2 class="kpi-value">USD {{ stats.total_amount_pending }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+<div class="mt-4">
+
+  <h4 class="mb-3" style="font-weight:700;color:#0f172a;">Quick Actions</h4>
+
+  <div class="row ca-actions">
+
+    <div class="col-xl-3 col-lg-6">
+      <a href="{% url 'arrival-notice-create' %}" class="ca-card">
+        <div class="ca-icon success">
+          <i class="fa fa-truck"></i>
+        </div>
+        <div class="ca-content">
+          <h4>Arrival Notice</h4>
+          <p>Create new arrival</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-6">
+      <a href="{% url 'new-shipment' %}"
+         class="ca-card {% if stats.ship_tobe > 0 %}alert{% endif %}">
+        <div class="ca-icon primary">
+          <i class="fa fa-plus"></i>
+        </div>
+        <div class="ca-content">
+          <h4>Create Shipment</h4>
+          {% if stats.ship_tobe > 0 %}
+            <p>{{ stats.ship_tobe }} pending</p>
+            <span class="badge">{{ stats.ship_tobe }}</span>
+          {% else %}
+            <p>No pending shipments</p>
+          {% endif %}
+        </div>
+      </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-6">
+      <a href="{% url 'document_handover_web' %}"
+         class="ca-card {% if stats.doc_tobe_handover > 0 %}alert{% endif %}">
+        <div class="ca-icon warning">
+          <i class="fa fa-send"></i>
+        </div>
+        <div class="ca-content">
+          <h4>Document Handover</h4>
+          {% if stats.doc_tobe_handover > 0 %}
+            <p>{{ stats.doc_tobe_handover }} pending</p>
+            <span class="badge">{{ stats.doc_tobe_handover }}</span>
+          {% else %}
+            <p>No pending documents</p>
+          {% endif %}
+        </div>
+      </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-6">
+      <a href="{% url 'bank_document_settlement_web' %}" class="ca-card">
+        <div class="ca-icon purplec">
+          <i class="fa fa-credit-card"></i>
+        </div>
+        <div class="ca-content">
+          <h4>Settlements</h4>
+          <p>Bank settlements</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-xl-3 col-lg-6">
+      <a href="{% url 'bank_document_report_web' %}" class="ca-card">
+        <div class="ca-icon primary1">
+          <i class="fa fa-chart-line"></i>
+        </div>
+        <div class="ca-content">
+          <h4>Reports</h4>
+          <p>View reports</p>
+        </div>
+      </a>
+    </div>
+
+     <div class="col-xl-6 col-lg-6">
+      
+    <a href="{% url 'impsales_dashboard' %}"
+       class="ca-card">
+
+      <div class="ca-icon primary">
+        <i class="fa fa-university"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Dashboard</h4>
+        <p>Logistics Overview</p>
+      </div>
+
+    </a>
+  </div>
+
+  </div>
+</div>
+
+
+</div>
+
+<style>
+/* ====== DASHBOARD BASE ====== */
+.dashboard-wrapper {
+  padding-bottom: 30px;
+}
+
+/* ====== HEADER ====== */
+.dashboard-header {
+  margin-bottom: 20px;
+}
+.dashboard-title {
+  font-weight: 700;
+  color: #0f172a;
+}
+.dashboard-subtitle {
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* ====== WELCOME ====== */
+.welcome-card {
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.welcome-label {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.welcome-user {
+  margin: 4px 0;
+  font-weight: 700;
+}
+.role-badge {
+  background: rgba(255,255,255,0.15);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* ====== KPI ====== */
+.kpi-row {
+  margin-bottom: 16px;
+}
+.kpi-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+.kpi-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+}
+.kpi-value {
+  margin-top: 6px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.kpi-card.success { border-left: 5px solid #16a34a; }
+.kpi-card.warning { border-left: 5px solid #f59e0b; }
+.kpi-card.danger  { border-left: 5px solid #dc2626; }
+
+/* ====== ACTIONS ====== */
+.action-panel {
+  margin-top: 10px;
+}
+.action-card {
+  display: block;
+  background: #ffffff;
+  padding: 22px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(15,23,42,0.08);
+  position: relative;
+  transition: all .2s ease;
+}
+.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 18px rgba(15,23,42,0.12);
+}
+.action-card i {
+  font-size: 26px;
+  color: #1e3a8a;
+}
+.action-card span {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  color: #0f172a;
+}
+.action-card .badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+}
+
+/* ===== QUICK ACTIONS – CLEARING AGENT STYLE ===== */
+.ca-actions {
+  row-gap: 22px;
+}
+
+.ca-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #ffffff;
+  padding: 22px 24px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 6px 16px rgba(15,23,42,0.08);
+  transition: all 0.2s ease;
+  position: relative;
+  height: 100%;
+}
+
+.ca-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(15,23,42,0.12);
+}
+
+.ca-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.ca-icon.primary { background: #2563eb; }
+.ca-icon.warning { background: #f97316; }
+.ca-icon.success { background: #16a34a; }
+.ca-icon.danger  { background: #dc2626; }
+
+.ca-content h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.ca-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.ca-card .badge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ca-card.alert {
+  background: #fff7f7;
+  border-left: 4px solid #dc2626;
+}
+
+
+.ca-icon.primary1 {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+}
+
+.ca-icon.primary1 i {
+  color: #f1c40f; /* gold */
+}
+
+.ca-icon.purplec {
+  background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+}
+
+.ca-icon.purplec i {
+  color: #ffffff;
+}
+
+
+</style>
+
+{% endblock %}

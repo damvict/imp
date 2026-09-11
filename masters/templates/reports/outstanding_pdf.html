@@ -1,0 +1,26 @@
+<h3 style="text-align:center">Outstanding Report</h3>
+
+<table width="100%" border="1" cellspacing="0" cellpadding="5">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Company</th>
+      <th>Doc</th>
+      <th>Ref</th>
+      <th align="right">Amount</th>
+      <th align="right">Outstanding</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in results %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ item.company }}</td>
+      <td>{{ item.doc_type }}</td>
+      <td>{{ item.reference_number }}</td>
+      <td align="right">{{ item.amount|floatformat:2 }}</td>
+      <td align="right">{{ item.outstanding|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

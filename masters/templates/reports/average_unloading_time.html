@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📊 Average Unloading Time Report</h2>
+
+    <h4 class="mt-3">
+        Average Unloading Time: 
+        {% if average_time %}
+            {{ average_time }}
+        {% else %}
+            No data available
+        {% endif %}
+    </h4>
+
+    <table class="table table-bordered mt-4">
+        <thead>
+            <tr>
+                <th>Shipment PO No</th>
+                <th>Unloading Start</th>
+                <th>Unloading End</th>
+                <th>Unloading Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shipment in shipments %}
+            <tr>
+                <td>{{ shipment.purchase_order_no }}</td>
+                <td>{{ shipment.unloading_start_time }}</td>
+                <td>{{ shipment.unloading_end_time }}</td>
+                <td>{{ shipment.unloading_duration }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No completed unloadings found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+      <!-- Back button -->
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary mt-3">← Back to Dashboard</a>
+</div>
+{% endblock %}

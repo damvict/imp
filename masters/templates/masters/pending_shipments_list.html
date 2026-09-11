@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table th, .table td {
+    padding: 0.4rem 0.6rem;
+    vertical-align: middle;
+}
+
+.table tr {
+    height: 20px;
+}
+
+/* Custom striped row color */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #beccc4;
+}
+
+/* Hover effect */
+.table-hover tbody tr:hover {
+    background-color: #e9eff5;
+}
+
+/* Header styling */
+.table thead th {
+    background-color: #10243a;
+    color: white;
+    padding: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_filter,
+.dataTables_wrapper .dt-buttons {
+    margin-bottom: 0.75rem;
+}
+</style>
+
+<div class="container mt-5">
+
+    <a href="{% url 'shipment_create' %}" class="btn btn-light text-primary fw-bold btn-sm mb-3">
+        <i class="fas fa-plus-circle"></i> New Shipment
+    </a>
+
+    <div class="card-body p-4">
+        <table id="datatable-buttons" class="table table-striped table-hover" style="width:100%">
+            <thead class="table-dark">
+                <tr>
+                    <th>PO No</th>
+                    <th>Packing List</th>
+                    <th>Expected Arrival</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shipment in shipments %}
+                <tr>
+                    <td>{{ shipment.purchase_order_no }}</td>
+                    <td>{{ shipment.packing_list_ref }}</td>
+                    <td>{{ shipment.expected_arrival_date }}</td>
+                    <td>
+                        <!--<span class="badge" style="background-color: {{ shipment.status.color_code }}; color: #fff;">
+                            {{ shipment.status.status_name }}
+                        </span>-->
+                    </td>
+                    <td>
+                        <a href="{% url 'shipment_arrival_update' shipment.id %}" class="btn btn-primary btn-sm">
+                            Arrival Update
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No pending shipments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

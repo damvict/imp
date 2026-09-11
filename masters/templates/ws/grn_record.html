@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}Record GRN{% endblock %}
+
+{% block content %}
+<style>
+/* ================= PAGE ================= */
+.grn-page {
+  background: #f5f7fa;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* ================= CARD ================= */
+.grn-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  height: 100%;
+}
+
+.grn-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: #337ab7;
+}
+
+.grn-supplier {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.grn-row {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.grn-status {
+  display: inline-block;
+  background: #dff0d8;
+  color: #3c763d;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.grn-btn {
+  margin-top: 14px;
+  width: 100%;
+  font-weight: 700;
+}
+
+/* ================= MODAL ================= */
+.grn-close {
+  font-size: 22px;
+  opacity: 0.6;
+  margin-top: -2px;
+}
+
+.grn-close:hover {
+  opacity: 1;
+  color: #f38fe4;
+}
+
+.grn-desc {
+  color: #ba0eb1;   /* choose your color */
+  font-weight: 600; /* optional */
+}
+
+</style>
+
+<div class="grn-page">
+
+  <h4 class="fw-bold mb-4">Record GRN</h4>
+
+  {% if shipments %}
+  <div class="row">
+
+    {% for s in shipments %}
+    <div class="col-md-4 col-sm-6 col-xs-12 mb-4">
+
+      <div class="grn-card">
+
+        <!-- Shipment Info -->
+       <div class="grn-code">
+    {{ s.shipment_code }} ~ 
+    <span class="grn-desc">
+        {{ s.shipment_description|default:"-" }}
+    </span>
+</div>
+
+        <div></div>
+       
+
+
+<div class="mb-2">
+  {% for item in s.items.all %}
+      <span class="badge bg-info text-dark me-1">
+          {{ item.department.name }}
+      </span>
+  {% empty %}
+      <span class="text-muted">No Department</span>
+  {% endfor %}
+</div>
+
+
+        <div class="grn-supplier">
+          <strong>Truck:</strong>
+          {{ s.dispatch.truck_no|default:"-" }}
+        </div>
+
+        <div class="grn-row">
+          <strong>Driver Phone:</strong>
+          {{ s.dispatch.driver_phone|default:"-" }}
+        </div>
+
+        <div class="grn-row">
+          <strong>Departure Date:</strong>
+          {{ s.dispatch.truck_depature_date|date:"Y-m-d"|default:"-" }}
+        </div>
+
+        <div class="grn-row">
+          <strong>Vessel:</strong>
+          {{ s.vessel|default:"-" }}
+        </div>
+
+        <!-- ================= STEP HANDLING ================= -->
+
+        {% if not s.physical_stock_verified %}
+          <!-- STEP 1 -->
+          <span class="grn-status" style="background:#fcf8e3;color:#8a6d3b;">
+            Awaiting Physical Verification
+          </span>
+
+          <form
+            method="post"
+            action="{% url 'verify-physical-stock-web' s.id %}"
+          >
+            {% csrf_token %}
+            <button class="btn btn-warning grn-btn">
+              Verify Physical Stock
+            </button>
+          </form>
+
+        {% else %}
+          <!-- STEP 2 -->
+          <span class="grn-status">
+            Stock Verified
+          </span>
+
+          <button
+            class="btn btn-success grn-btn"
+            data-toggle="modal"
+            data-target="#grnModal{{ s.id }}"
+          >
+            Record GRN
+          </button>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- ================= MODAL : STEP 2 ================= -->
+    {% if s.physical_stock_verified %}
+    <div class="modal fade" id="grnModal{{ s.id }}" tabindex="-1">
+      <div class="modal-dialog">
+        <form
+          method="post"
+          action="{% url 'record-grn-upload-web' s.id %}"
+          class="modal-content"
+        >
+          {% csrf_token %}
+
+          <div class="modal-header">
+            <button type="button" class="close grn-close" data-dismiss="modal">
+              &times;
+            </button>
+            <h4 class="modal-title">Record GRN</h4>
+          </div>
+
+          <div class="modal-body">
+
+            <div class="form-group">
+              <label>GRN Number <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                name="grn_number"
+                class="form-control"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label>Receiving Notes</label>
+              <textarea
+                name="receiving_notes"
+                class="form-control"
+                rows="3"
+              ></textarea>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">
+              Save GRN
+            </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Cancel
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+    {% endif %}
+    <!-- ================= END MODAL ================= -->
+
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- EMPTY STATE -->
+  <div class="text-center text-muted" style="margin-top:80px;">
+    <i class="fa fa-warehouse fa-3x mb-3"></i>
+    <p class="mb-4">No shipments ready for GRN recording.</p>
+    <a href="{% url 'ws_dashboard' %}" class="btn btn-primary">
+      ← Back to Dashboard
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

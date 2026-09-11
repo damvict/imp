@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Bank Document Amount{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+  <!-- ================= HEADER ================= -->
+  <div class="card bg-primary text-white mb-3">
+    <div class="card-body d-flex align-items-center">
+
+      <a href="{% url 'bank_document_settlement_web' %}"
+         class="btn btn-light btn-sm me-3">
+        ←
+      </a>
+
+      <h5 class="mb-0">
+        ✏️ Edit Bank Document Amount
+      </h5>
+
+    </div>
+  </div>
+
+
+  <!-- ================= ERROR ================= -->
+  {% if error %}
+    <div class="alert alert-danger">
+      {{ error }}
+    </div>
+  {% endif %}
+
+
+  <!-- ================= DOCUMENT INFORMATION ================= -->
+  <div class="card mb-3">
+
+    <div class="card-header">
+      <strong>Bank Document Information</strong>
+    </div>
+
+    <div class="card-body">
+
+      <div class="row">
+
+        <!-- Document Number -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            <strong>Document No</strong>
+          </label>
+
+          <input type="text"
+                 class="form-control"
+                 value="{{ document.reference_number|default:'' }}"
+                 readonly>
+        </div>
+
+
+        <!-- Document Type -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            <strong>Document Type</strong>
+          </label>
+
+          <input type="text"
+                 class="form-control"
+                 value="{{ document.doc_type|default:'' }}"
+                 readonly>
+        </div>
+
+
+        <!-- Company -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            <strong>Company</strong>
+          </label>
+
+          <input type="text"
+                 class="form-control"
+                 value="{{ document.company.name|default:'' }}"
+                 readonly>
+        </div>
+
+
+        <!-- Issue Date -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            <strong>Issue Date</strong>
+          </label>
+
+          <input type="text"
+                 class="form-control"
+                 value="{{ document.issue_date|date:'Y-m-d' }}"
+                 readonly>
+        </div>
+
+
+        <!-- Due Date -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            <strong>Due Date</strong>
+          </label>
+
+          <input type="text"
+                 class="form-control"
+                 value="{% if document.due_date %}{{ document.due_date|date:'Y-m-d' }}{% endif %}"
+                 readonly>
+        </div>
+
+
+        <!-- Current Amount -->
+        <div class="col-md-6 mb-3">
+          <label class="form-label">
+            <strong>Amount</strong>
+          </label>
+
+          <input type="number"
+                 step="0.01"
+                 min="0.01"
+                 name="amount"
+                 form="amount-edit-form"
+                 class="form-control"
+                 value="{{ document.amount|default:'' }}"
+                 {% if locked %}disabled{% endif %}
+                 required>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================= EDIT FORM ================= -->
+  <form method="post"
+        id="amount-edit-form">
+
+    {% csrf_token %}
+
+    <div class="card">
+
+      <div class="card-body">
+
+        {% if not locked %}
+
+          <div class="alert alert-info">
+            <strong>Note:</strong>
+            You can edit only the document amount.
+            The other document information cannot be changed from this page.
+          </div>
+
+          <div class="d-flex justify-content-between mt-3">
+
+            <a href="{% url 'bank_document_settlement_web' %}"
+               class="btn btn-danger">
+              ❌ Cancel
+            </a>
+
+            <button type="submit"
+                    class="btn btn-success">
+              💾 Save Amount
+            </button>
+
+          </div>
+
+        {% else %}
+
+          <div class="d-flex justify-content-end mt-3">
+
+            <a href="{% url 'bank_document_settlement_web' %}"
+               class="btn btn-secondary">
+              ← Back
+            </a>
+
+          </div>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

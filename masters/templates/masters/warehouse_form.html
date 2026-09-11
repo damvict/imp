@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ view.title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            {{ form.warehouse_name.label_tag }}
+            {{ form.warehouse_name }}
+            {% if form.warehouse_name.errors %}
+                <div class="text-danger">{{ form.warehouse_name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.is_active.label_tag }}
+            {{ form.is_active }}
+            {% if form.is_active.errors %}
+                <div class="text-danger">{{ form.is_active.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'warehouse_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

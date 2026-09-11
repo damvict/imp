@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+    <h2>Add Status Color</h2>
+    <div class="card-body">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            {{ form.status_code.label_tag }}
+            {{ form.status_code }}
+            {% if form.status_code.errors %}
+                <div class="text-danger">{{ form.status_code.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.status_name.label_tag }}
+            {{ form.status_name }}
+            {% if form.status_name.errors %}
+                <div class="text-danger">{{ form.status_name.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.color_code.label_tag }}
+            {{ form.color_code }}
+            {% if form.color_code.errors %}
+                <div class="text-danger">{{ form.color_code.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{% url 'status_color_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+    </div>
+    </div>
+</div>
+{% endblock %}

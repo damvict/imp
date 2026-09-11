@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="x_panel">
+      <div class="x_title">
+        <h2>{% if form.instance.pk %}Edit Bank{% else %}New Bank{% endif %}</h2>
+        <div class="clearfix"></div>
+      </div>
+
+```
+  <div class="x_content">
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <ul>
+          {% for field in form %}
+            {% for error in field.errors %}
+              <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="container">
+
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label class="form-label">Bank Name</label>
+            {{ form.b_name|add_class:"form-control" }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Account Number</label>
+            {{ form.accno|add_class:"form-control" }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Branch</label>
+            {{ form.branch|add_class:"form-control" }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-3">
+            <label class="form-label">OD</label>
+            {{ form.od|add_class:"form-control" }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">LC</label>
+            {{ form.lc|add_class:"form-control" }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">IMP</label>
+            {{ form.imp|add_class:"form-control" }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">DA</label>
+            {{ form.da|add_class:"form-control" }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Notes</label>
+            {{ form.notes|add_class:"form-control" }}
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary">
+            {% if form.instance.pk %}Update{% else %}Save{% endif %}
+          </button>
+          <a href="{% url 'bank_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+```
+
+  </div>
+</div>
+{% endblock %}

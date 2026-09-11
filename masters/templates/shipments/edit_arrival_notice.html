@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Edit Arrival Notice{% endblock %}
+
+{% block content %}
+
+<div class="arrival-bg">
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="x_panel">
+
+                <!-- PAGE TITLE -->
+                <div class="x_title">
+                    <h2>Edit Arrival Notice</h2>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="x_content">
+
+                    <!-- Shipment Information -->
+                    <div class="alert alert-info">
+                        <strong>Shipment:</strong>
+                        {{ shipment.shipment_code }}
+
+                        {% if shipment.bl %}
+                            &nbsp;&nbsp;|&nbsp;&nbsp;
+
+                            <strong>BL / AWB:</strong>
+                            {{ shipment.bl }}
+                        {% endif %}
+                    </div>
+
+                    <!-- FORM -->
+                    <form method="post">
+
+                        {% csrf_token %}
+
+                        <!-- FORM ERRORS -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+
+                                <strong>Please correct the following errors:</strong>
+
+                                <ul class="mb-0 mt-2">
+
+                                    {% for field in form %}
+
+                                        {% for error in field.errors %}
+
+                                            <li>
+                                                <strong>{{ field.label }}:</strong>
+                                                {{ error }}
+                                            </li>
+
+                                        {% endfor %}
+
+                                    {% endfor %}
+
+                                </ul>
+
+                            </div>
+                        {% endif %}
+
+
+                        <div class="container-fluid">
+
+                            <!-- ========================= -->
+                            <!-- COMPANY -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-6">
+
+                                    <label for="{{ form.company.id_for_label }}">
+                                        Company
+                                    </label>
+
+                                    {{ form.company|add_class:"form-select select2" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- VESSEL -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-6">
+
+                                    <label for="{{ form.vessel.id_for_label }}">
+                                        Vessel Name
+                                    </label>
+
+                                    {{ form.vessel|add_class:"form-control" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- ETA -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-4">
+
+                                    <label for="{{ form.expected_arrival_date.id_for_label }}">
+                                        Expected Arrival (ETA)
+                                    </label>
+
+                                    {{ form.expected_arrival_date|add_class:"form-control" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- SUPPLIER -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-6">
+
+                                    <label for="{{ form.supplier.id_for_label }}">
+                                        Supplier
+                                    </label>
+
+                                    {{ form.supplier|add_class:"form-select select2" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- BL / AWB -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-4">
+
+                                    <label for="{{ form.bl.id_for_label }}">
+                                        BL / AWB
+                                    </label>
+
+                                    {{ form.bl|add_class:"form-control" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- CONTAINER -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-4">
+
+                                    <label for="{{ form.container.id_for_label }}">
+                                        Container
+                                    </label>
+
+                                    {{ form.container|add_class:"form-control" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- CBM -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-4">
+
+                                    <label for="{{ form.cbm.id_for_label }}">
+                                        CBM
+                                    </label>
+
+                                    {{ form.cbm|add_class:"form-control" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- REMARK -->
+                            <!-- ========================= -->
+
+                            <div class="row mb-3">
+
+                                <div class="col-md-6">
+
+                                    <label for="{{ form.remark.id_for_label }}">
+                                        Remark
+                                    </label>
+
+                                    {{ form.remark|add_class:"form-control" }}
+
+                                </div>
+
+                            </div>
+
+
+                            <hr>
+
+
+                            <!-- ========================= -->
+                            <!-- BUTTONS -->
+                            <!-- ========================= -->
+
+                            <div class="mt-3">
+
+                                <button type="submit"
+                                        class="btn btn-success">
+
+                                    Save Arrival Notice
+
+                                </button>
+
+
+                                <a href="{% url 'shipments_list' %}"
+                                   class="btn btn-secondary ms-2">
+
+                                    Cancel
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

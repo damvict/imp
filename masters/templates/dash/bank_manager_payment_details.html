@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Payment Details{% endblock %}
+
+{% block content %}
+<style>
+/* Page */
+.page-bg {
+  background:#F9FAFB;
+  min-height:100vh;
+  padding:16px;
+  animation:fadeIn .35s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(6px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Header */
+.page-title {
+  color:#1E3A8A;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.sub-title {
+  color:#6B7280;
+  font-size:13px;
+  margin-bottom:14px;
+}
+
+/* Progress bar */
+.progress-wrap {
+  background:#E5E7EB;
+  height:6px;
+  border-radius:4px;
+  overflow:hidden;
+  margin-bottom:18px;
+}
+.progress-bar {
+  width:70%;
+  height:100%;
+  background:#2563EB;
+}
+
+/* Shipment summary */
+.shipment-box {
+  background:linear-gradient(135deg,#EEF2FF,#E0E7FF);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:20px;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+
+.label {
+  color:#6B7280;
+  font-size:12px;
+  margin-top:6px;
+}
+
+.value {
+  color:#1E3A8A;
+  font-size:14px;
+  font-weight:600;
+}
+
+/* Sections */
+.section-title {
+  font-size:14px;
+  font-weight:700;
+  color:#1E3A8A;
+  margin:20px 0 10px;
+}
+
+/* Payment options */
+.option {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#fff;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #E5E7EB;
+  margin-bottom:10px;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.option:hover {
+  border-color:#2563EB;
+  box-shadow:0 3px 8px rgba(37,99,235,.18);
+}
+
+.option input {
+  accent-color:#2563EB;
+}
+
+.option span {
+  font-size:14px;
+  font-weight:500;
+  color:#111827;
+}
+
+/* Inputs */
+.input {
+  width:100%;
+  border:1px solid #E5E7EB;
+  border-radius:12px;
+  padding:12px;
+  font-size:14px;
+  margin-bottom:16px;
+  transition:border .2s ease, box-shadow .2s ease;
+}
+
+.input:focus {
+  outline:none;
+  border-color:#2563EB;
+  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+
+textarea { resize:none; }
+
+/* Buttons */
+.btn {
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+
+.btn-primary {
+  background:linear-gradient(135deg,#2563EB,#1D4ED8);
+  color:#fff;
+}
+
+.btn-primary:hover {
+  transform:translateY(-1px);
+  box-shadow:0 8px 18px rgba(37,99,235,.35);
+}
+
+.btn-secondary {
+  background:#E5E7EB;
+  color:#111827;
+  margin-top:10px;
+}
+
+.btn-secondary:hover {
+  background:#D1D5DB;
+}
+</style>
+
+<div class="page-bg">
+
+  <h3 class="page-title">Shipment: {{ shipment.shipment_code }}</h3>
+  <div class="sub-title">Review payment details before sending for approval</div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar"></div>
+  </div>
+
+  <!-- Shipment Summary -->
+  <div class="shipment-box">
+    <div class="label">Supplier Invoice</div>
+    <div class="value">{{ shipment.supplier_invoice|default:"N/A" }}</div>
+
+    <div class="label">Reference Number</div>
+    <div class="value">{{ shipment.reference_number|default:"N/A" }}</div>
+
+    <div class="label">Total Duty Value (LKR)</div>
+    <div class="value">{{ shipment.total_duty_value|default:"N/A" }}</div>
+  </div>
+
+  <form method="POST"
+        action="{% url 'bank_manager_send_md_approval' shipment.id %}">
+    {% csrf_token %}
+
+    <!-- Payment Method -->
+    <div class="section-title">Select Payment Method</div>
+
+    <label class="option">
+      <input type="radio" name="payment_type" value="BT" required>
+      <span>Bank Transfer</span>
+    </label>
+
+    <label class="option">
+      <input type="radio" name="payment_type" value="LC">
+      <span>Letter Of Credit</span>
+    </label>
+
+    <label class="option">
+      <input type="radio" name="payment_type" value="CP">
+      <span>Cash Payment</span>
+    </label>
+
+    <!-- Bank Name -->
+   <div class="section-title">Select Bank</div>
+
+<select name="duty_paid_bank" class="input" required>
+  <option value="">-- Select Bank --</option>
+
+  {% for bank in banks %}
+    <option value="{{ bank.b_name }}">
+      {{ bank.b_name }} | {{ bank.branch }} | {{ bank.accno }}
+    </option>
+  {% endfor %}
+</select>
+
+    <!-- Notes -->
+    <div class="section-title">Payment Notes</div>
+    <textarea
+      name="notes"
+      class="input"
+      rows="4"
+      placeholder="Add any payment notes..."
+    ></textarea>
+
+    <button type="submit" class="btn btn-primary">
+      Send for MD Approval
+    </button>
+  </form>
+
+  <a href="javascript:history.back()" class="btn btn-secondary">
+    Back
+  </a>
+
+</div>
+{% endblock %}

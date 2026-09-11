@@ -1,0 +1,44 @@
+{% extends 'basedash.html' %}
+{% block content %}
+<h2>User Dashboard - WareHouse: {{ warehouse }}</h2>
+
+<div class="table-responsive mt-4">
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>Shipment</th>
+        <th>PO No</th>
+        <th>Packing List Ref</th>
+        <th>Item Categories</th>
+        <th>Warehouse</th>
+        <th>Expected Arrival</th>
+        <th>Company</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in grouped_details %}
+      <tr>
+        <td>{{ row.shipment.id }}</td>
+        <td>{{ row.shipment.purchase_order_no }}</td>
+        <td>{{ row.shipment.packing_list_ref }}</td>
+        <td>{{ row.item_names }}</td>
+        <td>{{ row.warehouse.warehouse_name }}</td>
+        <td>{{ row.expected_arrival_date }}</td>
+        <td>{{ row.company.name }}</td>
+        <td>
+          <a href="{% url 'arrival_update_detail' row.detail_id %}" class="btn btn-sm btn-success">
+            Arrival Update
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" class="text-center">No shipments awaiting arrival.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

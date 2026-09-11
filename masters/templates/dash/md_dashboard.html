@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block title %}MD Dashboard{% endblock %}
+
+{% block content %}
+<style>
+/* -------- Page -------- */
+.page-wrapper {
+  background-color: #F9FAFB;
+  min-height: 100vh;
+}
+
+/* -------- Header -------- */
+.header {
+  background-color: #1E3A8A;
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.header-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* -------- Welcome -------- */
+.welcome-box {
+  background-color: #E0F2FE;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px;
+}
+
+.welcome-text {
+  font-size: 16px;
+  color: #1E3A8A;
+}
+
+.user-role {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E40AF;
+  margin-top: 2px;
+}
+
+/* -------- Section -------- */
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 20px 16px 12px;
+}
+
+/* -------- Quick Actions -------- */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 0 16px;
+}
+
+
+.action-card {
+  width: 100%;
+  display: flex;
+}
+
+.action-inner {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  position: relative;
+   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Icon */
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  background-color: #DBEAFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-size: 26px;
+  color: #3B82F6;
+}
+
+/* Title */
+.action-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+/* Alert */
+.alert .action-inner {
+  border: 1px solid #FCA5A5;
+  background-color: #FEF2F2;
+}
+
+.alert .action-icon {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+.alert .action-title {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+.sub-alert {
+  font-size: 11px;
+  color: #B91C1C;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+/* Badge */
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background-color: #DC2626;
+  color: white;
+  border-radius: 12px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* -------- KPI / OVERVIEW -------- */
+.kpi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  width: 47%;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  border-left: 6px solid #3B82F6;
+}
+
+.kpi-title {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.kpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: rgba(59,130,246,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #3B82F6;
+}
+
+/* KPI color variants */
+.kpi-green { border-left-color: #10B981; }
+.kpi-green .kpi-icon { background-color: rgba(16,185,129,0.15); color:#10B981; }
+
+.kpi-yellow { border-left-color: #F59E0B; }
+.kpi-yellow .kpi-icon { background-color: rgba(245,158,11,0.15); color:#F59E0B; }
+
+.kpi-purple { border-left-color: #8B5CF6; }
+.kpi-purple .kpi-icon { background-color: rgba(139,92,246,0.15); color:#8B5CF6; }
+
+.kpi-red { border-left-color: #DC2626; }
+.kpi-red .kpi-icon { background-color: rgba(220,38,38,0.15); color:#DC2626; }
+
+
+/* -------- CA-style Quick Action Cards -------- */
+.ca-actions {
+  padding: 0 16px;
+  row-gap: 16px;
+}
+
+.ca-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #ffffff;
+  padding: 22px 24px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: all 0.2s ease;
+  position: relative;
+  width: 100%;
+}
+
+.ca-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+
+.ca-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.ca-icon.primary { background: #2563eb; }
+.ca-icon.danger  { background: #dc2626; }
+
+.ca-content {
+  text-align: left;
+}
+
+.ca-content h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.ca-content p {
+  font-size: 14px;
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.ca-card.alert {
+  background: #fff7f7;
+  border-left: 4px solid #dc2626;
+}
+
+.ca-card .badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+</style>
+
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+
+
+
+    <!-- OVERVIEW -->
+  <div class="section-title">Overview</div>
+
+  <div class="kpi-grid">
+
+    <div class="kpi-card">
+    <div class="kpi-title">Total Invoice Value</div>
+    <div class="kpi-row">
+        <div class="kpi-value">
+            {{ overview.total_invoice_value|floatformat:2|intcomma }}
+        </div>
+        <div class="kpi-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+        </div>
+    </div>
+</div>
+
+    <div class="kpi-card kpi-purple">
+      <div class="kpi-title">Clearance Initiated</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.clearance_initiated }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-green">
+      <div class="kpi-title">Clearance Completed</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.clearance_completed }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-title">Approved Duty Payments</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.approved_duty_payments }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-university"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-title">Pending GRN</div>
+      <div class="kpi-row">
+        <div class="kpi-value">{{ overview.pending_grn }}</div>
+        <div class="kpi-icon">
+          <i class="fas fa-box-open"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-red">
+      <div class="kpi-title">GRN Value (This Month)</div>
+      <div class="kpi-row">
+        <div class="kpi-value">
+    
+           {{ overview.total_grn_value_month|floatformat:2|intcomma }}
+        </div>
+        <div class="kpi-icon">
+          <i class="fas fa-chart-bar"></i>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUICK ACTIONS -->
+<div class="section-title">Quick Actions</div>
+
+<div class="row ca-actions">
+
+  <!-- Payment Approvals -->
+  <div class="col-xl-6 col-lg-6">
+    <a href="{% url 'md-payment-approvals' %}"
+       class="ca-card {% if md.payment_app > 0 %}alert{% endif %}">
+
+      {% if md.payment_app > 0 %}
+        <span class="badge">{{ md.payment_app }}</span>
+      {% endif %}
+
+      <div class="ca-icon danger">
+        <i class="fa fa-check-circle"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Payment Approvals</h4>
+        {% if md.payment_app > 0 %}
+          <p>{{ md.payment_app }} approval(s) pending</p>
+        {% else %}
+          <p>No approvals pending</p>
+        {% endif %}
+      </div>
+
+    </a>
+  </div>
+
+  <!-- Bank Balance -->
+  <div class="col-xl-6 col-lg-6">
+      
+    <a href="{% url 'md_dashboard_web' %}"
+       class="ca-card">
+
+      <div class="ca-icon primary">
+        <i class="fa fa-university"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Management Dashboard</h4>
+        <p>Logistics & Financial Overview</p>
+      </div>
+
+    </a>
+  </div>
+
+
+  <!-- Phase Range Report -->
+<div class="col-xl-6 col-lg-6">
+
+    <a href="{% url 'phase_range_report' %}"
+       class="ca-card">
+
+      <div class="ca-icon primary">
+        <i class="fa fa-chart-line"></i>
+      </div>
+
+      <div class="ca-content">
+        <h4>Phase Range Report</h4>
+        <p>View shipments by phase range</p>
+      </div>
+
+    </a>
+
+</div>
+
+</div>
+
+
+<script>
+  // Refresh page every 1 minute (60,000 ms)
+  setTimeout(function () {
+    window.location.reload();
+  }, 60000);
+</script>
+
+{% endblock %}

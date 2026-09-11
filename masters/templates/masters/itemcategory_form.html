@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow" style="max-width: 800px; width: 100%;">
+
+    <div class="card-header text-white" style="background-color: #3E5367;">
+      <h6 class="mb-0">
+        {% if form.instance.pk %} Edit Item Category {% else %} New Item Category {% endif %}
+      </h6>
+    </div>
+
+    <div class="card-body p-3">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Item Name -->
+        <div class="mb-3 row">
+          <label for="{{ form.item_name.id_for_label }}" class="col-sm-3 col-form-label fw-bold" style="color: #17202a;">
+            {{ form.item_name.label }}
+          </label>
+          <div class="col-sm-9">
+            {{ form.item_name|add_class:"form-control" }}
+            {% for error in form.item_name.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Sales Division (Select2) -->
+        <div class="mb-3 row">
+          <label for="{{ form.sales_division.id_for_label }}" class="col-sm-3 col-form-label fw-bold" style="color: #17202a;">
+            {{ form.sales_division.label }}
+          </label>
+          <div class="col-sm-9">
+             {{ form.sales_division|add_class:"form-select select2" }}
+            {% for error in form.sales_division.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Warehouses (Select2 Multi-select) -->
+        <div class="mb-3 row">
+          <label for="{{ form.warehouses.id_for_label }}" class="col-sm-3 col-form-label fw-bold" style="color: #17202a;">
+            {{ form.warehouses.label }}
+          </label>
+          <div class="col-sm-9">
+            {{ form.warehouses|add_class:"form-select select2" }}
+            {% for error in form.warehouses.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="text-end">
+          <button type="submit" class="btn btn-primary px-4">
+            {% if form.instance.pk %} Update {% else %} Save {% endif %}
+          </button>
+          <a href="{% url 'itemcategory_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

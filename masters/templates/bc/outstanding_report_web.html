@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Outstanding Report{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid" style="background:#F9FAFB; min-height:100vh;">
+
+  <!-- ================= HEADER ================= -->
+  <div class="d-flex align-items-center px-3"
+       style="background:#1E3A8A; min-height:60px;">
+    <a href="javascript:history.back()"
+       class="btn btn-sm btn-light d-flex align-items-center gap-1">
+      <i class="fa fa-arrow-left"></i> Back
+    </a>
+
+    <h5 class="flex-grow-1 text-center text-white fw-bold mb-0">
+      Outstanding Report
+    </h5>
+    <div style="width:44px;"></div>
+  </div>
+
+  <!-- ================= FILTER FORM ================= -->
+  <div class="container py-3">
+    <div class="card shadow-sm border-0">
+      <div class="card-body py-2 px-3">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row gx-3 gy-1 align-items-end">
+
+            <!-- Company -->
+            <div class="col-md-3">
+              <label class="form-label small mb-1">Company</label>
+              <select name="company_id" class="form-select form-select-sm">
+                <option value="">All Companies</option>
+                {% for c in companies %}
+                  <option value="{{ c.id }}"
+                    {% if selected_company|stringformat:"s" == c.id|stringformat:"s" %}
+                      selected
+                    {% endif %}
+                  >
+                    {{ c.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Document Type -->
+            <div class="col-md-3">
+              <label class="form-label small mb-1">Document Type</label>
+              <select name="doc_type" class="form-select form-select-sm">
+                {% for t in doc_types %}
+                  <option value="{{ t }}"
+                    {% if selected_doc_type == t %}selected{% endif %}
+                  >
+                    {{ t }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Date -->
+            <div class="col-md-3">
+              <label class="form-label small mb-1">As at Date</label>
+              <input type="date"
+                     name="date"
+                     class="form-control form-control-sm"
+                     value="{{ as_at }}"
+                     required>
+            </div>
+
+            <!-- Button -->
+            <div class="col-md-3 text-end">
+              <button class="btn btn-primary btn-sm px-3">
+                <i class="fa fa-search me-1"></i>
+                Generate
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RESULTS TABLE ================= -->
+  <div class="container pb-4">
+
+    {% if results %}
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead class="table-primary text-center">
+            <tr>
+              <th>#</th>
+              <th>Company</th>             
+              <th>Supplier</th>
+              <th>Bank</th>
+              <th>Doc Type</th>
+              <th>Reference No</th>
+              <th>Due Date</th>
+              <th>Tenor</th>
+               <th>Currency</th>
+              <th>Amount Foreign</th>             
+              <th class="text-end">Amount-RS</th>
+              <th class="text-end">Outstanding</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in results %}
+              <tr {% if item.due_date and item.due_date < as_at %}class="table-danger"{% endif %}>
+                <td class="text-center">{{ forloop.counter }}</td>
+                <td>{{ item.company }}</td>                
+                <td>{{ item.supplier }}</td>
+                <td>{{ item.bank }}</td>
+                <td class="text-center">{{ item.doc_type }}</td>
+                <td>{{ item.reference_number }}</td>
+                <td>{{ item.due_date|date:"Y-m-d" }}</td>
+                <td class="text-center">{{ item.tenor }}</td>
+                 <td class="text-center">{{ item.currency }}</td>
+                <td>{{ item.foreign_amount|floatformat:2|intcomma }}</td>
+               
+                <td class="text-end">
+                  {{ item.amount|floatformat:2|intcomma }}
+                </td>
+                <td class="text-end fw-bold text-danger">
+                  {{ item.balance|floatformat:2|intcomma }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+          <tfoot class="table-light">
+            <tr>
+              <th colspan="10" class="text-end">TOTAL</th>
+              <th class="text-end">
+                {{ total_amount|floatformat:2|intcomma }}
+              </th>
+              <th class="text-end text-danger">
+                {{ total_balance|floatformat:2|intcomma }}
+              </th>
+            </tr>
+          </tfoot>
+
+        </table>
+      </div>
+
+    {% elif as_at %}
+      <p class="text-center text-muted mt-4">
+        No outstanding records found
+      </p>
+    {% endif %}
+
+  </div>
+
+</div>
+
+<style>
+.card {
+  border-radius: 8px;
+  background: #ffffff;
+}
+.card-body {
+  background: #ccd9f1;
+}
+.form-label {
+  font-weight: 500;
+}
+.form-control-sm,
+.form-select-sm {
+  font-size: 0.90rem;
+}
+</style>
+
+{% endblock %}

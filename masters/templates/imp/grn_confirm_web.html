@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}GRN Confirmation{% endblock %}
+
+{% block content %}
+<style>
+/* ===== PAGE ===== */
+.grn-confirm-page {
+  background: #f5f7fa;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* ===== HEADER ===== */
+.grn-header h3 {
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+/* ===== CARD ===== */
+.grn-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  height: 100%;
+}
+
+.grn-code {
+  font-size: 16px;
+  font-weight: 800;
+  color: #337ab7;
+  margin-bottom: 2px;
+}
+
+.grn-supplier {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-bottom: 10px;
+}
+
+/* ===== DETAILS ===== */
+.grn-row {
+  font-size: 13px;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+
+.grn-row i {
+  width: 18px;
+  color: #7f8c8d;
+}
+
+/* ===== STATUS ===== */
+.grn-status {
+  display: inline-block;
+  background: #d9edf7;
+  color: #31708f;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+/* ===== BUTTON ===== */
+.grn-btn {
+  margin-top: 14px;
+  width: 100%;
+  font-weight: 700;
+}
+</style>
+
+<div class="grn-confirm-page">
+
+  <!-- HEADER -->
+  <div class="grn-header">
+    <h3>GRN Confirmation</h3>
+  </div>
+
+  <!-- FLASH MESSAGES -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if shipments %}
+    <div class="row">
+
+      {% for s in shipments %}
+      <div class="col-md-4 col-sm-6 mb-4">
+
+        <div class="grn-card">
+
+          <div class="grn-code">
+            <i class="fa fa-clipboard"></i>
+            {{ s.shipment_code }}
+          </div>
+
+          <div class="grn-supplier">
+            {{ s.supplier.name|default:"-" }}
+          </div>
+
+          <div class="grn-row">
+            <strong>GRN No:</strong>
+            {{ s.grn_number|default:"-" }}
+          </div>
+
+           <div class="grn-row">
+            <strong>Note:</strong>
+            {{ s.receiving_notes|default:"-" }}
+          </div>
+
+              
+
+          <div class="grn-row">
+             <strong>Vessel:</strong>
+            <i class="fa fa-ship"></i>
+            {{ s.vessel|default:"-" }}
+          </div>
+
+          <span class="grn-status">
+            Ready for GRN Upload
+          </span>
+
+          <form
+            method="post"
+            action="{% url 'record_grn_confirm_web' s.id %}"
+          >
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="btn btn-success grn-btn"
+              onclick="return confirm('Confirm GRN upload for this shipment?')"
+            >
+              Confirm GRN Upload
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+
+  {% else %}
+    <div class="text-center text-muted" style="margin-top:80px;">
+      <i class="fa fa-truck fa-3x mb-3"></i>
+      <p>No shipments available for GRN confirmation.</p>
+      <a href="{% url 'ws_dashboard' %}" class="btn btn-primary">
+        ← Back to Dashboard
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
